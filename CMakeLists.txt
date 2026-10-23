@@ -9,6 +9,8 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_TLS_VERIFY TRUE CACHE BOOL "Verify TLS certificates for dependency downloads" FORCE)
 if(MSVC)
+    # All SDK/wrapper objects must use /MT like the static Rust companion.
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     add_compile_options(/guard:cf)
     add_link_options(/DYNAMICBASE /NXCOMPAT /HIGHENTROPYVA /guard:cf)
 elseif(MINGW)
