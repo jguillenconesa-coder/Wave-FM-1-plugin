@@ -51,6 +51,16 @@ release workflows gate publication. User-machine acceptance remains separate.
   locks, allocation or spinning in the audio callback. macOS asset publication
   uses Ubuntu after the native macOS build to avoid a second macOS runner queue.
 
+Final 0.2.1 preview.2 native Windows and macOS workflows completed successfully,
+including the real HTTPS download test. All four actual published downloads
+matched their release checksums; all 345 Windows / 991 macOS bundle file hashes,
+source commit, architectures and author notices were verified. Both official
+validator reports record 47 passed and zero failed tests; the native Windows
+download additionally passed validation under Wine. A clean export of tracked
+source passed Gitleaks with no findings. Evidence and practical limits:
+`downloads/windows/VALIDATION.md`. Preview.1 is superseded by preview.2's coherent
+host-state publication; use the latter for the new MIDI controls.
+
 ## Version 0.2.0 additions (2026-10-23)
 
 - Twenty-three original firmware packages are distributed as separate interpreted

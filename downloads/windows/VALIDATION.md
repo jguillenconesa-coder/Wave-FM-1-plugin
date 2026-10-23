@@ -1,13 +1,48 @@
-# Validation record · Preview 0.2.0 · 2026-10-23
+# Validation record · Preview 0.2.1 · 2026-10-23
 
-For the upcoming 0.2.1 source changes: local checks add MIDI routing and optional
-community downloads. Original external packages were downloaded from 64 author
-GitHub releases; 62 passed basic engine/LCD/eight-second audio checks, while
-BEETLE/PIGEON were silent with the generic stimulus. See
-[exact external results](../../docs/COMMUNITY_COMPATIBILITY.md).
-Native 0.2.1 release gates include an explicit real HTTPS download and hash
-verification. The completed native evidence below remains specific to 0.2.0
-preview.4 until a separate 0.2.1 result is recorded.
+Published release: **v0.2.1-preview.2**, source `2e8ceea`. Subsequent documentation-only commits update links and this record.
+
+- [Native Windows build/publication 39986788981](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/39986788981): success, 12m 37s.
+- [Native Universal macOS build/publication 39986788463](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/39986788463): success, 9m 14s.
+- Both gates require engine/state tests, controller regressions, a real HTTPS
+  author download with hash/package verification and completed official VST3
+  validation with zero failures. Windows also installs, loads the private factory,
+  uninstalls and verifies application/registration cleanup.
+- All four public downloads were retrieved and matched their release checksums.
+  Metadata identifies source `2e8ceea`; every hash of the Windows ZIP's **345**
+  bundle files and macOS ZIP's **991** bundle files matches. Both Windows modules
+  are x64; both macOS modules contain Intel/arm64. Packaged original credits,
+  23 bundled packages, 83 references and 64 author release links were verified.
+- The published macOS native report records **47 tests passed, zero failed**.
+  The actual downloaded native Windows bundle additionally passed **47 official
+  VST3 tests under Wine**, as well as its native CI gate. Reports:
+  `docs/validation/macos-021-preview2-vst3.txt` and
+  `docs/validation/windows-021-preview2-vst3.txt`.
+- Local checks: 21 unit tests, two portable-state tests, two catalogue integration
+  tests and 16 source/packaging integrity tests passed. A clean tracked-source
+  export passed Gitleaks 8.24.2 with no findings. A temporary egui linker object
+  in the build cache triggered a binary-symbol false positive; it is not tracked
+  source or a shipped file.
+- Local installer smoke: all 345 installed bundle hashes matched, private factory
+  loaded, uninstallation removed the application directory, and five protected
+  fixtures representing Live, preferences, a project, another VST3 and a global
+  CLAP stayed unchanged. This used a disposable Wine prefix. Installer logic is
+  unchanged between preview.1 and preview.2; the latter fixes controller-state publication.
+- Separately, 64 original author packages were downloaded: 62 passed basic
+  boot/LCD/eight-second audio; BEETLE and PIGEON were silent with the generic
+  sequence. [Exact external results](../../docs/COMMUNITY_COMPATIBILITY.md).
+  These external binaries are not redistributed. A smoke test does not establish
+  full feature/security verification or permission to redistribute assets.
+
+No interactive Ableton/controller session was automated. Try an empty Set with
+important projects closed/backed up. Windows has no own Authenticode signature.
+macOS uses ad-hoc signatures without Developer ID/notarization, and the PKG is
+not Apple-signed; Gatekeeper may block it. Zero risk is not guaranteed. No new
+Rust/runtime dependencies, host changes, drivers or services were introduced.
+The CI Node 20 warning concerns the pinned download-artifact action, which
+completed under GitHub's Node 24 enforcement; it is unrelated to plugin runtime.
+
+## Historical record · Preview 0.2.0 · 2026-10-23
 
 Emulator: `72adb810c4409c4b7302ca56906c05083834faee`; wrapper: v0.16.0.
 Exact source revision, desktop fingerprint, firmware packages, matching sources,
