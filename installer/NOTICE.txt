@@ -1,0 +1,13 @@
+Wave FM-1 - Experimental Windows x64 build
+
+Close Ableton Live and other audio hosts before installing or uninstalling.
+This installs the FM-1 VST3 and its required matching CLAP module for all users,
+plus the Microsoft Visual C++ x64 runtime. Live loads the VST3, not the CLAP.
+
+The plugin appears as FM-1 by fm1-emu. It reuses Joakim Eriksson's FM-1 emulator.
+Do not keep another build of the same plugin installed in custom plugin folders.
+No firmware is included: load your own compatible .fwsc package in the plugin.
+
+Windows and Ableton validation is pending. Save a backup of your Live projects
+before testing this prototype. Uninstalling removes plugin files and documentation,
+not your Live projects or firmware files. The shared Microsoft runtime is retained.

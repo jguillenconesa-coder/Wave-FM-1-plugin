@@ -1,0 +1,73 @@
+name: Windows VST3 prototype
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '23 8 * * 1'
+permissions:
+  contents: read
+concurrency:
+  group: windows-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Packaging integrity tests
+        run: python -m unittest discover -s tests -v
+      - name: Prepare pinned emulator
+        run: python tools/bootstrap.py
+      - name: Install Rust toolchain and advisory scanner
+        run: |
+          rustup toolchain install 1.99.1 --profile minimal
+          cargo install cargo-audit --version 0.22.2 --locked
+      - name: Audit both dependency lockfiles
+        run: |
+          cargo audit --file .deps/fm1-emu/Cargo.lock
+          cargo audit --file .deps/fm1-emu/crates/fm1-plugin/Cargo.lock
+  build:
+    needs: checks
+    runs-on: windows-2022
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Prepare pinned emulator
+        run: python tools/bootstrap.py
+      - name: Install Rust toolchain
+        run: rustup toolchain install 1.99.1 --profile minimal
+      - name: CPU and peripheral tests
+        run: cargo test --manifest-path .deps/fm1-emu/Cargo.toml --locked --release -p fm1-core -p fm1-soc -j 2
+      - name: Build Windows CLAP and VST3
+        shell: pwsh
+        run: ./tools/build-windows.ps1
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          choco install innosetup --no-progress --yes --version=6.4.3
+          if ($LASTEXITCODE -ne 0) { throw 'Inno Setup installation failed' }
+      - name: Package Windows installer
+        shell: pwsh
+        run: ./tools/package-windows.ps1
+      - name: Install, load plugin factory and uninstall
+        shell: pwsh
+        run: ./tools/smoke-installer.ps1
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Wave-FM-1-Windows-x64-experimental
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14

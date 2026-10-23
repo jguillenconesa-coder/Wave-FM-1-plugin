@@ -1,0 +1,13 @@
+.deps/
+build/
+dist/
+__pycache__/
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+*.p12
+*.log
+core
+core.*
