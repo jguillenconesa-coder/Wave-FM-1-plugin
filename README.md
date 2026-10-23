@@ -55,6 +55,12 @@ no se incluye la fotografía ni se afirma una equivalencia colorimétrica exacta
 Cambian carcasa, teclas y controles; pantalla y LED conservan sus colores.
 La selección se guarda con cada instancia del proyecto.
 
+![Las seis paletas dibujadas por el panel del plugin](docs/images/skins.png)
+
+Vista del panel original de fm1-emu (Joakim Eriksson, MIT) con las paletas de
+esta integración. La pantalla de muestra es uniforme; al cargar un firmware
+mostrará su interfaz. No se ha utilizado la fotografía del fabricante.
+
 El instrumento sigue apareciendo como **FM-1**, fabricante **fm1-emu**, con
 la identidad VST3 de la preview para recuperar proyectos anteriores.
 No se garantiza un número ilimitado de instancias; el consumo de CPU varía.
