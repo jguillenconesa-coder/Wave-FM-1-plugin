@@ -28,7 +28,7 @@ release workflows gate publication. User-machine acceptance remains separate.
   fail verification. A corrupted bundled package is rejected before replacing
   the current instance. Catalogue hash verification is integrity checking, not
   certification or a sandbox for malicious firmware.
-- macOS is built natively through the macOS workflow for both Intel/arm64, with
+- From preview.4, macOS is built natively through the macOS workflow for both Intel/arm64, with
   private CLAP loading. Packages are released only after native tests, official
   VST3 validation and bundle-signature checks. Ad-hoc code signatures are not
   Developer ID, installer signatures or Apple notarization. Native host/driver
@@ -42,6 +42,18 @@ credit and attribution text in the matching source archives against the directly
 accessible `firmware-licenses` folder, including files named `MIT-*.txt` or
 `Apache-*.txt` under `LICENSES/`. Builds reject missing or changed notices; no
 copyright text is replaced with the repository maintainer's identity.
+
+The final preview.4 native Windows and macOS workflows completed successfully.
+The actual four published downloads (EXE, Windows ZIP, macOS ZIP and PKG) were
+retrieved and verified against their release hashes. Both bundle manifests,
+Windows PE architecture, both Universal Mach-O slices and the packaged original
+credits were checked. macOS's included official validator report records 47
+passed tests and zero failures. The downloaded native MSVC bundle additionally
+passed 47 official Windows VST3 tests under Wine, with zero failures. Earlier macOS previews had an incorrect validator
+path and masked pipeline status; those green workflows are not accepted as
+validation. Preview.4 enables shell pipeline failure propagation and requires a
+nonempty successful test-count report on both platforms. See the validation record
+for native run links and practical limits.
 
 Source secret scans were repeated with Gitleaks 8.24.2 on the working tree and
 on safely extracted corresponding firmware source archives: no findings. No

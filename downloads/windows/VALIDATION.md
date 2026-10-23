@@ -14,11 +14,11 @@ hashes are in `SHA256SUMS` and `SHA256SUMS-macos` on the release page.
 | Independent instance configuration and firmware state | Passed; catalogue save encode/decode checked for every package |
 | Portable save round-trip and transactional replacement, real Felucca fixture | 2 passed |
 | Official Windows VST3 validator, final 23-package cross-build | 47 passed, 0 failed |
-| Native Windows MSVC build, firmware tests, installer/factory/uninstall | 23-package preview.3 passed native tests, official validation, install/factory/uninstall; preview.4 additionally requires a nonempty successful validator report |
+| Native Windows MSVC build, firmware tests, installer/factory/uninstall | Preview.4 passed native Windows firmware/state tests, explicit completed official validation, installer/factory/uninstall and release publication |
 | Install/reinstall to standard VST3 path, uninstall and HKLM registration (Wine) | Passed again on final expanded package; all installed bundle hashes matched; factory load and removal verified |
 | Silent rejection of unowned directory and legacy 0.1.0 registration | Passed; existing fixture preserved |
 | Ableton program/preferences/project, other VST3 and global CLAP fixtures | All five unchanged after install/reinstall/uninstall |
-| Native macOS Universal build/signature/validator | Preview.4 requires successful native tests, signatures, and an explicit completed official validator report before publication |
+| Native macOS Universal build/signature/validator | Preview.4 passed native firmware/state tests, Universal build/signature checks and 47 official VST3 tests with zero failures |
 | Interactive plugin window under Wine | Not validated: software graphics could not provide the required accelerated OpenGL context |
 | User's actual Live installation / native audio drivers / long sessions | Not tested here; user confirmed the prior plugin worked in Live Windows |
 
@@ -49,3 +49,24 @@ output layout; the pipeline did not propagate that error and wrote an empty
 report. Those workflow successes are **not** accepted as macOS VST3 validation.
 Preview.4 uses `bin/Release/validator`, captures errors, requires a positive
 completed-test count with zero failures, and enables pipeline failure propagation.
+
+Final macOS preview.4: [native build and publication 39945061489](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/39945061489),
+source `3d4a472`. The published ZIP and PKG were downloaded and their release
+hashes checked. All 986 bundle files match the manifest; both Mach-O binaries
+contain Intel and arm64 slices, and the included report records 47 passed tests,
+zero failed. The ZIP includes all 23 firmware packages and the attribution files.
+
+Final Windows preview.4: [native MSVC build and publication 39945061480](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/39945061480),
+source `3d4a472`. The actual EXE and portable ZIP downloads match their published
+SHA-256 values. All 340 bundle files match the native build manifest; both plugin
+binaries are x64 PE files. The portable ZIP contains all 23 firmware packages,
+the original upstream notice texts and the explicit maintainer/author declaration.
+The release workflow installed, loaded the factory and completely uninstalled
+the exact installer on its disposable native Windows runner before publication.
+
+The downloaded native MSVC VST3 was also run through the official Windows
+validator under Wine: **47 passed, 0 failed**. Raw reports are retained for
+[Windows](../../docs/validation/windows-preview4-vst3.txt) and
+[macOS](../../docs/validation/macos-preview4-vst3.txt). The Windows report checks
+the delivered binary pair, in addition to the native Windows release workflow;
+it does not represent a test on the user's computer or in Ableton Live.
