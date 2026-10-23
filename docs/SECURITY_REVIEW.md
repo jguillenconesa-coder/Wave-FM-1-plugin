@@ -43,6 +43,13 @@ release workflows gate publication. User-machine acceptance remains separate.
   require a real author HTTPS download, hash match and package parse in addition
   to their normal engine and official VST3 checks. No new Rust dependencies
   were introduced. Actual Live MIDI mapping requires user-machine acceptance.
+- Preview.2 additionally publishes coherent atomic control snapshots only from
+  the host's serialized initialize/process phases. The worker never polls raw
+  host parameter values during state deserialization. Regression tests cover
+  partially restored positions/button counters and interrupted snapshot reads;
+  neither may replay saved controls into the old firmware. Publication uses no
+  locks, allocation or spinning in the audio callback. macOS asset publication
+  uses Ubuntu after the native macOS build to avoid a second macOS runner queue.
 
 ## Version 0.2.0 additions (2026-10-23)
 

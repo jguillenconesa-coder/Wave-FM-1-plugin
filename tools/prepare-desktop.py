@@ -49,6 +49,7 @@ def main():
     text = replace_once(text, 'master: FloatParam::new(', 'controls: controls::PanelParams::default(),\n            master: FloatParam::new(')
     text = replace_once(text, '        let link = self.start();\n        self.ratio = RATE / cfg.sample_rate as f64;',
                         '        self.params.controls.resync();\n        let link = self.start();\n        self.ratio = RATE / cfg.sample_rate as f64;')
+    text = replace_once(text, '        let start = self.taken;', '        self.params.controls.publish();\n        let start = self.taken;')
     text = replace_once(text, '    pub running: Mutex<Option<Arc<Vec<u8>>>>,',
                         '    pub running: Mutex<Option<Arc<Vec<u8>>>>,\n    jobs: Mutex<Vec<std::thread::JoinHandle<()>>>,')
     text = replace_once(text, 'impl Link {', '''impl Link {
@@ -77,9 +78,9 @@ def main():
     engine = plugin / "src/engine.rs"
     text = engine.read_text()
     text = replace_once(text, '    let mut m: Option<Machine> = None;',
-                        '    let mut controls = crate::controls::Routing::new(params.controls.snapshot());\n    let mut m: Option<Machine> = None;')
+                        '    let mut controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n    let mut m: Option<Machine> = None;')
     text = replace_once(text, '                    active_pkg = m.as_ref().map(|_| pkg);',
-                        '                    controls = crate::controls::Routing::new(params.controls.snapshot());\n                    active_pkg = m.as_ref().map(|_| pkg);')
+                        '                    controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n                    active_pkg = m.as_ref().map(|_| pkg);')
     text = replace_once(text, 'Cmd::Key { id, down } => apply(&mut m, Action::Key { id, down }),',
                         '''Cmd::Key { id, down } => {
                     if m.as_ref().is_some_and(|m| m.soc.board == Board::Fm1) {
@@ -87,12 +88,14 @@ def main():
                     } else { apply(&mut m, Action::Key { id, down }); }
                 }''')
     text = replace_once(text, '                    m = Some(next);',
-                        '                    controls = crate::controls::Routing::new(params.controls.snapshot());\n                    m = Some(next);')
+                        '                    controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n                    m = Some(next);')
     text = replace_once(text, '        snapshots(&mut pending, m.as_ref(), &params, Instant::now());', '''        if m.as_ref().is_some_and(|m| m.soc.board == Board::Fm1) {
-            controls.poll(params.controls.snapshot(), Instant::now(), |e| panel_event(&mut m, e));
+            if let Some(snapshot) = params.controls.snapshot() {
+                controls.poll(snapshot, Instant::now(), |e| panel_event(&mut m, e));
+            }
         } else {
             // FM-1 control IDs must never be applied to an imported SMK-37 firmware.
-            controls = crate::controls::Routing::new(params.controls.snapshot());
+            controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());
         }
         snapshots(&mut pending, m.as_ref(), &params, Instant::now());''')
     text += '''

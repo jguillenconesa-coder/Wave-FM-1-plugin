@@ -40,6 +40,12 @@ Cada instancia tiene referencias y pulsos independientes. Cambiar de firmware
 establece de nuevo las referencias, sin recorrer todas sus posiciones. Los
 controles FM-1 adicionales están desactivados con un firmware SMK-37 importado.
 
+Los controles asignables se aplican cuando el host procesa el instrumento,
+también con el transporte detenido si Live mantiene activa la pista. Al recuperar
+un Set se publica una referencia coherente después de restaurar sus parámetros:
+los valores guardados no se interpretan como nuevos giros o pulsaciones. No se
+leen parámetros a medio restaurar desde el hilo del emulador.
+
 No se ha automatizado una sesión real de Live desde este entorno: las pruebas
 comprueban las rutas del motor y los parámetros VST3; confirma el mapeo con tu
 controlador en un Set vacío antes de incorporarlo a un proyecto importante.

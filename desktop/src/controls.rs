@@ -1,7 +1,7 @@
 // MIT. Host control integration; see desktop/README.md and AUTHORS.md.
 //! Physical control names are stable across firmwares. They are not synth parameter names.
 use nih_plug::prelude::*;
-use std::sync::{Arc, atomic::{AtomicU64, Ordering}};
+use std::sync::{Arc, atomic::{AtomicI32, AtomicU64, Ordering}};
 use std::time::{Duration, Instant};
 
 // Same visual order and hardware encoder numbers as panel::ENCS.
@@ -35,6 +35,10 @@ pub struct PanelParams {
     #[nested(array)]
     pub buttons: [ButtonParam; 14],
     epoch: AtomicU64,
+    sequence: AtomicU64,
+    published_positions: [AtomicI32; 7],
+    published_rises: [AtomicU64; 14],
+    published_epoch: AtomicU64,
 }
 
 impl Default for PanelParams {
@@ -55,6 +59,10 @@ impl Default for PanelParams {
                 }
             }),
             epoch: AtomicU64::new(0),
+            sequence: AtomicU64::new(0),
+            published_positions: std::array::from_fn(|_| AtomicI32::new(64)),
+            published_rises: std::array::from_fn(|_| AtomicU64::new(0)),
+            published_epoch: AtomicU64::new(0),
         }
     }
 }
@@ -67,16 +75,39 @@ pub struct Snapshot {
 }
 
 impl PanelParams {
-    pub fn snapshot(&self) -> Snapshot {
-        Snapshot {
-            positions: std::array::from_fn(|i| self.encoders[i].value.value()),
-            rises: std::array::from_fn(|i| self.buttons[i].rises.load(Ordering::Relaxed)),
-            epoch: self.epoch.load(Ordering::Relaxed),
-        }
+    /// Only initialize()/process() publish. NIH-plug serializes those calls with
+    /// state restoration. Never read partially restored host parameters directly.
+    pub fn publish(&self) {
+        self.sequence.fetch_add(1, Ordering::SeqCst); // odd: publication in progress
+        for i in 0..7 { self.published_positions[i].store(self.encoders[i].value.value(), Ordering::SeqCst); }
+        for i in 0..14 { self.published_rises[i].store(self.buttons[i].rises.load(Ordering::Relaxed), Ordering::SeqCst); }
+        self.published_epoch.store(self.epoch.load(Ordering::Relaxed), Ordering::SeqCst);
+        self.sequence.fetch_add(1, Ordering::SeqCst);
+    }
+
+    /// One bounded read attempt; no audio-thread locks, spinning or allocation.
+    pub fn snapshot(&self) -> Option<Snapshot> {
+        let sequence = self.sequence.load(Ordering::SeqCst);
+        if sequence & 1 != 0 { return None; }
+        let snapshot = Snapshot {
+            positions: std::array::from_fn(|i| self.published_positions[i].load(Ordering::SeqCst)),
+            rises: std::array::from_fn(|i| self.published_rises[i].load(Ordering::SeqCst)),
+            epoch: self.published_epoch.load(Ordering::SeqCst),
+        };
+        (self.sequence.load(Ordering::SeqCst) == sequence).then_some(snapshot)
     }
 
     /// Restoring positions establishes a reference; it must not turn all encoders on boot.
-    pub fn resync(&self) { self.epoch.fetch_add(1, Ordering::Relaxed); }
+    pub fn resync(&self) {
+        self.epoch.fetch_add(1, Ordering::Relaxed);
+        self.publish();
+    }
+}
+
+impl Default for Snapshot {
+    // A read interrupted by publication must establish a baseline on its next
+    // coherent read, including a firmware boot while the host is processing.
+    fn default() -> Self { Self { positions: [64; 7], rises: [0; 14], epoch: u64::MAX } }
 }
 
 #[derive(Debug, PartialEq)]
@@ -140,7 +171,36 @@ impl Routing {
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn initial() -> Snapshot { PanelParams::default().snapshot() }
+    fn initial() -> Snapshot { PanelParams::default().snapshot().unwrap() }
+
+    #[test]
+    fn partially_restored_host_state_is_not_exposed_before_initialize() {
+        let mut params = PanelParams::default();
+        let mut routing = Routing::new(params.snapshot().unwrap());
+        params.encoders[0].value = IntParam::new("Select", 100, IntRange::Linear { min: 0, max: 127 });
+        params.buttons[9].rises.fetch_add(1, Ordering::Relaxed);
+        routing.poll(params.snapshot().unwrap(), Instant::now(), |_| panic!("partially restored state replayed a control"));
+        params.resync();
+        routing.poll(params.snapshot().unwrap(), Instant::now(), |_| panic!("saved values must not trigger controls"));
+        params.encoders[0].value = IntParam::new("Select", 101, IntRange::Linear { min: 0, max: 127 });
+        params.buttons[2].rises.fetch_add(1, Ordering::Relaxed);
+        params.publish();
+        let mut events = Vec::new();
+        routing.poll(params.snapshot().unwrap(), Instant::now(), |e| events.push(e));
+        assert_eq!(events, [Event::Encoder { enc: 0, clicks: 1 }, Event::Key { id: 2, down: true }]);
+    }
+
+    #[test]
+    fn an_in_progress_publication_is_skipped_without_spinning() {
+        let params = PanelParams::default();
+        params.sequence.store(1, Ordering::SeqCst);
+        assert!(params.snapshot().is_none());
+        params.sequence.store(2, Ordering::SeqCst);
+        assert!(params.snapshot().is_some());
+        let mut routing = Routing::new(Snapshot::default());
+        params.published_positions[0].store(100, Ordering::SeqCst);
+        routing.poll(params.snapshot().unwrap(), Instant::now(), |_| panic!("an interrupted boot replayed the encoder reference"));
+    }
 
     #[test]
     fn all_encoder_routes_are_relative_and_use_the_physical_matrix() {
