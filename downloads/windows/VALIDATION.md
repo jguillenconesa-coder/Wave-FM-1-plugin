@@ -1,24 +1,24 @@
 # Validation record · Preview 0.2.0 · 2026-10-23
 
 Emulator: `72adb810c4409c4b7302ca56906c05083834faee`; wrapper: v0.16.0.
-Exact source revision, compiler, desktop fingerprint, firmware packages, matching
-sources, notices and binary hashes are recorded by each build. Release asset
+Exact source revision, desktop fingerprint, firmware packages, matching sources,
+notices and binary hashes are recorded by each build; compiler output is in CI. Release asset
 hashes are in `SHA256SUMS` and `SHA256SUMS-macos` on the release page.
 
 | Check | Observed result |
 | --- | --- |
-| Python dependency/packaging integrity tests | 15 passed |
+| Python dependency/packaging integrity tests | 16 passed |
 | Emulator CPU / SoC baseline | 58 + 38 passed |
 | Windows plugin unit tests under Wine 10 | 9 passed; all six panel palettes render distinctly and preserve LCD pixels |
 | 23 real firmware packages, Windows engine | All booted, drew LCD, produced 352,800 finite audio frames each; no CPU halt |
 | Independent instance configuration and firmware state | Passed; catalogue save encode/decode checked for every package |
 | Portable save round-trip and transactional replacement, real Felucca fixture | 2 passed |
 | Official Windows VST3 validator, final 23-package cross-build | 47 passed, 0 failed |
-| Native Windows MSVC build, firmware tests, installer/factory/uninstall | Prior seven-package build passed; expanded build must pass before release publication |
+| Native Windows MSVC build, firmware tests, installer/factory/uninstall | 21-package build 704ebd0 passed native tests, official validation, install/factory/uninstall; final 23-package build is gated before publication |
 | Install/reinstall to standard VST3 path, uninstall and HKLM registration (Wine) | Passed again on final expanded package; all installed bundle hashes matched; factory load and removal verified |
 | Silent rejection of unowned directory and legacy 0.1.0 registration | Passed; existing fixture preserved |
 | Ableton program/preferences/project, other VST3 and global CLAP fixtures | All five unchanged after install/reinstall/uninstall |
-| Native macOS Universal build/signature/validator | Gated by macOS workflow before publishing its assets |
+| Native macOS Universal build/signature/validator | 21-package build 704ebd0 passed Universal build, signature checks, native tests, official validator and ZIP/PKG creation; final catalogue is gated before publication |
 | Interactive plugin window under Wine | Not validated: software graphics could not provide the required accelerated OpenGL context |
 | User's actual Live installation / native audio drivers / long sessions | Not tested here; user confirmed the prior plugin worked in Live Windows |
 
@@ -39,3 +39,7 @@ Wine fixtures do not access the user's computer or important projects. Test the
 update in an empty Set with backups. No experimental in-process plugin can
 promise zero risk. This is not manufacturer certification or a complete security
 audit; the dependency-maintenance warnings remain in the security review.
+
+Native baseline evidence: [Windows run 39939039661](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/39939039661)
+and [macOS run 39939039128](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/39939039128).
+The release tag runs these checks again against its own exact source revision.

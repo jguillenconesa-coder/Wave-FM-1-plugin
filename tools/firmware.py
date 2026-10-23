@@ -3,7 +3,9 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 import shutil
+import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -12,6 +14,27 @@ def sha(path):
     if path.is_symlink() or not path.is_file():
         raise ValueError(f"Missing or linked firmware input: {path}")
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def verify_notices(source, directory):
+    """Retain every source notice, including texts named MIT-*.txt in LICENSES/."""
+    with tarfile.open(source) as archive:
+        for member in archive:
+            path = Path(member.name)
+            if not member.isfile() or not (
+                "LICENSES" in (part.upper() for part in path.parts)
+                or re.search(r"LICENSE|LICENCE|LICENSING|COPYING|COPYRIGHT|NOTICE|CREDITS|AUTHORS|ATTRIBUTION|OFL", path.name, re.I)
+            ):
+                continue
+            if path.is_absolute() or ".." in path.parts or len(path.parts) < 2:
+                raise ValueError(f"Invalid source notice path: {member.name}")
+            # All pinned archives have a single named root directory. Read only;
+            # never extract a source tree or execute an upstream build here.
+            relative = Path(*path.parts[1:])
+            with archive.extractfile(member) as stream:
+                expected = hashlib.file_digest(stream, "sha256").hexdigest()
+            if sha(directory / relative) != expected:
+                raise ValueError(f"Original source notice mismatch: {relative}")
 
 
 def verify_source():
@@ -28,6 +51,7 @@ def verify_source():
             raise ValueError(f"Corresponding source hash mismatch: {e['id']}")
         for name in ("LICENSE", "LICENSING.md"):
             sha(ROOT / "firmware/licenses" / e["id"] / name)
+        verify_notices(ROOT / "firmware/sources" / e["source"], ROOT / "firmware/licenses" / e["id"])
     return entries
 
 

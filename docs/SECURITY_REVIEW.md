@@ -37,6 +37,12 @@ release workflows gate publication. User-machine acceptance remains separate.
   below are the prior 0.1.0 baseline where not explicitly superseded; they must
   not be read as new native Ableton or macOS results.
 
+An additional source-notice completeness check compares every licence, notice,
+credit and attribution text in the matching source archives against the directly
+accessible `firmware-licenses` folder, including files named `MIT-*.txt` or
+`Apache-*.txt` under `LICENSES/`. Builds reject missing or changed notices; no
+copyright text is replaced with the repository maintainer's identity.
+
 Source secret scans were repeated with Gitleaks 8.24.2 on the working tree and
 on safely extracted corresponding firmware source archives: no findings. No
 upstream source build scripts were executed during catalogue research. This
