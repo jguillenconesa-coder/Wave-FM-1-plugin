@@ -1,4 +1,4 @@
-"""Collect source notices and SPDX metadata for the Windows Cargo dependency graph."""
+"""Collect source notices and SPDX metadata for the selected Cargo dependency graph."""
 import json
 import argparse
 from pathlib import Path
@@ -13,12 +13,12 @@ SUPPLEMENTAL = {"ecolor": "egui-MIT.txt", "egui": "egui-MIT.txt", "egui_glow": "
     "clipboard-win": "clipboard-win-BSL-1.0.txt", "winapi-x86_64-pc-windows-gnu": "winapi-MIT.txt"}
 
 
-def main(target="x86_64-pc-windows-msvc"):
+def main(target="x86_64-pc-windows-msvc", output=None):
     manifest = ROOT / ".deps/fm1-emu/crates/fm1-plugin/Cargo.toml"
     metadata = json.loads(subprocess.check_output(["cargo", "metadata", "--locked",
         "--manifest-path", str(manifest), "--filter-platform", target,
         "--format-version", "1"], text=True))
-    out = ROOT / "dist/licenses/rust"
+    out = output or ROOT / "dist/licenses/rust"
     out.mkdir(parents=True, exist_ok=True)
     inventory = []
     for package in sorted(metadata["packages"], key=lambda p: (p["name"], p["version"])):
@@ -45,10 +45,12 @@ def main(target="x86_64-pc-windows-msvc"):
             shutil.copyfile(path, folder / f"{i:02d}-{path.name}")
         inventory.append({k: package[k] for k in ("name", "version", "license", "authors", "repository", "source")})
     (out / "inventory.json").write_text(json.dumps(inventory, indent=2) + "\n", encoding="utf-8")
-    print(f"Collected licence notices for {len(inventory)} Windows Rust packages")
+    print(f"Collected licence notices for {len(inventory)} {target} Rust packages")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--target", choices=("x86_64-pc-windows-msvc", "x86_64-pc-windows-gnu"), default="x86_64-pc-windows-msvc")
-    main(parser.parse_args().target)
+    parser.add_argument("--target", choices=("x86_64-pc-windows-msvc", "x86_64-pc-windows-gnu", "aarch64-apple-darwin", "x86_64-apple-darwin"), default="x86_64-pc-windows-msvc")
+    parser.add_argument("--output", type=Path)
+    args = parser.parse_args()
+    main(args.target, args.output)

@@ -1,85 +1,76 @@
-# Instalar y probar Wave FM-1 Preview en Windows
+# Wave FM-1 Preview 0.2.0 · Windows
 
-Esta es una versión experimental para Windows 10/11 de 64 bits. El VST3 supera
-47 pruebas del validador oficial bajo Wine 10 y el motor Windows tiene pruebas
-de firmware, MIDI/audio y guardado de estado. Eso **no sustituye una prueba en
-Ableton Live real** ni permite garantizar riesgo cero.
+VST3 de 64 bits para Windows 10/11. Conserva la identidad VST3 de la preview
+0.1.0 para recuperar sus proyectos. El usuario confirmó que la versión anterior
+funciona en Live. Consulta las pruebas concretas de esta versión en
+`downloads/windows/VALIDATION.md`; no se garantiza riesgo cero.
 
-## Instalación independiente
+## Instalar y actualizar
 
-1. Cierra Ableton Live y cualquier otro host de audio.
-2. Ejecuta `Wave-FM-1-0.1.0-Windows-x64-Setup.exe` desde la descarga del proyecto.
-3. El instalador copia el paquete privado en
-   `%LOCALAPPDATA%\Wave FM-1 Preview\VST3` y registra **Wave FM-1 Preview**
-   en Agregar o quitar programas. No necesita permisos de administrador.
+1. Guarda tus proyectos, haz copia de seguridad y cierra Live y otros hosts.
+2. Si tienes la preview **0.1.0**, desinstálala desde **Agregar o quitar programas**.
+   Conserva tus Sets y exportaciones. El nuevo instalador detecta esa instalación
+   y pide retirarla para evitar dos copias del mismo VST3.
+3. Ejecuta `Wave-FM-1-0.2.0-Windows-x64-Setup.exe`.
+4. La ruta predeterminada es
+   `C:\Program Files\Common Files\VST3\Wave FM-1.vst3`. Requiere permisos de
+   administrador. Puedes cambiarla manteniendo el nombre final `Wave FM-1.vst3`.
+   El instalador rechaza una carpeta existente que no gestione.
+5. Abre un **Set vacío**. Con la exploración de carpetas VST3 del sistema activa,
+   Live debe mostrar **FM-1**, fabricante **fm1-emu**. Si hace falta, vuelve a
+   explorar plugins. No sustituyas tu carpeta personalizada existente.
 
-El instalador no modifica Ableton, sus preferencias, proyectos, licencias,
-controladores ni plugins existentes. Tampoco instala runtimes compartidos,
-crea servicios, cambia PATH, añade exclusiones al antivirus ni activa el plugin.
-El módulo CLAP va dentro del paquete VST3, aislado de otros módulos del equipo.
-No se instala firmware y no se escribe en el FM-1 físico.
+El instalador escribe únicamente su bundle y su registro de desinstalación.
+No edita Live, sus preferencias, licencias ni proyectos. No instala runtimes
+compartidos, servicios, controladores, cambios de PATH ni exclusiones al antivirus.
+Al usar la ruta estándar, Live puede descubrirlo en su siguiente escaneo.
+No se flashea ningún dispositivo físico. El módulo CLAP se carga exclusivamente
+desde el propio bundle.
 
-La carpeta de esta preview queda fuera de las carpetas estándar de exploración
-automática: instalarla no hace que Ableton la cargue por sí solo.
+Para el ZIP portátil, copia **todo** `VST3/FM-1.vst3` a una carpeta de plugins de
+tu elección con Live cerrado. No genera entrada en Aplicaciones. No mantengas
+copias simultáneas de la preview en carpetas estándar y personalizadas.
 
-## Primera prueba sin abrir proyectos importantes
+## Firmware y skin por instancia
 
-Haz una copia de seguridad de tus proyectos y abre un **Set vacío**. Ningún
-plugin nuevo ofrece garantía de riesgo cero al cargarse dentro de un DAW.
+**Firmware…** incluye Felucca 1.6.1, X0X 1.1.0, AMB-1 1.3 y FoMni-1 0.4, sin
+conexión y con tamaño y SHA-256 comprobados al abrirlos. **Open firmware / save
+file…** y **Load firmware / save…** conservan la carga manual `.fwsc` y `.fm1save`.
+**Export save…** exporta el estado portátil.
 
-- Si no utilizas una carpeta VST3 personalizada, puedes seleccionar
-  `%LOCALAPPDATA%\Wave FM-1 Preview\VST3` en las preferencias de plugins de
-  Live para esta prueba. Anota el ajuste anterior para restaurarlo después.
-- **Si ya utilizas una carpeta VST3 personalizada, no la sustituyas.** Para
-  preservar tus preferencias actuales, prueba desde un perfil de Windows
-  separado antes de añadir esta preview a tu configuración habitual.
-- No mantengas dos versiones del mismo emulador activadas simultáneamente.
-  El instrumento conserva la identidad de upstream: **FM-1**, fabricante **fm1-emu**.
-  El nombre procede de upstream; esta preview tiene un identificador VST3 propio
-  para no reemplazar las referencias a otro FM-1 en tus proyectos.
+Cambiar de firmware reinicia esa instancia y sustituye sus patches. El menú
+pide confirmación si hay uno cargado. Exporta antes lo que quieras conservar.
+Si falla la integridad o el arranque inicial, se conserva la configuración
+anterior. La carga manual permite versiones modificadas fuera del catálogo.
 
-En el Set vacío, añade FM-1 a una pista MIDI, abre su interfaz y selecciona
-**Load firmware / save…** para abrir un `.fwsc` obtenido de su autor. Activa la
-monitorización y envía notas en el canal que espere ese firmware. Para el
-firmware original, upstream documenta el canal 2; el plugin permite remapearlo.
-Empieza con un volumen bajo. Los archivos de firmware no están incluidos.
+**Skin** ofrece **Graphite / rose** y **Cream / mint**, interpretaciones dibujadas
+sin imágenes del fabricante. No se certifica la reproducción de todas las
+variantes comerciales. Cambia carcasa, teclas y controles; pantalla y LED
+conservan sus colores. Se guarda con la instancia y no afecta al sonido.
+En firmwares SMK-37 manuales se conserva el panel SMK-37 sin estas skins.
 
-## Desinstalación completa de esta preview
+Empieza a volumen bajo y envía MIDI al canal esperado. El plugin permite
+remapearlo. Guarda los cambios desde el firmware antes de guardar el Set:
+se conservan firmware y flash, no toda la RAM. Fuentes, créditos y licencias
+están en `Contents/Resources/` dentro del bundle.
 
-1. Cierra Live y los demás hosts de audio.
-2. Abre **Configuración de Windows > Aplicaciones > Aplicaciones instaladas**
-   (o **Agregar o quitar programas**).
-3. Busca **Wave FM-1 Preview**, elige **Desinstalar** y sigue el asistente.
+## Desinstalar
 
-Se eliminan el paquete VST3 privado, su módulo interno, documentación, licencias
-instaladas y la entrada de desinstalación. Tus proyectos de Live y los firmwares
-que guardaste aparte se conservan. No se borran plugins de otros fabricantes ni
-se modifican las preferencias de Live. Si habilitaste manualmente la carpeta
-para la prueba, restaura tú el ajuste anterior en Live.
+Cierra Live. En **Configuración > Aplicaciones > Aplicaciones instaladas** o
+**Agregar o quitar programas**, elige **Wave FM-1 Preview > Desinstalar**.
+Elimina sus binarios, firmwares incluidos, fuentes, licencias, documentación y
+registro. Conserva tus proyectos y exportaciones guardados aparte. Los archivos
+personales añadidos manualmente al bundle no se borran con comodines.
+Para el ZIP, elimina solamente la carpeta del bundle que copiaste.
 
-## Qué falta probar en Ableton
+## Desarrollo y límites
 
-- Dos instancias con firmwares distintos, controles y ajustes independientes.
-- Guardar desde el propio firmware, guardar el Set, cerrar y recuperar ambos.
-- Audio a 44,1/48 kHz y buffers de 128/256/512 muestras; CPU, latencia y exportación.
-- Abrir/cerrar ventanas y quitar instancias sin fallos.
+PowerShell 7, Python 3, Git, Rust 1.99.1, CMake >=3.27, VS2022 C++/Windows SDK
+e Inno Setup 7.1.0: `./tools/build-windows.ps1` y `./tools/package-windows.ps1`.
+La compilación cruzada está en `tools/build-windows-cross.sh`.
 
-Las pruebas bajo Wine no verifican tu instalación de Live, drivers ni hardware.
-No pruebes esta preview por primera vez sobre un proyecto importante.
-
-## Desarrolladores
-
-En Windows, utiliza PowerShell 7, Python 3, Git, Rust 1.99.1, CMake >=3.27,
-VS2022 C++/Windows SDK e Inno Setup 6.3+:
-
-```powershell
-./tools/build-windows.ps1
-./tools/package-windows.ps1
-```
-
-La compilación cruzada usa `tools/build-windows-cross.sh` con MinGW-w64 POSIX.
-Las bibliotecas de ejecución se enlazan estáticamente; se conservan las llamadas
-necesarias a DLL de Windows. El instalador no requiere descargas al ejecutarse.
-Los hashes SHA-256 sirven para comprobar integridad, no identidad del editor.
-La preview no tiene firma Authenticode propia: no desactives SmartScreen ni el
-antivirus para probarla.
+La preview no tiene firma Authenticode propia. Los hashes comprueban integridad,
+no identidad del editor. No desactives las protecciones del sistema. Los
+firmwares y el motor se ejecutan dentro del DAW; no son un sandbox. Usa archivos
+de confianza. Prueba dos instancias, guardar/reabrir y tu configuración de audio
+antes de abrir un proyecto importante con la actualización.

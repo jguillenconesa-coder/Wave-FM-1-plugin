@@ -1,4 +1,4 @@
-# Wave FM-1 Preview para Windows
+# Wave FM-1 Preview
 
 Plugin **VST3 de 64 bits** que emula el M-VAVE FM-1 y permite cargar firmwares
 `.fwsc`. Se basa en [fm1-emu de Joakim Eriksson](https://github.com/joakimeriksson/fm1-emu):
@@ -7,39 +7,51 @@ Los créditos y licencias originales se conservan.
 
 ## Descargar e instalar
 
-- [Instalador Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.1.0-preview.1/Wave-FM-1-0.1.0-Windows-x64-Setup.exe)
-- [Paquete portátil](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.1.0-preview.1/Wave-FM-1-0.1.0-Windows-x64-Portable.zip)
-- [Hashes SHA-256](downloads/windows/SHA256SUMS)
-- [Versiones publicadas](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases)
+- [Instalador Windows 0.2.0](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.1/Wave-FM-1-0.2.0-Windows-x64-Setup.exe)
+- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.1/Wave-FM-1-0.2.0-Windows-x64-Portable.zip)
+- [Versión publicada y archivos de macOS](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.0-preview.1)
+- [Instalar/desinstalar en Windows](docs/WINDOWS.md) · [macOS Intel y Apple Silicon](docs/MACOS.md)
 
-Si la descarga directa falla, abre [la página de esta versión](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.1.0-preview.1)
-y selecciona el archivo `.exe` en **Assets**.
+Si la descarga directa falla, abre la página de la versión y selecciona el
+archivo en **Assets**. Los paquetes macOS solo se publican si su compilación y
+validación nativa terminan correctamente; su ausencia indica que siguen pendientes.
 
-El instalador coloca **Wave FM-1 Preview** en tu carpeta de usuario, sin permisos
-administrativos, y ofrece desinstalación desde **Agregar o quitar programas**.
-No modifica la instalación de Ableton, sus preferencias, proyectos ni otros
-plugins. Tampoco activa el plugin en Live ni cambia sus carpetas de exploración.
+Windows instala por defecto en
+`C:\Program Files\Common Files\VST3\Wave FM-1.vst3`, requiere permisos de
+administrador y se elimina desde **Agregar o quitar programas**. La instalación
+no cambia archivos de Live, sus preferencias ni proyectos. Al estar en la ruta
+VST3 estándar, Live puede descubrirlo automáticamente en su siguiente escaneo.
+Si tienes instalada la preview 0.1.0, desinstálala antes para evitar duplicados;
+conserva tus proyectos y archivos exportados.
 
-**Es una preview experimental, no una versión validada en Ableton Live.**
-El paquete Windows supera las 47 pruebas del validador oficial bajo Wine 10,
-pero ningún plugin nuevo puede prometer riesgo cero dentro de un DAW. Prueba
-primero con un Set vacío y tus proyectos importantes cerrados y respaldados.
+**Preview experimental.** El usuario ha confirmado que la versión anterior
+funciona en su Live Windows. Esto no valida todas las configuraciones ni todos
+los firmwares. Prueba la actualización en un Set vacío con tus proyectos
+importantes cerrados y respaldados; no se garantiza riesgo cero.
 
-Sigue [las instrucciones de instalación, prueba y desinstalación](docs/WINDOWS.md).
-La carpeta es `%LOCALAPPDATA%\Wave FM-1 Preview\VST3`.
-Si ya usas una carpeta VST3 personalizada, **no la sustituyas**: prueba desde
-un perfil Windows separado para mantener tus preferencias actuales.
+## Firmwares y aspecto
 
-El instrumento aparece como **FM-1**, fabricante **fm1-emu**. Su panel conserva
-los controles y la pantalla emulada del aparato. Cada instancia tiene su propio
-motor, firmware y estado. No se garantiza compatibilidad con todos los firmwares
-ni un número ilimitado de instancias; su consumo de CPU varía.
+El menú **Firmware…** permite cargar sin conexión **Felucca 1.6.1, X0X 1.1.0,
+AMB-1 1.3 y FoMni-1 0.4**. Cada paquete original se comprueba por tamaño y
+SHA-256 antes de cargarlo; los cuatro tienen pruebas reales de arranque,
+pantalla y audio en el motor Windows. Consulta [procedencia, licencias y
+fuentes completas](firmware/README.md). No se incluye firmware propietario de
+fábrica ni paquetes con permiso de redistribución incierto.
 
-No se incluye firmware. Puedes obtener, por ejemplo,
-[Felucca 1.6.1 de su autor](https://github.com/hugelton/Felucca/releases/tag/v1.6.1)
-y abrir el `.fwsc` desde **Load firmware / save…**. Los firmwares tienen sus
-propias licencias. Guarda los cambios desde el propio firmware antes de guardar
-el Set: el estado conserva firmware y flash, no una captura completa de la RAM.
+El menú conserva **Open firmware / save file…** y el botón **Load firmware /
+save…** para `.fwsc` y `.fm1save` propios. Cambiar de firmware reinicia solo esa
+instancia y sus patches; exporta primero para conservarlos. Cada instancia
+mantiene motor, firmware, flash y skin independientes. Guarda los cambios desde
+el firmware antes de guardar el Set: se conserva firmware y flash, no toda la RAM.
+
+**Skin** ofrece **Graphite / rose** y **Cream / mint**. Son interpretaciones
+gráficas, no una reproducción certificada de todas las variantes comerciales.
+Cambian la carcasa, teclas y controles sin teñir la pantalla o los LED del
+firmware; la selección se guarda con cada instancia del proyecto.
+
+El instrumento sigue apareciendo como **FM-1**, fabricante **fm1-emu**, con
+la identidad VST3 de la preview para recuperar proyectos anteriores.
+No se garantiza un número ilimitado de instancias; el consumo de CPU varía.
 
 ## Desarrollo y compilación
 
@@ -63,6 +75,10 @@ Las pruebas de integridad propias se ejecutan con:
 ```sh
 python3 -m unittest discover -s tests -v
 ```
+
+El fork de interfaz está en `desktop/`; `tools/prepare-desktop.py` verifica la
+base y genera un árbol separado sin modificar el emulador fijado. Para macOS:
+`bash tools/build-macos.sh` y `bash tools/package-macos.sh` desde un Mac.
 
 La preparación del motor en la nube sigue en `tools/setup-cloud.sh`. Usa el
 checkout existente; no crees worktrees salvo petición explícita. GitHub Actions

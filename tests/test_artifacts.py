@@ -30,6 +30,7 @@ class BuildIntegrityTests(unittest.TestCase):
             file = self.root / name
             file.parent.mkdir(parents=True, exist_ok=True)
             file.write_bytes(pe())
+        artifacts.firmware.package(self.root / "VST3/FM-1.vst3", "windows")
 
     def record(self):
         with patch.object(artifacts.subprocess, "check_output", return_value="a" * 40):
@@ -52,6 +53,19 @@ class BuildIntegrityTests(unittest.TestCase):
         (self.root / artifacts.FILES[1]).unlink()
         with self.assertRaisesRegex(ValueError, "Missing"):
             artifacts.process(self.root, record=True)
+
+    def test_changed_firmware_is_rejected(self):
+        self.record()
+        file = next((self.root / "VST3/FM-1.vst3/Contents/x86_64-win/firmwares").glob("*.fwsc"))
+        file.write_bytes(b"corrupted")
+        with self.assertRaisesRegex(ValueError, "mismatch"):
+            artifacts.process(self.root)
+
+    def test_unexpected_executable_in_bundle_is_rejected(self):
+        self.record()
+        (self.root / "VST3/FM-1.vst3/extra.dll").write_bytes(pe())
+        with self.assertRaisesRegex(ValueError, "Unexpected"):
+            artifacts.process(self.root)
 
     def test_truncated_binary_is_rejected(self):
         (self.root / artifacts.FILES[0]).write_bytes(b"MZ")

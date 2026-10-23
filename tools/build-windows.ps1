@@ -15,8 +15,9 @@ Push-Location $Root
 try {
     # A failed rebuild must not leave a previous successful manifest packageable.
     if (Test-Path 'dist/build-info.json') { Remove-Item 'dist/build-info.json' }
-    Invoke-Checked -Program python -Arguments @('tools/bootstrap.py')
-    $Manifest = Join-Path $Root '.deps/fm1-emu/crates/fm1-plugin/Cargo.toml'
+    Invoke-Checked -Program python -Arguments @('tools/prepare-desktop.py')
+    $env:CARGO_TARGET_DIR = Join-Path $Root '.deps/fm1-emu/crates/fm1-plugin/target'
+    $Manifest = Join-Path $Root '.deps/fm1-desktop/crates/fm1-plugin/Cargo.toml'
     Invoke-Checked -Program cargo -Arguments @('build', '--manifest-path', $Manifest, '--release', '--locked', '--target', 'x86_64-pc-windows-msvc', '-j', "$Jobs")
     Invoke-Checked -Program cmake -Arguments @('-S', '.', '-B', 'build/windows', '-G', 'Visual Studio 17 2022', '-A', 'x64')
     Invoke-Checked -Program cmake -Arguments @('--build', 'build/windows', '--config', 'Release', '--target', 'wave_fm1', '--parallel', "$Jobs")
@@ -39,6 +40,7 @@ try {
     }
     Copy-Item 'docs/WINDOWS.md' 'dist/INSTALL.md'
     if (-not (Test-Path 'dist/VST3/FM-1.vst3/Contents/x86_64-win/FM-1.vst3' -PathType Leaf)) { throw 'Missing VST3 output.' }
+    Invoke-Checked -Program python -Arguments @('tools/firmware.py', '--bundle', 'dist/VST3/FM-1.vst3')
     Invoke-Checked -Program python -Arguments @('tools/artifacts.py', 'record')
     Write-Host 'Built the private VST3/CLAP pair in dist/VST3. See dist/INSTALL.md.'
 } finally { $env:RUSTFLAGS = $PreviousRustFlags; Pop-Location }

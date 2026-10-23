@@ -1,6 +1,6 @@
 #requires -Version 7.0
 # For a disposable Windows CI runner only: installs and then uninstalls the preview.
-param([string]$Version = '0.1.0')
+param([string]$Version = '0.2.0')
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_OS -ne 'Windows') {
@@ -11,10 +11,10 @@ $Installer = Join-Path $Root "dist/installer/Wave-FM-1-$Version-Windows-x64-Setu
 $Process = Start-Process $Installer -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-' -Wait -PassThru
 if ($Process.ExitCode -notin @(0, 3010)) { throw "Installer failed: $($Process.ExitCode)" }
 try {
-    $App = Join-Path $env:LOCALAPPDATA 'Wave FM-1 Preview'
-    $Vst = Join-Path $App 'VST3/FM-1.vst3/Contents/x86_64-win/FM-1.vst3'
-    $Clap = Join-Path $App 'VST3/FM-1.vst3/Contents/x86_64-win/FM-1.clap'
-    $Registration = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{E45CB310-7AAF-4D78-9093-FAC036548235}_is1'
+    $App = Join-Path ${env:CommonProgramFiles} 'VST3/Wave FM-1.vst3'
+    $Vst = Join-Path $App 'Contents/x86_64-win/FM-1.vst3'
+    $Clap = Join-Path $App 'Contents/x86_64-win/FM-1.clap'
+    $Registration = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{E45CB310-7AAF-4D78-9093-FAC036548235}_is1'
     if ((Get-ItemProperty $Registration).DisplayName -ne 'Wave FM-1 Preview') { throw 'Missing Installed apps registration.' }
     foreach ($File in @($Vst, $Clap)) {
         if (-not (Test-Path $File -PathType Leaf)) { throw "Installer did not create $File" }
@@ -23,7 +23,7 @@ try {
     # wrapper name, search location, exported factory and runtime dependencies.
     @'
 import ctypes, os
-path = os.path.join(os.environ['LOCALAPPDATA'], 'Wave FM-1 Preview', 'VST3', 'FM-1.vst3', 'Contents', 'x86_64-win', 'FM-1.vst3')
+path = os.path.join(os.environ['CommonProgramFiles'], 'VST3', 'Wave FM-1.vst3', 'Contents', 'x86_64-win', 'FM-1.vst3')
 plugin = ctypes.WinDLL(path)
 plugin.InitDll.restype = ctypes.c_bool
 plugin.InitDll.argtypes = []
@@ -43,7 +43,7 @@ print('Installed VST3 factory loaded successfully')
 '@ | python -
     if ($LASTEXITCODE -ne 0) { throw 'Installed VST3 failed factory smoke check.' }
 } finally {
-    $Uninstaller = Join-Path $env:LOCALAPPDATA 'Wave FM-1 Preview/unins000.exe'
+    $Uninstaller = Join-Path $App 'unins000.exe'
     $Process = Start-Process $Uninstaller -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART' -Wait -PassThru
     if ($Process.ExitCode -ne 0) { throw "Uninstaller failed: $($Process.ExitCode)" }
 }

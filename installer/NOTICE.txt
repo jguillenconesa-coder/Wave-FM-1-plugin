@@ -1,21 +1,22 @@
-Wave FM-1 Preview - Experimental Windows x64 build
+Wave FM-1 Preview 0.2.0 - Experimental Windows x64 VST3
 
-Close Ableton Live and other audio hosts before installing or uninstalling.
-This installs a private VST3 bundle for the current Windows user only:
-%LOCALAPPDATA%\Wave FM-1 Preview\VST3
-No administrator access or shared runtime installation is required.
-Ableton's application files, preferences, projects and other plugins are not changed.
-The installer does not enable the plugin or change Live's scan folders.
+Close Ableton Live and other hosts before installing or uninstalling.
+Default: C:\Program Files\Common Files\VST3\Wave FM-1.vst3
+Administrator access is required. Live can discover this plugin on its next
+system VST3 scan. No Ableton files, preferences or projects are changed.
+No shared runtimes, drivers, services or antivirus changes are installed.
 
-The plugin appears as FM-1 by fm1-emu. It reuses Joakim Eriksson's FM-1 emulator.
-Do not keep another build of the same plugin installed in custom plugin folders.
-No firmware is included: load your own compatible .fwsc package in the plugin.
+Uninstall preview 0.1.0 from Windows Settings > Apps first to avoid duplicate
+copies. Keep your projects and exported .fm1save files. The new installer
+refuses to overwrite an existing folder not managed by this installer.
 
-No experimental plugin can guarantee zero risk when loaded into a DAW.
-First test only in an empty Live Set, with important projects closed and backed up.
-Do not replace an existing custom VST3 folder setting just to test this preview.
-Use a separate Windows test profile if you need to preserve your current preferences.
+The instrument appears as FM-1 by fm1-emu. Its emulator and original panel are
+by Joakim Eriksson. Firmware menu: Felucca 1.6.1, X0X 1.1.0, AMB-1 1.3,
+FoMni-1 0.4. Original authors, licences and full sources are included in the
+bundle under Contents/Resources. Manual firmware/save loading is retained.
+Changing firmware resets only that instance: export what you wish to keep.
 
-Remove Wave FM-1 Preview from Windows Settings > Apps > Installed apps / Add or
-remove programs. This removes this preview's files and registration only, not
-your Live projects, saved firmware files or existing plugins.
+Test in an empty Live Set with important projects closed and backed up.
+No experimental plugin can guarantee zero risk inside a DAW.
+Uninstall Wave FM-1 Preview from Windows Settings > Apps. It removes only
+this product's installed files and registration, not your projects or exports.

@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.27)
-project(WaveFM1Windows VERSION 0.1.0 LANGUAGES C CXX)
-if(NOT WIN32 OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8 OR (NOT MSVC AND NOT MINGW))
-    message(FATAL_ERROR "This packaging project requires Windows x64, with MSVC or MinGW-w64.")
+project(WaveFM1Windows VERSION 0.2.0 LANGUAGES C CXX)
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8 OR (NOT APPLE AND (NOT WIN32 OR (NOT MSVC AND NOT MINGW))))
+    message(FATAL_ERROR "This packaging project requires Windows x64 or macOS 64-bit.")
 endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_TLS_VERIFY TRUE CACHE BOOL "Verify TLS certificates for dependency downloads" FORCE)
 if(MSVC)
     add_compile_options(/guard:cf)
     add_link_options(/DYNAMICBASE /NXCOMPAT /HIGHENTROPYVA /guard:cf)
-else()
+elseif(MINGW)
     add_compile_options(-fstack-protector-strong)
     add_link_options(-static -static-libgcc -static-libstdc++ -Wl,--dynamicbase,--nxcompat,--high-entropy-va)
 endif()
@@ -23,10 +23,14 @@ FetchContent_MakeAvailable(clap-wrapper)
 add_library(wave_fm1 MODULE)
 # Keep matching binary basenames. The pin-checked patch loads the private
 # companion beside this VST3, never a module from global CLAP directories.
+set(VST3_TARGET wave_fm1) # pinned wrapper's macOS output-directory helper uses this name
 target_add_vst3_wrapper(TARGET wave_fm1 OUTPUT_NAME "FM-1"
     SINGLE_PLUGIN_TUID "763245F44C814116B23B2268F75ADC65"
     BUNDLE_VERSION "${PROJECT_VERSION}" WINDOWS_FOLDER_VST3 TRUE
     ASSET_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bundle")
+if(APPLE)
+    set_target_properties(wave_fm1 PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bundle")
+endif()
 set_target_properties(wave_fm1 PROPERTIES PREFIX "" OUTPUT_NAME "FM-1")
 if(MINGW)
     target_link_libraries(wave_fm1 PRIVATE ssp)

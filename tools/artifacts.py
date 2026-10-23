@@ -7,6 +7,7 @@ import struct
 import subprocess
 
 from bootstrap import REVISION
+import firmware
 
 ROOT = Path(__file__).resolve().parents[1]
 FILES = ("VST3/FM-1.vst3/Contents/x86_64-win/FM-1.vst3",
@@ -32,14 +33,24 @@ def digest(path):
 
 def process(directory, record=False):
     hashes = {name: digest(directory / name) for name in FILES}
+    prefix = "VST3/FM-1.vst3/"
+    hashes.update({prefix + name: value for name, value in firmware.verify_bundle(directory / prefix).items()})
+    actual = {p.relative_to(directory).as_posix() for p in (directory / prefix).rglob("*") if p.is_file()}
+    if actual != set(hashes):
+        raise ValueError("Unexpected files in VST3 bundle")
+    desktop = hashlib.sha256()
+    for path in sorted((ROOT / "desktop").rglob("*.rs")) + [ROOT / "tools/prepare-desktop.py"]:
+        desktop.update(path.relative_to(ROOT).as_posix().encode())
+        desktop.update(path.read_bytes())
+    desktop_hash = desktop.hexdigest()
     manifest = directory / "build-info.json"
     if record:
         commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-        manifest.write_text(json.dumps({"schema": 1, "source_commit": commit,
-            "emulator_commit": REVISION, "sha256": hashes}, indent=2) + "\n", encoding="utf-8")
+        manifest.write_text(json.dumps({"schema": 2, "source_commit": commit,
+            "emulator_commit": REVISION, "desktop_sha256": desktop_hash, "sha256": hashes}, indent=2) + "\n", encoding="utf-8")
     else:
         data = json.loads(manifest.read_text(encoding="utf-8"))
-        if data.get("schema") != 1 or data.get("emulator_commit") != REVISION or data.get("sha256") != hashes:
+        if data.get("schema") != 2 or data.get("desktop_sha256") != desktop_hash or data.get("emulator_commit") != REVISION or data.get("sha256") != hashes:
             raise ValueError("Build manifest mismatch: rebuild both plugin modules together.")
     print("Windows x64 binary pair and SHA-256 manifest verified")
 

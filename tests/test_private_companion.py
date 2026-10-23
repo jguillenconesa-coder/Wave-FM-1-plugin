@@ -19,6 +19,9 @@ class PrivateCompanionTests(unittest.TestCase):
         windows = result.decode().split("#if SMTG_OS_WINDOWS\n")[1].split("#else")[0]
         self.assertIn("os::getPluginPath().parent_path()", windows)
         self.assertNotIn("getValidCLAPSearchPaths", windows)
+        macos = result.decode().split("#elif SMTG_OS_MACOS\n")[1].split("#else")[0]
+        self.assertIn('"Contents" / "PlugIns" / "FM-1.clap"', macos)
+        self.assertNotIn("getValidCLAPSearchPaths", macos)
 
     def test_unknown_wrapper_source_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "hash mismatch"):

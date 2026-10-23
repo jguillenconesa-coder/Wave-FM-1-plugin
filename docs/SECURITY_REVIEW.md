@@ -6,6 +6,36 @@ not an independent penetration test or a complete audit of upstream Rust/C++
 code. Windows x64 binaries have been built and checked under Wine 10. Native
 Windows/Ableton acceptance remains outstanding.
 
+## Version 0.2.0 additions (2026-10-23)
+
+- Four original firmware packages are distributed as separate interpreted programs,
+  not linked into the plugin: Felucca 1.6.1, X0X 1.1.0, AMB-1 1.3 and FoMni-1 0.4.
+  The exact release licences, assets and build prerequisites were inspected.
+  Complete corresponding sources (including recursive AMB submodules), original
+  notices and additional SDK/font licence texts travel inside every bundle.
+  SLOOP 2.8 was excluded because of unclear reserved-asset distribution terms.
+- Catalogue loading is offline, fixed at build time, bounded to 8 MiB, and checks
+  size and SHA-256 before sending the package to the existing transactional loader.
+  It resolves only the loaded CLAP's own folder, not the host executable, current
+  directory, user environment variable or an Internet manifest. Manual loading of
+  modified/custom firmware remains available without a catalogue hash restriction.
+- GUI work uses a hash-checked baseline and a separate MIT desktop fork. Original
+  emulator sources and dependency lockfiles remain unchanged. Skin is persisted
+  per instance and never recolours firmware screen pixels or changes sound.
+- The build manifest now covers firmware, sources, licence files and desktop
+  source fingerprint as well as both Windows binaries. Unexpected bundle files
+  fail verification. A corrupted bundled package is rejected before replacing
+  the current instance. Catalogue hash verification is integrity checking, not
+  certification or a sandbox for malicious firmware.
+- macOS is built natively through the macOS workflow for both Intel/arm64, with
+  private CLAP loading. Packages are released only after native tests, official
+  VST3 validation and bundle-signature checks. Ad-hoc code signatures are not
+  Developer ID, installer signatures or Apple notarization. Native host/driver
+  compatibility still requires user testing.
+- Current release evidence is in `downloads/windows/VALIDATION.md`. The checks
+  below are the prior 0.1.0 baseline where not explicitly superseded; they must
+  not be read as new native Ableton or macOS results.
+
 ## Changes made
 
 - GitHub Actions use immutable full commit pins, read-only build-job permissions,
@@ -26,9 +56,11 @@ Windows/Ableton acceptance remains outstanding.
   official Authenticode-verified Inno Setup 7.1.0 x64 compiler. Plugin runtime
   libraries are linked statically; the installer does not download or install
   shared system runtimes. Compiler failure and missing output are fatal.
-- Installation is per-user under `%LOCALAPPDATA%\Wave FM-1 Preview`, requires
-  no elevation and leaves standard plugin folders and Ableton settings alone.
-  The installer registers its own uninstaller in HKCU. No services, drivers,
+- Version 0.2.0 installs its own bundle in `%CommonProgramFiles%\VST3\Wave FM-1.vst3`,
+  requires elevation and registers its own uninstaller in HKLM. It changes no
+  Ableton settings or application files. Unlike 0.1.0, the bundle is discoverable
+  by the host's standard VST3 scan. Existing unowned folders are rejected in both
+  interactive and silent mode; the legacy per-user 0.1.0 must be removed first. No services, drivers,
   antivirus exclusions or PATH changes are installed.
 - A local patch verifies the exact wrapper source SHA-256 before adding private
   companion loading. The VST3 only loads the CLAP inside its own bundle. It does
@@ -45,7 +77,7 @@ Windows/Ableton acceptance remains outstanding.
 
 ## Checks executed
 
-- 13 packaging/dependency integrity tests pass, including rejected binary mutation,
+- 15 packaging/dependency integrity tests pass, including rejected binary mutation,
   missing companion, wrong architecture, truncated PE, wrong revision and local
   upstream modifications. Tests use synthetic files, not fabricated plugin builds.
 - Inno Setup 7.1.0's generated Windows x64 installer was installed and reinstalled

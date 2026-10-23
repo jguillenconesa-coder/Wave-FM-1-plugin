@@ -3,12 +3,13 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 jobs=${FM1_BUILD_JOBS:-2}
-python3 tools/bootstrap.py
+python3 tools/prepare-desktop.py
 rm -f dist/build-info.json
 rustup target add x86_64-pc-windows-gnu
 export CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER=x86_64-w64-mingw32-gcc-posix
 export RUSTFLAGS="${RUSTFLAGS:-} -C target-feature=+crt-static"
-cargo build --manifest-path .deps/fm1-emu/crates/fm1-plugin/Cargo.toml \
+export CARGO_TARGET_DIR="$PWD/.deps/fm1-emu/crates/fm1-plugin/target"
+cargo build --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml \
     --release --locked --target x86_64-pc-windows-gnu -j "$jobs"
 cmake -S . -B build/cross-windows -G Ninja \
     -DCMAKE_TOOLCHAIN_FILE=cmake/windows-mingw.cmake -DCMAKE_BUILD_TYPE=Release
@@ -35,4 +36,5 @@ for p in root.rglob('*'):
         shutil.copyfile(p, dst)
 PY
 cp docs/WINDOWS.md dist/INSTALL.md
+python3 tools/firmware.py --bundle dist/VST3/FM-1.vst3
 python3 tools/artifacts.py record

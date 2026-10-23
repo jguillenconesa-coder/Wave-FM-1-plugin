@@ -1,6 +1,6 @@
 # Credits and third-party notices
 
-Wave FM-1 is an independent Windows packaging project. It is not an official
+Wave FM-1 is an independent Windows/macOS instrument packaging project. It is not an official
 M-VAVE product and is not endorsed by M-VAVE, Ableton, Steinberg or the authors
 listed here. Their product names remain their respective owners' marks.
 
@@ -24,10 +24,25 @@ versions, authors and repositories in `licenses/rust/inventory.json`. This
 inventory includes build dependencies and platform dependencies, not only code
 that ends up in a binary. Original upstream terms govern any redistribution.
 
-No firmware, factory sample bank, manufacturer artwork or third-party release
-binary is committed as part of this repository. Firmware authors retain their
-rights; importing or sharing a firmware-containing `.fm1save` does not change
-its licence. Felucca-family firmware may be GPL-3.0; do not describe it as MIT.
+The offline firmware catalogue distributes separate unmodified interpreted programs:
+
+| Firmware | Credit | Licence |
+| --- | --- | --- |
+| Felucca 1.6.1 | Leo Kuroshita (@kurogedelic), Hügelton Instruments and contributors | GPL-3.0-only; MIT engines, CC0 samples, OFL fonts and Apache-2.0 SDK/DSP notices retained. |
+| X0X 1.1.0 | Charles Vestal; Felucca platform by Leo Kuroshita; 9W9/8W8 by athousanddetails; ER-99 by Matthew Cieplak; Open303 by Robin Schmidt; TB-3PO contributors; BB Gen by mestela (author permission documented upstream) | GPL-3.0-only; third-party MIT, GPL, OFL and Apache notices retained. |
+| AMB-1 1.3 | Charles Vestal; fm1-base; felucca-bsp by Leo Kuroshita / Hügelton Instruments; FoMni Dattorro plate lineage | MPL-2.0 for this release, with third-party notices retained. Earlier catalogue descriptions calling all versions GPL are outdated. |
+| FoMni-1 0.4 | Charles Vestal; Felucca/X0X platform contributors; Chordian by Jan125 | GPL-3.0-only; Chordian data CC0; OFL fonts and Apache SDK notices retained. |
+
+Full upstream notices are in `firmware/licenses/<id>/`, and complete corresponding
+sources with recursive submodules are in `firmware/sources/`. Both are also included
+inside every VST3 package. See `firmware/manifest.json` for exact versions, source
+revisions, original URLs and hashes. Their own licences apply; the wrapper's MIT
+licence does not relicense firmware. The catalogue is an aggregation of independent
+programs, not linked firmware code. Loading a firmware or sharing a `.fm1save`
+does not change its licence. No proprietary stock firmware is distributed.
+
+Desktop changes to the upstream MIT panel/editor are identified in `desktop/README.md`.
+Skins are original drawn colour palettes, with no manufacturer artwork copied.
 
 Research references (not code dependencies):
 

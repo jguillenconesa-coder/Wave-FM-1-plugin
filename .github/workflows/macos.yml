@@ -1,0 +1,72 @@
+name: macOS Universal VST3
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags: ['v*-preview.*']
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-14
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Install toolchain
+        run: |
+          rustup toolchain install 1.99.1 --profile minimal
+          brew install cmake ninja
+      - name: Verify source and catalogue integrity
+        run: python3 -m unittest discover -s tests -v
+      - name: Build Universal 2 VST3
+        run: bash tools/build-macos.sh
+      - name: Native firmware, UI and state tests
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/build/macos-rust
+          MACOSX_DEPLOYMENT_TARGET: '11.0'
+        run: |
+          uname -m
+          cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --lib --test catalogue --test portable -j 3 -- --nocapture
+      - name: Official VST3 validation
+        run: |
+          cmake -S tools/validator -B build/macos-validator -G Ninja -DCMAKE_BUILD_TYPE=Release -DVST3_SDK_ROOT="$PWD/build/macos/cpm/vst3sdk"
+          cmake --build build/macos-validator --target validator --parallel 3
+          build/macos-validator/bin/validator 'dist/macos/VST3/Wave FM-1.vst3' | tee dist/macos/VALIDATION.txt
+          cp dist/macos/VALIDATION.txt dist/macos-downloads-validation.txt
+      - name: Package verified bundle
+        run: bash tools/package-macos.sh
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Wave-FM-1-macOS-Universal
+          path: dist/macos-downloads/
+          if-no-files-found: error
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: macos-14
+    permissions:
+      contents: write
+    steps:
+      - name: Download build from this workflow
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: Wave-FM-1-macOS-Universal
+          path: artifacts
+      - name: Attach verified macOS assets to the preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PREVIEW_TAG: ${{ github.ref_name }}
+        run: |
+          [[ "$PREVIEW_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-preview\.[0-9]+$ ]] || exit 1
+          cd artifacts
+          shasum -a 256 --check SHA256SUMS-macos
+          if ! gh release view "$PREVIEW_TAG" >/dev/null 2>&1; then
+            gh release create "$PREVIEW_TAG" --verify-tag --prerelease --title "Wave FM-1 Preview ${PREVIEW_TAG#v}" --notes 'Universal macOS VST3; see repository installation and validation documentation.'
+          fi
+          gh release upload "$PREVIEW_TAG" ./*.zip ./*.pkg SHA256SUMS-macos build-info-macos.json --clobber
