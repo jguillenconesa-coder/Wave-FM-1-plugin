@@ -42,7 +42,8 @@ jobs:
         run: |
           cmake -S tools/validator -B build/macos-validator -G Ninja -DCMAKE_BUILD_TYPE=Release -DVST3_SDK_ROOT="$PWD/build/macos/cpm/vst3sdk"
           cmake --build build/macos-validator --target validator --parallel 3
-          build/macos-validator/bin/validator 'dist/macos/VST3/Wave FM-1.vst3' 2>&1 | tee macos-validator.log
+          # The pinned SDK puts Ninja executables in bin/<configuration> on macOS.
+          build/macos-validator/bin/Release/validator 'dist/macos/VST3/Wave FM-1.vst3' 2>&1 | tee macos-validator.log
           python3 - <<'PY'
           from pathlib import Path
           import re

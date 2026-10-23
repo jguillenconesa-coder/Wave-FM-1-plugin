@@ -14,11 +14,11 @@ hashes are in `SHA256SUMS` and `SHA256SUMS-macos` on the release page.
 | Independent instance configuration and firmware state | Passed; catalogue save encode/decode checked for every package |
 | Portable save round-trip and transactional replacement, real Felucca fixture | 2 passed |
 | Official Windows VST3 validator, final 23-package cross-build | 47 passed, 0 failed |
-| Native Windows MSVC build, firmware tests, installer/factory/uninstall | 21-package build 704ebd0 passed native tests, official validation, install/factory/uninstall; final 23-package build is gated before publication |
+| Native Windows MSVC build, firmware tests, installer/factory/uninstall | 23-package preview.3 passed native tests, official validation, install/factory/uninstall; preview.4 additionally requires a nonempty successful validator report |
 | Install/reinstall to standard VST3 path, uninstall and HKLM registration (Wine) | Passed again on final expanded package; all installed bundle hashes matched; factory load and removal verified |
 | Silent rejection of unowned directory and legacy 0.1.0 registration | Passed; existing fixture preserved |
 | Ableton program/preferences/project, other VST3 and global CLAP fixtures | All five unchanged after install/reinstall/uninstall |
-| Native macOS Universal build/signature/validator | 21-package build 704ebd0 passed Universal build, signature checks, native tests, official validator and ZIP/PKG creation; final catalogue is gated before publication |
+| Native macOS Universal build/signature/validator | Preview.4 requires successful native tests, signatures, and an explicit completed official validator report before publication |
 | Interactive plugin window under Wine | Not validated: software graphics could not provide the required accelerated OpenGL context |
 | User's actual Live installation / native audio drivers / long sessions | Not tested here; user confirmed the prior plugin worked in Live Windows |
 
@@ -43,3 +43,9 @@ audit; the dependency-maintenance warnings remain in the security review.
 Native baseline evidence: [Windows run 39939039661](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/39939039661)
 and [macOS run 39939039128](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/39939039128).
 The release tag runs these checks again against its own exact source revision.
+
+The macOS validator path in previews 2/3 was incorrect for the SDK's Ninja
+output layout; the pipeline did not propagate that error and wrote an empty
+report. Those workflow successes are **not** accepted as macOS VST3 validation.
+Preview.4 uses `bin/Release/validator`, captures errors, requires a positive
+completed-test count with zero failures, and enables pipeline failure propagation.
