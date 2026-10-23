@@ -1,0 +1,5 @@
+# Preserve upstream packages, matching sources and legal notices byte for byte.
+# Windows checkout newline conversion must not alter original copyright texts.
+/firmware/catalogue/** -text
+/firmware/sources/** -text
+/firmware/licenses/** -text
