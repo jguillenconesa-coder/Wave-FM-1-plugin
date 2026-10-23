@@ -24,9 +24,11 @@ jobs:
           PREVIEW_TAG: ${{ github.ref_name }}
         run: |
           [[ "$PREVIEW_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-preview\.[0-9]+$ ]] || exit 1
+          version=${PREVIEW_TAG#v}
+          version=${version%-preview.*}
           gh release create "$PREVIEW_TAG" \
-            downloads/windows/Wave-FM-1-0.1.0-Windows-x64-Setup.exe \
-            downloads/windows/Wave-FM-1-0.1.0-Windows-x64-Portable.zip \
+            "downloads/windows/Wave-FM-1-$version-Windows-x64-Setup.exe" \
+            "downloads/windows/Wave-FM-1-$version-Windows-x64-Portable.zip" \
             downloads/windows/SHA256SUMS \
-            --verify-tag --prerelease --title "Wave FM-1 Windows Preview 0.1.0" \
+            --verify-tag --prerelease --title "Wave FM-1 Preview $version" \
             --notes-file docs/RELEASE_NOTES.md

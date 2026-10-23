@@ -50,7 +50,7 @@ begin
   Result := True;
   if RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{E45CB310-7AAF-4D78-9093-FAC036548235}_is1', 'DisplayVersion', OldVersion) then
     if OldVersion = '0.1.0' then begin
-      MsgBox('Uninstall Wave FM-1 Preview 0.1.0 from Windows Settings > Apps first, then run this installer again. Keep your projects and exported saves. This prevents two copies of the same VST3 being scanned.', mbInformation, MB_OK);
+      SuppressibleMsgBox('Uninstall Wave FM-1 Preview 0.1.0 from Windows Settings > Apps first, then run this installer again. Keep your projects and exported saves. This prevents two copies of the same VST3 being scanned.', mbInformation, MB_OK, IDOK);
       Result := False;
     end;
 end;
@@ -74,7 +74,7 @@ begin
   if CurPageID = wpSelectDir then begin
     Error := CheckDirectory();
     if Error <> '' then begin
-      MsgBox(Error, mbError, MB_OK);
+      SuppressibleMsgBox(Error, mbError, MB_OK, IDOK);
       Result := False;
     end;
   end;

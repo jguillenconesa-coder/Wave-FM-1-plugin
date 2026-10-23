@@ -17,7 +17,9 @@ BASE_HASHES = {
 def main():
     verify_upstream()
     for name, expected in BASE_HASHES.items():
-        if hashlib.sha256((SOURCE / name).read_bytes()).hexdigest() != expected:
+        # Git for Windows may check out CRLF; verify the same normalized source.
+        data = (SOURCE / name).read_bytes().replace(b"\r\n", b"\n")
+        if hashlib.sha256(data).hexdigest() != expected:
             raise SystemExit(f"Unexpected UI baseline: {name}")
     if DEST.is_symlink():
         raise SystemExit("Desktop build directory must not be a symlink")

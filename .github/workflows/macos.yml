@@ -8,7 +8,7 @@ permissions:
   contents: read
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 50
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -24,7 +24,7 @@ jobs:
       - name: Verify source and catalogue integrity
         run: python3 -m unittest discover -s tests -v
       - name: Build Universal 2 VST3
-        run: bash tools/build-macos.sh
+        run: bash tools/build-macos.sh 2>&1 | tee macos-build.log
       - name: Native firmware, UI and state tests
         env:
           CARGO_TARGET_DIR: ${{ github.workspace }}/build/macos-rust
@@ -40,6 +40,14 @@ jobs:
           cp dist/macos/VALIDATION.txt dist/macos-downloads-validation.txt
       - name: Package verified bundle
         run: bash tools/package-macos.sh
+      - name: Report build error context
+        if: failure()
+        run: |
+          if [[ -f macos-build.log ]]; then
+            context=$(tail -n 30 macos-build.log | tr '\n' ' ')
+            context=${context//%/%25}
+            echo "::error title=macOS build context::$context"
+          fi
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: Wave-FM-1-macOS-Universal
@@ -48,7 +56,7 @@ jobs:
   publish:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: build
-    runs-on: macos-14
+    runs-on: macos-15
     permissions:
       contents: write
     steps:

@@ -62,6 +62,20 @@ jobs:
             if (Test-Path msvc-build.log) { Get-Content msvc-build.log -Tail 100 >> $env:GITHUB_STEP_SUMMARY }
             '```' >> $env:GITHUB_STEP_SUMMARY
           }
+      - name: Native catalogue and state tests
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/.deps/fm1-emu/crates/fm1-plugin/target
+          RUSTFLAGS: '-C target-feature=+crt-static'
+        run: cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --target x86_64-pc-windows-msvc --lib --test catalogue --test portable -j 2 -- --nocapture
+      - name: Report build error context
+        if: failure()
+        shell: pwsh
+        run: |
+          if (Test-Path msvc-build.log) {
+            $Lines = (Get-Content msvc-build.log -Tail 30) -join ' | '
+            $Lines = $Lines.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=Windows build context::$Lines"
+          }
       - name: Install Inno Setup
         shell: pwsh
         run: |
