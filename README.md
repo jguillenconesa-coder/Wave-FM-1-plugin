@@ -9,11 +9,11 @@ repositorio no se presenta como autora de ese trabajo; consulta
 
 ## Descargar e instalar
 
-- [Instalador Windows 0.2.0](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.1/Wave-FM-1-0.2.0-Windows-x64-Setup.exe)
-- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.1/Wave-FM-1-0.2.0-Windows-x64-Portable.zip)
-- [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.1/Wave-FM-1-0.2.0-macOS-Universal.pkg)
-- [macOS Universal: ZIP por usuario](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.1/Wave-FM-1-0.2.0-macOS-Universal.zip)
-- [Versión publicada, hashes y todos los archivos](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.0-preview.1)
+- [Instalador Windows 0.2.0](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.2/Wave-FM-1-0.2.0-Windows-x64-Setup.exe)
+- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.2/Wave-FM-1-0.2.0-Windows-x64-Portable.zip)
+- [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.2/Wave-FM-1-0.2.0-macOS-Universal.pkg)
+- [macOS Universal: ZIP por usuario](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.2/Wave-FM-1-0.2.0-macOS-Universal.zip)
+- [Versión publicada, hashes y todos los archivos](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.0-preview.2)
 - [Instalar/desinstalar en Windows](docs/WINDOWS.md) · [macOS Intel y Apple Silicon](docs/MACOS.md)
 
 Si la descarga directa falla, abre la página de la versión y selecciona el
