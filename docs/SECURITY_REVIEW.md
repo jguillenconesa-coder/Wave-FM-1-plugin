@@ -26,6 +26,16 @@ blocks the plugin. Browser downloads are not claimed to be hash-verified by the
 plugin. No firmware redistribution, new dependencies or installer/host permissions
 were added. Existing project/controller state IDs remain unchanged.
 
+The 0.2.2 preview.1 native Windows and macOS gates completed successfully at
+source `79f89b8`, including real primary-button Felucca and Melodee downloads,
+hash/package verification and saving to disk. All four public downloads matched
+their release checksums. All 345 Windows and 991 macOS bundle file hashes,
+architectures and packaged original credits were verified. The published native
+macOS report and additional validation of the actual published Windows bundle
+under Wine each record 47 passed tests and zero failures. Local regression and
+packaging tests passed; a clean tracked-source export passed Gitleaks with no
+findings. Exact evidence and acceptance limits: `downloads/windows/VALIDATION.md`.
+
 ## Version 0.2.1 additions (2026-10-23)
 
 - MIDI/Live adds 21 stable host parameters without changing the existing

@@ -1,4 +1,45 @@
-# Validation record · Preview 0.2.1 · 2026-10-23
+# Validation record · Preview 0.2.2 · 2026-10-23
+
+Published release: **v0.2.2-preview.1**, source `79f89b8`. Subsequent
+documentation-only commits update links and this record.
+
+- [Native Windows build/publication 39992303466](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/39992303466): success, 15m 8s.
+- [Native Universal macOS build/publication 39992303478](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/39992303478): success, 8m 59s.
+- Both native gates now download **Felucca and Melodee using the same source
+  resolver as the primary community button**, verify the reference SHA-256,
+  parse the package and assert it was saved. The original Melodee Hub URL
+  reproduced HTTP 403; its original GitHub release downloads successfully.
+  Melodee 1.4.5 SHA-256:
+  `a18f40d6f8c8087b25f115ab11286f85c7f04383de836227c463c6ce4745ce20`.
+- All four public downloads were retrieved and matched their release checksums.
+  Both build manifests identify source `79f89b8`; all **345 Windows** and
+  **991 macOS** bundle file hashes match. Both Windows modules are x64 and
+  both macOS modules contain Intel/arm64. Packaged original credits, 23 bundled
+  packages, 83 references and 64 author release links were verified.
+- The published native macOS report records **47 passed, zero failed** official
+  VST3 tests. The actual downloaded native Windows bundle additionally passed
+  **47 official tests under Wine**, in addition to its native CI gate. Reports:
+  [macOS](../../docs/validation/macos-022-preview1-vst3.txt) and
+  [Windows](../../docs/validation/windows-022-preview1-vst3.txt).
+- Local checks passed: **24 unit tests** and **16 Python integrity/packaging
+  tests**. Both native gates also run the two portable-state tests and two
+  catalogue integration tests. Regression tests
+  cover blocked Hub download routing, same-version/hash fallback, no retry after
+  an integrity failure, preservation of different existing files, reuse of an
+  identical file and retained author links after a Hub catalogue refresh. A clean
+  tracked-source export passed Gitleaks 8.24.2 with no findings.
+- Native Windows CI also requires installer/factory/uninstall checks. Installer
+  scope and host identities are unchanged; this fix adds no runtime dependencies,
+  services, drivers or firmware binaries. Existing state IDs and credits remain.
+
+No interactive Ableton session or save-dialog click sequence was automated.
+The native tests exercise the actual download, validation and file-save path;
+user-machine acceptance of the interface remains necessary. Close Live before
+updating and try an empty Set with important projects backed up. No zero-risk
+guarantee is made. Windows has no own Authenticode signature; macOS uses ad-hoc
+signatures without Developer ID/notarization and its PKG is not Apple-signed.
+
+## Historical record · Preview 0.2.1 · 2026-10-23
 
 Published release: **v0.2.1-preview.2**, source `2e8ceea`. Subsequent documentation-only commits update links and this record.
 

@@ -9,11 +9,11 @@ repositorio no se presenta como autora de ese trabajo; consulta
 
 ## Descargar e instalar
 
-- [Instalador Windows 0.2.1](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.1-preview.2/Wave-FM-1-0.2.1-Windows-x64-Setup.exe)
-- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.1-preview.2/Wave-FM-1-0.2.1-Windows-x64-Portable.zip)
-- [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.1-preview.2/Wave-FM-1-0.2.1-macOS-Universal.pkg)
-- [macOS Universal: ZIP por usuario](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.1-preview.2/Wave-FM-1-0.2.1-macOS-Universal.zip)
-- [Versión publicada, hashes y todos los archivos](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.1-preview.2)
+- [Instalador Windows 0.2.2](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.2-preview.1/Wave-FM-1-0.2.2-Windows-x64-Setup.exe)
+- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.2-preview.1/Wave-FM-1-0.2.2-Windows-x64-Portable.zip)
+- [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.2-preview.1/Wave-FM-1-0.2.2-macOS-Universal.pkg)
+- [macOS Universal: ZIP por usuario](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.2-preview.1/Wave-FM-1-0.2.2-macOS-Universal.zip)
+- [Versión publicada, hashes y todos los archivos](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.2-preview.1)
 - [Instalar/desinstalar en Windows](docs/WINDOWS.md) · [macOS Intel y Apple Silicon](docs/MACOS.md)
 
 Si la descarga directa falla, abre la página de la versión y selecciona el
@@ -46,6 +46,11 @@ automáticamente. Incluye enlaces alternativos a **64 publicaciones originales
 de GitHub**, con hash de referencia. Los paquetes externos no forman parte
 del instalador ni equivalen a firmwares completamente verificados. Consulta
 [el explorador, las descargas y sus límites](docs/COMMUNITY_BROWSER.md).
+
+En **0.2.2**, el botón **Download .fwsc…** utiliza preferentemente la publicación
+original del autor y muestra la ruta guardada o el error. Corrige la descarga de
+Melodee, bloqueada en el enlace del Hub. **Download in browser** permite guardar
+manualmente desde el navegador; después se puede abrir el archivo en el plugin.
 
 El menú **Firmware…** incluye **23 firmwares sin conexión**, con versiones
 fijadas y pruebas reales de arranque, pantalla y audio. Entre ellos: Felucca,
