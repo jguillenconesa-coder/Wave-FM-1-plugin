@@ -1,0 +1,27 @@
+macOS package credits (from the locked Cargo metadata).
+MIT option selected where multiple licences are offered.
+Root upstream licensing: https://github.com/madsmtm/objc2/blob/d7d2fa23ceaa5e6096c923b081040e5d81b3b9df/LICENSE.md
+MIT text: https://github.com/madsmtm/objc2/blob/5237cbf081d04ef75a1f6a207b4018e7c1ae7438/LICENSE.txt
+Steven Sheldon shared MIT text: https://github.com/SSheldon/rust-objc/blob/master/LICENSE.txt
+block and dispatch declare MIT in their Cargo.toml; their registry archives omit a standalone licence file.
+
+block 0.1.6: Steven Sheldon; MIT; http://github.com/SSheldon/rust-block
+block2 0.5.1: Steven Sheldon, Mads Marquart <mads@marquart.dk>; MIT; https://github.com/madsmtm/objc2
+block2 0.6.2: Mads Marquart <mads@marquart.dk>; MIT; https://github.com/madsmtm/objc2
+dispatch 0.2.0: Steven Sheldon; MIT; http://github.com/SSheldon/rust-dispatch
+dispatch2 0.3.1: Mads Marquart <mads@marquart.dk>, Mary <mary@mary.zone>; Zlib OR Apache-2.0 OR MIT; https://github.com/madsmtm/objc2
+malloc_buf 0.0.6: Steven Sheldon; MIT; https://github.com/SSheldon/malloc_buf
+objc 0.2.7: Steven Sheldon; MIT; http://github.com/SSheldon/rust-objc
+objc-sys 0.3.5: Mads Marquart <mads@marquart.dk>; MIT; https://github.com/madsmtm/objc2
+objc2 0.5.3: Steven Sheldon, Mads Marquart <mads@marquart.dk>; MIT; https://github.com/madsmtm/objc2
+objc2 0.6.5: Mads Marquart <mads@marquart.dk>; MIT; https://github.com/madsmtm/objc2
+objc2-app-kit 0.2.2: ; MIT; https://github.com/madsmtm/objc2
+objc2-app-kit 0.3.2: ; Zlib OR Apache-2.0 OR MIT; https://github.com/madsmtm/objc2
+objc2-core-data 0.2.2: ; MIT; https://github.com/madsmtm/objc2
+objc2-core-foundation 0.3.2: ; Zlib OR Apache-2.0 OR MIT; https://github.com/madsmtm/objc2
+objc2-core-image 0.2.2: ; MIT; https://github.com/madsmtm/objc2
+objc2-encode 4.1.0: Mads Marquart <mads@marquart.dk>; MIT; https://github.com/madsmtm/objc2
+objc2-foundation 0.2.2: ; MIT; https://github.com/madsmtm/objc2
+objc2-foundation 0.3.2: ; MIT; https://github.com/madsmtm/objc2
+objc2-metal 0.2.2: ; MIT; https://github.com/madsmtm/objc2
+objc2-quartz-core 0.2.2: ; MIT; https://github.com/madsmtm/objc2

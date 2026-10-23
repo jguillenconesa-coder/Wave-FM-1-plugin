@@ -11,6 +11,8 @@ PATTERN = re.compile(r"^(licen[cs]e|copying|copyright|notice|ofl|ufl)([._-]|$)",
 SUPPLEMENTAL = {"ecolor": "egui-MIT.txt", "egui": "egui-MIT.txt", "egui_glow": "egui-MIT.txt",
     "emath": "egui-MIT.txt", "epaint": "egui-MIT.txt", "profiling": "profiling-MIT.txt",
     "clipboard-win": "clipboard-win-BSL-1.0.txt", "winapi-x86_64-pc-windows-gnu": "winapi-MIT.txt"}
+SUPPLEMENTAL.update({"block": "Steven-Sheldon-MIT.txt", "dispatch": "Steven-Sheldon-MIT.txt",
+    "malloc_buf": "malloc-buf-MIT.txt"})
 
 
 def main(target="x86_64-pc-windows-msvc", output=None):
@@ -37,6 +39,10 @@ def main(target="x86_64-pc-windows-msvc", output=None):
             parent = parent.parent
         if not notices and package["name"] in SUPPLEMENTAL:
             notices = [ROOT / "LICENSES" / SUPPLEMENTAL[package["name"]]]
+        if not notices and "github.com/madsmtm/objc2" in (package["repository"] or ""):
+            notices = [ROOT / "LICENSES/objc2-MIT.txt", ROOT / "LICENSES/objc2-LICENSING.md"]
+        if "apple-darwin" in target and ("github.com/madsmtm/objc2" in (package["repository"] or "") or package["name"] in ("block", "dispatch", "malloc_buf")):
+            notices.append(ROOT / "LICENSES/macos-Rust-AUTHORS.txt")
         if not notices:
             raise ValueError(f"Missing original licence text: {package['name']} {package['version']}")
         folder = out / f"{package['name']}-{package['version']}"

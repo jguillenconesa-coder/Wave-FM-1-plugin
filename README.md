@@ -32,8 +32,8 @@ importantes cerrados y respaldados; no se garantiza riesgo cero.
 ## Firmwares y aspecto
 
 El menú **Firmware…** permite cargar sin conexión **Felucca 1.6.1, X0X 1.1.0,
-AMB-1 1.3 y FoMni-1 0.4**. Cada paquete original se comprueba por tamaño y
-SHA-256 antes de cargarlo; los cuatro tienen pruebas reales de arranque,
+AMB-1 1.3, FoMni-1 0.4, Polly 0.5, Skiff 1.4 y DUB-1 1.2.0**. Cada paquete original se comprueba por tamaño y
+SHA-256 antes de cargarlo; los siete tienen pruebas reales de arranque,
 pantalla y audio en el motor Windows. Consulta [procedencia, licencias y
 fuentes completas](firmware/README.md). No se incluye firmware propietario de
 fábrica ni paquetes con permiso de redistribución incierto.

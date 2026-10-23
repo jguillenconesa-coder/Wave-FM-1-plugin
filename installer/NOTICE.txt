@@ -12,7 +12,7 @@ refuses to overwrite an existing folder not managed by this installer.
 
 The instrument appears as FM-1 by fm1-emu. Its emulator and original panel are
 by Joakim Eriksson. Firmware menu: Felucca 1.6.1, X0X 1.1.0, AMB-1 1.3,
-FoMni-1 0.4. Original authors, licences and full sources are included in the
+FoMni-1 0.4, Polly 0.5, Skiff 1.4, DUB-1 1.2.0. Original authors, licences and full sources are included in the
 bundle under Contents/Resources. Manual firmware/save loading is retained.
 Changing firmware resets only that instance: export what you wish to keep.
 

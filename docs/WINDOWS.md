@@ -33,7 +33,7 @@ copias simultáneas de la preview en carpetas estándar y personalizadas.
 
 ## Firmware y skin por instancia
 
-**Firmware…** incluye Felucca 1.6.1, X0X 1.1.0, AMB-1 1.3 y FoMni-1 0.4, sin
+**Firmware…** incluye Felucca 1.6.1, X0X 1.1.0, AMB-1 1.3, FoMni-1 0.4, Polly 0.5, Skiff 1.4 y DUB-1 1.2.0, sin
 conexión y con tamaño y SHA-256 comprobados al abrirlos. **Open firmware / save
 file…** y **Load firmware / save…** conservan la carga manual `.fwsc` y `.fm1save`.
 **Export save…** exporta el estado portátil.

@@ -32,6 +32,10 @@ The offline firmware catalogue distributes separate unmodified interpreted progr
 | X0X 1.1.0 | Charles Vestal; Felucca platform by Leo Kuroshita; 9W9/8W8 by athousanddetails; ER-99 by Matthew Cieplak; Open303 by Robin Schmidt; TB-3PO contributors; BB Gen by mestela (author permission documented upstream) | GPL-3.0-only; third-party MIT, GPL, OFL and Apache notices retained. |
 | AMB-1 1.3 | Charles Vestal; fm1-base; felucca-bsp by Leo Kuroshita / Hügelton Instruments; FoMni Dattorro plate lineage | MPL-2.0 for this release, with third-party notices retained. Earlier catalogue descriptions calling all versions GPL are outdated. |
 | FoMni-1 0.4 | Charles Vestal; Felucca/X0X platform contributors; Chordian by Jan125 | GPL-3.0-only; Chordian data CC0; OFL fonts and Apache SDK notices retained. |
+| Polly 0.5 | Charles Vestal; fm1-base and felucca-bsp contributors; Sonivox EAS (Sonic Network Inc., Android Open Source Project); Groove MIDI Dataset by Jon Gillick, Adam Roberts, Jesse Engel, Douglas Eck and David Bamman, Google Magenta / © Google LLC | GPL-3.0-only app, MPL-2.0 platform, Apache-2.0 EAS and SDK, CC BY 4.0 drum performances; upstream modifications and source credits in `firmware/licenses/polly/styles/README.md`. |
+| Skiff 1.4 | illuminus5; Leo Kuroshita / Hügelton Instruments; DSP and font contributors listed in its LICENSING.md | GPL-3.0-only, with MIT, Apache-2.0, CC0 and OFL notices preserved. |
+| DUB-1 1.2.0 | sbegueria; Charles Vestal (AMB-1/FoMni/X0X); Leo Kuroshita / Hügelton Instruments | GPL-3.0-only, with OFL and Apache-2.0 notices. |
+
 
 Full upstream notices are in `firmware/licenses/<id>/`, and complete corresponding
 sources with recursive submodules are in `firmware/sources/`. Both are also included
@@ -73,3 +77,11 @@ commit URLs during maintenance, not from mutable branches during packaging.
 The wrapper has a local, hash-checked patch in `tools/private_companion.py` to
 load only the CLAP inside this preview's private VST3 bundle. This changes the
 Windows loading path, not the firmware engine. The emulator sources are unmodified.
+
+macOS Rust bindings also credit Steven Sheldon and the objc2 contributors. Some
+registry archives omit a standalone licence; the shared upstream texts and
+package authorship are retained in `LICENSES/Steven-Sheldon-MIT.txt`,
+`objc2-MIT.txt`, `objc2-LICENSING.md`, `malloc-buf-MIT.txt` and
+`macos-Rust-AUTHORS.txt`, and collected for each affected package. The MIT option
+is selected where offered. Builds use the native Apple SDK under its own terms;
+no Apple SDK is redistributed.

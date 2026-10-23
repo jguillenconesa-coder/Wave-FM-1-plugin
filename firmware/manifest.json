@@ -72,6 +72,62 @@
       "source": "fomni-0.4-source.tar.gz",
       "source_sha256": "dee47da2ddd6e63dd3e3421c7ba9aaf2cb91d8a43cb791dd4b5f31a1540d5f25",
       "source_commit": "6ecd227013cc18def0e89d035b3760eb268b342b"
+    },
+    {
+      "id": "polly",
+      "name": "Polly",
+      "version": "0.5",
+      "author": "Charles Vestal and contributors; Sonivox EAS; Google Magenta",
+      "license": "GPL-3.0-only",
+      "description": "General MIDI multitimbral synthesizer and arranger",
+      "file": "polly-0.5.fwsc",
+      "size": 610136,
+      "sha256": "2dea2914b4628f075cf3605fae7a75afc03a4b2ae2d7823d8ccf4bf16dd986c7",
+      "download": "https://github.com/charlesvestal/fm1-polly/releases/download/v0.5/polly-0.5.fwsc",
+      "repository": "https://github.com/charlesvestal/fm1-polly",
+      "tag": "v0.5",
+      "source": "polly-0.5-source.tar.gz",
+      "source_sha256": "04cba9d618af527d7a7cc2bab52f0c8f804c097d53496dfcbf614fa40cd1f0a8",
+      "source_commit": "62cd07ea7c95c30021c31e957cea8be448415fa7",
+      "submodules": {
+        "base": "6fa5ae2101589bcc5e3a5e75ceda018f444b3c28",
+        "base/bsp": "7d8f8490c2245f334775889cb7107573b12289e0"
+      },
+      "source_note": "Original source and recursive submodules; demonstration videos under docs/video omitted (not build inputs)."
+    },
+    {
+      "id": "skiff",
+      "name": "Skiff",
+      "version": "1.4",
+      "author": "illuminus5; Leo Kuroshita / Hügelton Instruments and contributors",
+      "license": "GPL-3.0-only",
+      "description": "Six-track multi-engine groovebox",
+      "file": "skiff-1.4.fwsc",
+      "size": 610337,
+      "sha256": "0622a752e8304777c042ccea0732ba023e1413baa6dbc8724576e2ec76de02e0",
+      "download": "https://github.com/illuminus5/skiff/releases/download/v1.4/skiff-1.4.fwsc",
+      "repository": "https://github.com/illuminus5/skiff",
+      "tag": "v1.4",
+      "source": "skiff-1.4-source.tar.gz",
+      "source_sha256": "5705b3b982ca910b8aeef1992c7e7930fa1608dc39504ee2ae14ef52f4d18876",
+      "source_commit": "c01fa1ed619266d770ea6552b153612e1b77d0a9"
+    },
+    {
+      "id": "dub",
+      "name": "DUB-1",
+      "version": "1.2.0",
+      "author": "Santiago Beguería; Charles Vestal and contributors",
+      "license": "GPL-3.0-only",
+      "description": "Generative dub techno instrument",
+      "file": "dub-1.2.0.fwsc",
+      "size": 609666,
+      "sha256": "1816e6eea0c2f8aa1d47aacd45d2ef9161ab233bc17e1c9069545a9f8def15dc",
+      "download": "https://github.com/sbegueria/fm1-dub/releases/download/v1.2.0/dub-1.2.0.fwsc",
+      "repository": "https://github.com/sbegueria/fm1-dub",
+      "tag": "v1.2.0",
+      "source": "dub-1.2.0-source.tar.gz",
+      "source_sha256": "0fc34affea805250ab5fb33fb4a3129c75905570fbd9d52060fceb527db2d9e0",
+      "source_commit": "ed490917895803fa160bd53b21ad848cd7bbe04a"
     }
   ]
 }

@@ -11,6 +11,10 @@ El emulador interpreta el firmware dentro del proceso del host; no es un sandbox
 | [X0X 1.1.0](https://github.com/charlesvestal/fm1-x0x/releases/tag/v1.1.0) | Charles Vestal y colaboradores | Bajos 303, baterías 808/909 y breaks | GPL-3.0-only |
 | [AMB-1 1.3](https://github.com/charlesvestal/fm1-amb/releases/tag/v1.3) | Charles Vestal y colaboradores | Ambient generativo | MPL-2.0 |
 | [FoMni-1 0.4](https://github.com/charlesvestal/fm1-fomni/releases/tag/v0.4) | Charles Vestal y colaboradores; Chordian de Jan125 | Arpa de acordes y ritmos | GPL-3.0-only |
+| [Polly 0.5](https://github.com/charlesvestal/fm1-polly/releases/tag/v0.5) | Charles Vestal; Sonivox EAS; Google Magenta | Síntesis General MIDI y acompañamiento | GPL-3.0-only; plataforma MPL-2.0; EAS Apache-2.0; ritmos CC BY 4.0 |
+| [Skiff 1.4](https://github.com/illuminus5/skiff/releases/tag/v1.4) | illuminus5; Hügelton Instruments y colaboradores | Groovebox de seis pistas y múltiples motores | GPL-3.0-only |
+| [DUB-1 1.2.0](https://github.com/sbegueria/fm1-dub/releases/tag/v1.2.0) | sbegueria; Charles Vestal y colaboradores | Dub techno generativo | GPL-3.0-only |
+
 
 `manifest.json` fija versión, revisión de fuente, URL original, tamaño y SHA-256
 del paquete y de sus fuentes. Las licencias de recursos, bibliotecas, muestras,
@@ -23,9 +27,12 @@ Ableton, Roland o Suzuki. Sus marcas corresponden a sus propietarios.
 
 `sources/` contiene las fuentes correspondientes a cada versión. Felucca usa
 el archivo completo publicado por su autor, con Felucca-Engines incluido.
-AMB-1 contiene también sus submódulos fm1-base y felucca-bsp en sus revisiones
+AMB-1 y Polly contienen también sus submódulos fm1-base y felucca-bsp en sus revisiones
 fijadas; no se usa el ZIP incompleto generado automáticamente por GitHub.
-X0X y FoMni-1 incluyen sus scripts de compilación y recursos del tag original.
+X0X, FoMni-1, Skiff y DUB-1 incluyen sus scripts y recursos del tag original.
+De Polly solo se omiten los vídeos de demostración `docs/video`; no son entradas
+de compilación. Se incluyen los datos Sonivox EAS y el README, licencia, autores
+y descripción de modificaciones de los ritmos de Google Magenta (CC BY 4.0).
 Los requisitos de compilación y la obtención del toolchain y SDK externos se
 explican en los `BUILDING.md` de cada archivo. Los archivos de fuentes conservan
 sus licencias originales; la licencia MIT del empaquetador no las sustituye.
@@ -54,6 +61,13 @@ Investigación del 23-10-2026: se consultaron las publicaciones originales y el
 [directorio de aroum](https://github.com/aroum/fm1-custom-fw). La búsqueda de
 YouTube `firmware Wave-FM1` y la demo de Felucca enlazada por ese directorio
 devolvieron HTTP 403 desde el entorno; no se afirma haber visto los vídeos.
-SLOOP 2.8 se excluye por la incertidumbre sobre la redistribución de recursos
-identificados como derechos reservados en su documentación. No se incluyen
+The Firmware Hub y ambas búsquedas de YouTube aportadas por el usuario devolvieron
+HTTP 403 desde el entorno. El catálogo del emulador sirvió para localizar
+candidatos del Hub; las comprobaciones se hicieron sobre publicaciones originales.
+Esta selección no es una auditoría exhaustiva de todos los proyectos del Hub.
+SLOOP 2.8 y Dinghy 0.3 se excluyen por la incertidumbre sobre recursos
+identificados como derechos reservados en su documentación. ChoralRoot 0.26.1
+se excluye porque declara presets de Casio y Sequential sin licencia concedida.
+El firmware oficial Open V14 contiene SDK con restricciones de dispositivo;
+no se distribuye como si fuera enteramente GPL sin restricciones. No se incluyen
 firmwares propietarios, de pago, con licencia ausente ni el firmware de fábrica.
