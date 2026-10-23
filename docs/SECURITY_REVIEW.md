@@ -6,6 +6,20 @@ not an independent penetration test or a complete audit of upstream Rust/C++
 code. Windows x64 binaries have been built and checked under Wine 10; native
 release workflows gate publication. User-machine acceptance remains separate.
 
+## Version 0.2.3 knob display fix (2026-10-23)
+
+The editor now observes the seven existing host encoder references to draw
+their indicators over a 270-degree sweep, including host automation and reopened
+windows. This is editor-only feedback: it emits no commands, writes no host
+parameters and does not change the serialized control IDs, worker routing,
+firmware state or audio callback. Manual mouse turns remain endless and the
+next host reference change reanchors their display. FM-1 feedback is not applied
+to the SMK-37 panel. Existing native drawing callers retain their click-based API.
+Regression tests check actual indicator pixels at low/centre/high references,
+all seven routes, editor reopening, instance separation and unchanged engine
+behaviour during reference restoration. No new dependency, firmware binary,
+network permission or installer scope is introduced.
+
 ## Version 0.2.2 download fix (2026-10-23)
 
 The primary community button now resolves a pinned original author release

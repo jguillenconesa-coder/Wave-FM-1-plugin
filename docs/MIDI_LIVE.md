@@ -27,6 +27,15 @@ panel manual conserva sus giros sin fin; no desplaza automáticamente estas
 referencias. La opción Takeover de Live puede ayudar a evitar saltos al conectar
 un controlador cuya posición física no coincide.
 
+Desde **0.2.3**, los indicadores del dibujo siguen esas referencias del host:
+0 apunta abajo a la izquierda, 64 aproximadamente hacia arriba y 127 abajo a
+la derecha, con un recorrido de 270°. Se actualizan los siete encoders, incluidos
+**Knob 1–4**, tanto con MIDI asignado como con automatización o los deslizadores
+de la columna. Al reabrir la ventana se recuperan sus posiciones actuales.
+Mover el ratón sigue girando el encoder sin fin; el próximo cambio del host
+recoloca el indicador según la referencia MIDI. Esto no permite leer el valor
+musical interno del firmware ni cambia cómo se aplican sus giros.
+
 Los botones asignables generan un pulso de **100 ms** al pasar de Off a On y
 se liberan automáticamente. Usa botones momentáneos que envíen **127 al pulsar
 y 0 al soltar**. Un controlador que solo mande On debe volver a Off antes de

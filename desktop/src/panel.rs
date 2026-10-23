@@ -345,6 +345,13 @@ fn bright(f: f32) -> f32 {
 pub fn draw(buf: &mut [u32], base: &[u32], st: &State) { draw_with_palette(buf, base, st, &GRAPHITE) }
 
 pub fn draw_with_palette(buf: &mut [u32], base: &[u32], st: &State, p: &Palette) {
+    let angles = std::array::from_fn(|i| (st.enc_clicks[i] as f32 * 18.0).to_radians());
+    draw_with_encoder_angles(buf, base, st, p, &angles);
+}
+
+/// Desktop host feedback can supply absolute MIDI-reference angles, while
+/// existing native callers retain their endless click-based drawing API.
+pub fn draw_with_encoder_angles(buf: &mut [u32], base: &[u32], st: &State, p: &Palette, angles: &[f32; 7]) {
     canvas(W);
     buf.copy_from_slice(base);
     // the LCD at 2x
@@ -359,10 +366,10 @@ pub fn draw_with_palette(buf: &mut [u32], base: &[u32], st: &State, p: &Palette)
             buf[o + W + 1] = c;
         }
     }
-    // knobs: encoders turn 18 degrees a click; the pot sweeps 270 degrees
+    // Encoder angles come from the caller; the master pot sweeps 270 degrees.
     for (i, (_, _, cx, cy, r)) in ENCS.iter().enumerate() {
         let glow = (st.turning[i] as f32 / 10.0).min(1.0);
-        knob_with_palette(buf, *cx, *cy, *r, (st.enc_clicks[i] as f32 * 18.0).to_radians(), glow, p);
+        knob_with_palette(buf, *cx, *cy, *r, angles[i], glow, p);
     }
     let pa = (-135.0 + 270.0 * st.pot as f32 / 1023.0).to_radians();
     knob_with_palette(buf, POT.0, POT.1, POT.2, pa, (st.turning[7] as f32 / 10.0).min(1.0), p);

@@ -1,6 +1,15 @@
-# Wave FM-1 Preview 0.2.2 · Windows y macOS
+# Wave FM-1 Preview 0.2.3 · Windows y macOS
 
-Corrige las descargas de **Community firmwares…**: el botón principal prioriza
+Corrige la posición visual de los knobs al mover un controlador MIDI asignado
+en Ableton o una automatización del host. **Knob 1–4, Select, Presets y Algorithm**
+reflejan su referencia 0–127 con un recorrido visual de 270°, también al reabrir
+la ventana o recuperar un Set. La actualización del dibujo no envía giros
+adicionales al motor. El ratón mantiene sus giros continuos; el siguiente cambio
+del host vuelve a situar el indicador en su referencia MIDI. Esta referencia
+no equivale al valor musical del parámetro que muestra cada firmware.
+
+Se mantiene la corrección de descargas de **Community firmwares…** de 0.2.2:
+el botón principal prioriza
 la publicación original del autor en GitHub, en lugar del enlace del Hub que
 puede responder HTTP 403. Melodee se comprueba con una descarga real desde el
 mismo flujo que usa el botón principal. Se muestran la versión, el proveedor,
@@ -35,10 +44,10 @@ firmware, flash y skin independientes. El instrumento sigue apareciendo como
 
 ## Descargas
 
-- **Windows x64**: `Wave-FM-1-0.2.2-Windows-x64-Setup.exe`, con desinstalador
+- **Windows x64**: `Wave-FM-1-0.2.3-Windows-x64-Setup.exe`, con desinstalador
   en Agregar o quitar programas. Ruta predeterminada:
   `C:\Program Files\Common Files\VST3\Wave FM-1.vst3`.
-- **Windows portátil**: `Wave-FM-1-0.2.2-Windows-x64-Portable.zip`. Mantén unido
+- **Windows portátil**: `Wave-FM-1-0.2.3-Windows-x64-Portable.zip`. Mantén unido
   todo el bundle `VST3/FM-1.vst3`; evita dos copias simultáneas.
 - **macOS Universal 2**: ZIP y PKG para Intel/Apple Silicon, compilados con
   mínimo macOS 11. El ZIP permite instalar por usuario; el PKG instala el bundle

@@ -14,6 +14,34 @@ pub const BUTTONS: [&str; 14] = [
     "HOME", "SAVE", "ARP", "SEQ", "PLAY", "REC",
 ];
 
+/// Editor-only feedback. Observing host values must never send another encoder
+/// event, including when a window reopens or a Set restores its references.
+#[derive(Default)]
+pub struct EncoderDisplay {
+    positions: Option<[i32; 7]>,
+    pub angles: [f32; 7],
+}
+
+impl EncoderDisplay {
+    pub fn sync(&mut self, positions: [i32; 7]) -> [bool; 7] {
+        let changed = std::array::from_fn(|i| self.positions.is_some_and(|last| last[i] != positions[i]));
+        for i in 0..7 {
+            if self.positions.is_none() || changed[i] {
+                self.angles[i] = (-135.0 + 270.0 * positions[i].clamp(0, 127) as f32 / 127.0).to_radians();
+            }
+        }
+        self.positions = Some(positions);
+        changed
+    }
+
+    /// Mouse operation remains endless. The next host change reanchors the
+    /// indicator to its absolute MIDI reference without changing audio routing.
+    pub fn turn(&mut self, i: usize, clicks: i32) {
+        self.angles[i] = (self.angles[i] + (clicks as f32 * 18.0).to_radians())
+            .rem_euclid(std::f32::consts::TAU);
+    }
+}
+
 #[derive(Params)]
 pub struct EncoderParam {
     #[id = "enc"]
@@ -172,6 +200,69 @@ impl Routing {
 mod tests {
     use super::*;
     fn initial() -> Snapshot { PanelParams::default().snapshot().unwrap() }
+
+    #[test]
+    fn host_knobs_repaint_without_mouse_events_and_reopen_at_the_saved_reference() {
+        let mut display = EncoderDisplay::default();
+        let mut other = EncoderDisplay::default();
+        assert_eq!(display.sync([64; 7]), [false; 7]);
+        other.sync([64; 7]);
+        let mut positions = [64; 7];
+        positions[3..].copy_from_slice(&[0, 32, 96, 127]);
+        assert_eq!(display.sync(positions), [false, false, false, true, true, true, true]);
+        assert!((display.angles[3].to_degrees() + 135.0).abs() < 0.001);
+        assert!((display.angles[6].to_degrees() - 135.0).abs() < 0.001);
+        assert!(display.angles[3..].windows(2).all(|pair| pair[0] < pair[1]));
+        assert_eq!(other.sync([64; 7]), [false; 7]);
+        assert_ne!(other.angles[3], display.angles[3]);
+
+        // A repaint does not undo an endless mouse turn. A new host position
+        // does reanchor it, and a new editor immediately shows restored values.
+        display.turn(3, 40);
+        let manual = display.angles[3];
+        assert_eq!(display.sync(positions), [false; 7]);
+        assert_eq!(display.angles[3], manual);
+        positions[3] = 127;
+        display.sync(positions);
+        let mut reopened = EncoderDisplay::default();
+        assert_eq!(reopened.sync(positions), [false; 7]);
+        assert_eq!(reopened.angles, display.angles);
+        positions[..3].copy_from_slice(&[0, 127, 32]);
+        assert_eq!(display.sync(positions), [true, true, true, false, false, false, false]);
+    }
+
+    #[test]
+    fn rendered_knob_indicators_follow_host_values_without_replaying_engine_controls() {
+        let mut params = PanelParams::default();
+        let mut display = EncoderDisplay::default();
+        let mut routing = Routing::new(params.snapshot().unwrap());
+        let lcd = vec![0; 240 * 240];
+        let st = crate::panel::State { lcd: &lcd, enc_clicks: &[0; 7], pot: 512,
+            down: &[false; 41], leds: &[0.0; 41], turning: &[0; 8] };
+        let base = crate::panel::base();
+        let mut image = base.clone();
+        for position in [0, 127, 64] {
+            for i in 0..7 {
+                params.encoders[i].value = IntParam::new(ENCODERS[i].0, position,
+                    IntRange::Linear { min: 0, max: 127 });
+            }
+            params.resync(); // restoring references is visual feedback, not a turn
+            display.sync(std::array::from_fn(|i| params.encoders[i].value.value()));
+            crate::panel::draw_with_encoder_angles(&mut image, &base, &st,
+                &crate::panel::GRAPHITE, &display.angles);
+            for (_, _, x, y, radius) in crate::panel::ENCS {
+                // Pointer halfway along its radius: low = lower left,
+                // high = lower right, centre = upwards.
+                let angle = match position { 0 => -135.0_f32, 127 => 135.0, _ => 0.0 }.to_radians();
+                let px = (x + angle.sin() * radius * 0.4).round() as usize;
+                let py = (y - angle.cos() * radius * 0.4).round() as usize;
+                assert_eq!(image[py * crate::panel::W + px], 0xeeeae2,
+                    "host reference {position} did not move the rendered indicator at {x},{y}");
+            }
+            routing.poll(params.snapshot().unwrap(), Instant::now(),
+                |_| panic!("visual synchronization replayed a saved control"));
+        }
+    }
 
     #[test]
     fn partially_restored_host_state_is_not_exposed_before_initialize() {

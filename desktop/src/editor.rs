@@ -28,6 +28,7 @@ struct Ui {
     tex: Option<egui::TextureHandle>,
     down: [bool; 64],
     enc_clicks: [i32; 8],
+    encoder_display: controls::EncoderDisplay,
     turning: [u32; 9],
     /// SMK-37: its analog inputs as set (fm1_soc::smk's ANALOG_* indices)
     analog: [u16; 23],
@@ -64,6 +65,7 @@ impl Default for Ui {
             tex: None,
             down: [false; 64],
             enc_clicks: [0; 8],
+            encoder_display: controls::EncoderDisplay::default(),
             turning: [0; 9],
             analog,
             grab: None,
@@ -95,6 +97,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
     let build = |_: &egui::Context, ui: &mut Ui| {
         ui.tex = None;
         ui.grab = None;
+        ui.encoder_display = controls::EncoderDisplay::default();
     };
     create_egui_editor(params.editor_state.clone(), Ui::default(), build, move |ctx, setter, ui| {
         let (lcd, leds, pads, board, booted, halted, speed, late) = {
@@ -110,6 +113,12 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
             ui.buf = vec![0; ui.base.len()];
         }
         let smk = board == Board::Smk37;
+        if !smk {
+            let changed = ui.encoder_display.sync(std::array::from_fn(|i| params.controls.encoders[i].value.value()));
+            for i in 0..7 {
+                if changed[i] { ui.turning[i] = 10; }
+            }
+        }
         let (w, h) = if smk { (panel_smk::W, panel_smk::H) } else { (panel::W, panel::H) };
 
         egui::TopBottomPanel::top("bar").show(ctx, |bar| {
@@ -317,7 +326,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                         .on_hover_text("Master · absolute level · the same parameter as the panel's MASTER pot");
                     map.add_enabled_ui(!smk, |map| {
                         map.label("Encoders · relative reference 0–127")
-                            .on_hover_text("A change of one step sends one encoder click. These positions are not firmware parameter values. The physical panel's encoders remain endless and independent of these references.");
+                            .on_hover_text("A change of one step sends one encoder click. The panel indicators follow these MIDI references over a 270° sweep; they are not firmware parameter values. Mouse turns remain endless.");
                         // Put the four performance knobs first, with names matching Live exactly.
                         for i in [3, 4, 5, 6, 0, 1, 2] {
                             let param = &params.controls.encoders[i].value;
@@ -499,7 +508,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                     leds: &leds,
                     turning: &std::array::from_fn(|i| ui.turning[i]),
                 };
-                panel::draw_with_palette(&mut ui.buf, &ui.base, &st, &skin.palette);
+                panel::draw_with_encoder_angles(&mut ui.buf, &ui.base, &st, &skin.palette, &ui.encoder_display.angles);
             }
             for t in ui.turning.iter_mut() {
                 *t = t.saturating_sub(1);
@@ -698,7 +707,8 @@ fn key(ui: &mut Ui, link: &Link, id: i32, down: bool) {
 }
 
 fn turn(ui: &mut Ui, link: &Link, smk: bool, i: i32, clicks: i32) {
-    ui.enc_clicks[i as usize] += clicks;
+    ui.enc_clicks[i as usize] = ui.enc_clicks[i as usize].wrapping_add(clicks);
+    if !smk { ui.encoder_display.turn(i as usize, clicks); }
     ui.turning[i as usize] = 10;
     let enc = if smk { i as u8 } else { panel::ENCS[i as usize].1 };
     let _ = link.cmds.send(Cmd::Enc { enc, clicks });
