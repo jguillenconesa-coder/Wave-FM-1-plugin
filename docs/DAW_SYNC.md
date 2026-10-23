@@ -56,9 +56,21 @@ muestras que ya llegan tarde, en vez de retenerlas y retrasar cada vez más el
 instrumento. Esto se aplica tanto al reloj interno como al modo DAW y a todos
 los firmwares. No crea las muestras que un equipo no consigue calcular.
 
-Un aviso amarillo **Audio underruns** indica muestras que faltaron. Prueba a
-aumentar el tamaño de buffer de audio en Live o reducir instancias/carga de CPU.
-El plugin no modifica esos ajustes por su cuenta. **MIDI queue full** indica
+Desde 0.2.5, la franja inferior muestra siempre **Engine**, **Audio late**,
+**CPU** y la frecuencia/bloque del **Host**. **Copy audio status** copia esos
+datos junto con la versión y el firmware. **Audio late** mide la cola de audio
+del plugin, no el contador de errores del controlador ASIO. Puede aumentar
+brevemente al arrancar o cargar un firmware; el retraso persistente requiere
+investigación. **Engine** inferior a 1.00x indica sobrecarga sostenida; un
+promedio superior a 1.00x no descarta pausas breves del sistema.
+
+La emulación entrega audio en tandas más cortas y la recuperación tiene un
+presupuesto proporcional al bloque de audio. No modifica el buffer de Live ni
+añade latencia. Para diagnosticar, empieza con **CPU clock: 240 MHz**: subir ese
+valor aumenta el trabajo del ordenador, aunque pueda ayudar al firmware con
+sus propios plazos. Ante sobrecarga, reduce otras cargas/instancias o prueba
+un buffer mayor. El plugin no modifica esos ajustes por su cuenta.
+**MIDI queue full** indica
 que falta capacidad para entregar eventos; la sincronización intenta recuperarse
 con Stop/Start cuando vuelve a haber espacio.
 

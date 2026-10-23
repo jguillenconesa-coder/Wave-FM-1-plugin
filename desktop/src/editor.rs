@@ -29,6 +29,7 @@ struct Ui {
     down: [bool; 64],
     enc_clicks: [i32; 8],
     encoder_display: controls::EncoderDisplay,
+    led_display: panel::LedDisplay,
     turning: [u32; 9],
     /// SMK-37: its analog inputs as set (fm1_soc::smk's ANALOG_* indices)
     analog: [u16; 23],
@@ -66,6 +67,7 @@ impl Default for Ui {
             down: [false; 64],
             enc_clicks: [0; 8],
             encoder_display: controls::EncoderDisplay::default(),
+            led_display: panel::LedDisplay::default(),
             turning: [0; 9],
             analog,
             grab: None,
@@ -98,6 +100,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
         ui.tex = None;
         ui.grab = None;
         ui.encoder_display = controls::EncoderDisplay::default();
+        ui.led_display = panel::LedDisplay::default();
     };
     create_egui_editor(params.editor_state.clone(), Ui::default(), build, move |ctx, setter, ui| {
         let (lcd, leds, pads, board, booted, halted, speed, late) = {
@@ -185,7 +188,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 });
                 bar.label("MIDI channel");
                 bar.add(widgets::ParamSlider::for_param(&params.channel, setter).with_width(90.0));
-                bar.label("CPU clock").on_hover_text("The emulated FM-1's clock, 240 MHz as on the chip. Raise it if a firmware runs out of time; each step costs this computer's CPU. Changing it restarts the firmware");
+                bar.label("CPU clock").on_hover_text("Virtual CPU speed, not the audio buffer or musical tempo. Higher MHz can help firmware CPU deadlines but increases this computer's load and may cause audio underruns. Start at 240 MHz when diagnosing host underruns. Changing it restarts the firmware.");
                 bar.add(widgets::ParamSlider::for_param(&params.clock, setter).with_width(90.0));
                 bar.label("Musical clock");
                 bar.add(widgets::ParamSlider::for_param(&params.transport_sync, setter).with_width(165.0))
@@ -208,13 +211,32 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 } else if halted {
                     "The firmware stopped: an instruction the emulator does not know".into()
                 } else {
-                    let late = if late > 0 { format!(", {late} frames late in the last second") } else { String::new() };
-                    if speed > 0.0 { format!("could run {speed:.1}x real time{late}") } else { format!("starting{late}") }
+                    "Firmware running".into()
                 };
                 bar.label(status);
-                if late > 0 {
-                    bar.colored_label(egui::Color32::YELLOW, "Audio underruns · increase Live's buffer or reduce CPU load")
-                        .on_hover_text("Late samples are discarded to preserve the timeline. DAW sync cannot prevent audio gaps when the machine thread cannot keep up. Try a larger audio buffer or fewer active instances.");
+            });
+        });
+
+        // Audio health has its own space: a firmware/download message must not
+        // hide the speed needed to distinguish overload from a buffering fault.
+        egui::TopBottomPanel::bottom("audio-health").show(ctx, |health| {
+            let (rate, samples) = params.audio_diagnostics.host();
+            let engine = if speed > 0.0 { format!("{speed:.2}x") } else { "measuring…".into() };
+            let cpu = params.clock.value().mhz();
+            health.horizontal_wrapped(|row| {
+                row.label(egui::RichText::new(format!("Engine: {engine}")).strong())
+                    .on_hover_text("Above 1.00x means average emulation is faster than real time. Brief scheduling delays can still cause late audio. Below 1.00x indicates sustained overload.");
+                row.separator();
+                let late_label = format!("Audio late: {late} frames/s");
+                row.colored_label(if late > 0 { egui::Color32::YELLOW } else { row.visuals().text_color() }, late_label)
+                    .on_hover_text("The plugin's own audio queue, not the ASIO driver's error counter. Start-up loading may miss frames. Persistent late audio needs investigation; higher CPU clock MHz increases host load.");
+                row.separator();
+                row.label(format!("CPU: {cpu} MHz"));
+                row.label(if rate > 0.0 { format!("Host: {rate:.0} Hz / {samples} samples") } else { "Host: not processing".into() });
+                if row.button("Copy audio status").clicked() {
+                    let firmware = params.firmware.lock().unwrap().name.clone();
+                    ctx.copy_text(format!("FM-1 {} | Firmware: {firmware} | Engine: {engine} | Audio late: {late} frames/s | CPU: {cpu} MHz | Host: {rate:.0} Hz / {samples} samples",
+                        env!("CARGO_PKG_VERSION")));
                 }
             });
         });
@@ -512,12 +534,13 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 };
                 panel_smk::draw(&mut ui.buf, &ui.base, &st);
             } else {
+                let stable_leds = ui.led_display.update(&leds);
                 let st = panel::State {
                     lcd: &lcd,
                     enc_clicks: &std::array::from_fn(|i| ui.enc_clicks[i]),
                     pot: (params.master.value() * 1023.0).round() as u16,
                     down: &std::array::from_fn(|i| ui.down[i]),
-                    leds: &leds,
+                    leds: &stable_leds,
                     turning: &std::array::from_fn(|i| ui.turning[i]),
                 };
                 panel::draw_with_encoder_angles(&mut ui.buf, &ui.base, &st, &skin.palette, &ui.encoder_display.angles);

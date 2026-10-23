@@ -1,6 +1,29 @@
-# Wave FM-1 Preview 0.2.4 · Windows y macOS
+# Wave FM-1 Preview 0.2.5 · Windows y macOS
 
-Añade **Musical clock → Internal / firmware o Ableton / DAW** por instancia.
+Estabiliza el color de botones y teclas frente a pequeñas variaciones del
+muestreo de sus LEDs. Conserva los encendidos/apagados y flashes deliberados
+del firmware. El filtro solo afecta al dibujo, sin pulsaciones adicionales ni
+cambios de MIDI o sonido; una prueba compara los píxeles renderizados.
+
+Reduce el tamaño de las tandas de emulación para entregar audio con mayor
+frecuencia y limita el trabajo de recuperación en función del bloque del host.
+Evita que recuperar una cola atrasada concentre trabajo excesivo en el callback.
+No cambia el tamaño del buffer de Live ni la latencia declarada del plugin.
+
+Nueva franja inferior permanente: **Engine**, **Audio late**, **CPU** y
+**Host**, con **Copy audio status** para copiar el diagnóstico. El aviso superior
+ya no oculta estos datos. Un valor Engine inferior a 1.00x indica que la
+emulación no alcanza tiempo real; subir CPU clock puede empeorar esa situación.
+
+Añade una prueba con X0X real, reproducción, notas y percusión MIDI durante
+12 segundos a 48 kHz / 512 muestras. Se ejecuta aparte, sin otras pruebas
+simultáneas, y exige audio finito y cero muestras ausentes tras los primeros
+dos segundos. El informe `REALTIME_X0X.txt` queda en los ZIP publicados.
+Esta prueba no reproduce una sesión interactiva de Ableton ni garantiza el
+rendimiento de todos los equipos. El aviso persistente del usuario no se ha
+reproducido en el entorno local; la comprobación en su equipo sigue pendiente.
+
+Se conserva **Musical clock → Internal / firmware o Ableton / DAW** por instancia.
 El modo DAW genera MIDI Clock de 24 PPQN y Start/Stop desde el tempo y transporte
 del host. Cada inicio o salto de posición reinicia la secuencia; el firmware
 debe admitir reloj externo y usar su entrada TRS/MIDI. Consulta `docs/DAW_SYNC.md`.
@@ -56,10 +79,10 @@ firmware, flash y skin independientes. El instrumento sigue apareciendo como
 
 ## Descargas
 
-- **Windows x64**: `Wave-FM-1-0.2.4-Windows-x64-Setup.exe`, con desinstalador
+- **Windows x64**: `Wave-FM-1-0.2.5-Windows-x64-Setup.exe`, con desinstalador
   en Agregar o quitar programas. Ruta predeterminada:
   `C:\Program Files\Common Files\VST3\Wave FM-1.vst3`.
-- **Windows portátil**: `Wave-FM-1-0.2.4-Windows-x64-Portable.zip`. Mantén unido
+- **Windows portátil**: `Wave-FM-1-0.2.5-Windows-x64-Portable.zip`. Mantén unido
   todo el bundle `VST3/FM-1.vst3`; evita dos copias simultáneas.
 - **macOS Universal 2**: ZIP y PKG para Intel/Apple Silicon, compilados con
   mínimo macOS 11. El ZIP permite instalar por usuario; el PKG instala el bundle

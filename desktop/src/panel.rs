@@ -342,6 +342,60 @@ fn bright(f: f32) -> f32 {
     (f / 0.08).clamp(0.0, 1.0)
 }
 
+/// Display-only hysteresis for multiplexed LEDs sampled on the worker's clock.
+/// Small duty-cycle variations should not shimmer the caps or flip their ink.
+/// Full on/off transitions remain immediate so sequencer flashes keep their timing.
+pub struct LedDisplay { levels: [f32; 41] }
+
+impl Default for LedDisplay {
+    fn default() -> Self { Self { levels: [0.0; 41] } }
+}
+
+impl LedDisplay {
+    pub fn update(&mut self, input: &[f32; 41]) -> [f32; 41] {
+        for (level, &sample) in self.levels.iter_mut().zip(input) {
+            let target = if sample.is_finite() { bright(sample) } else { 0.0 };
+            if target == 0.0 || target == 1.0 || (target - *level).abs() >= 0.08 {
+                *level = target;
+            }
+        }
+        self.levels.map(|level| level * 0.08)
+    }
+}
+
+#[cfg(test)]
+mod led_display_tests {
+    use super::*;
+
+    #[test]
+    fn duty_cycle_jitter_keeps_button_pixels_stable_but_real_flashes_remain() {
+        let base = base_with_palette(&GRAPHITE);
+        let lcd = vec![0; 240 * 240];
+        let mut display = LedDisplay::default();
+        let draw = |leds: &[f32; 41]| {
+            let mut pixels = vec![0; W * H];
+            draw_with_palette(&mut pixels, &base, &State {
+                lcd: &lcd, enc_clicks: &[0; 7], pot: 0, down: &[false; 41],
+                leds, turning: &[0; 8],
+            }, &GRAPHITE);
+            pixels
+        };
+        let mut input = [0.0; 41]; input[12] = 0.04;
+        let reference = draw(&display.update(&input));
+        for jitter in [0.039, 0.041, 0.035, 0.045, 0.04] {
+            input[12] = jitter;
+            assert_eq!(draw(&display.update(&input)), reference);
+        }
+        input[12] = 0.08;
+        let lit = draw(&display.update(&input));
+        assert_ne!(lit, reference);
+        input[12] = 0.0;
+        assert_ne!(draw(&display.update(&input)), lit);
+        // State belongs to this window, never another instance or the firmware.
+        assert_eq!(LedDisplay::default().update(&[0.0; 41]), [0.0; 41]);
+    }
+}
+
 pub fn draw(buf: &mut [u32], base: &[u32], st: &State) { draw_with_palette(buf, base, st, &GRAPHITE) }
 
 pub fn draw_with_palette(buf: &mut [u32], base: &[u32], st: &State, p: &Palette) {

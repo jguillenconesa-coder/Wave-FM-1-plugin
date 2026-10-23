@@ -15,7 +15,7 @@ for name in ("Contents/MacOS/FM-1", "Contents/PlugIns/FM-1.clap/Contents/MacOS/F
 hashes = {p.relative_to(bundle).as_posix(): firmware.sha(p) for p in sorted(bundle.rglob("*")) if p.is_file()}
 manifest = directory / "build-info.json"
 if sys.argv[1] == "record":
-    data = {"schema": 1, "version": "0.2.4", "architectures": ["arm64", "x86_64"],
+    data = {"schema": 1, "version": "0.2.5", "architectures": ["arm64", "x86_64"],
             "minimum_macos": "11.0", "emulator_commit": REVISION,
             "source_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(), "sha256": hashes}
     manifest.write_text(json.dumps(data, indent=2) + "\n")

@@ -1,6 +1,6 @@
 #requires -Version 7.0
 # For a disposable Windows CI runner only: installs and then uninstalls the preview.
-param([string]$Version = '0.2.4')
+param([string]$Version = '0.2.5')
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_OS -ne 'Windows') {

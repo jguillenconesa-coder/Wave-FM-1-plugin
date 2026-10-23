@@ -51,10 +51,12 @@ def main():
     text = replace_once(text, '    pub clock: EnumParam<Clock>,', '''    pub clock: EnumParam<Clock>,
     #[id = "transport_sync"]
     pub transport_sync: EnumParam<host_sync::Source>,
-    pub transport_feedback: host_sync::Feedback,''')
+    pub transport_feedback: host_sync::Feedback,
+    pub audio_diagnostics: audio_timing::Diagnostics,''')
     text = replace_once(text, '            clock: EnumParam::new("CPU clock", Clock::Mhz240).non_automatable(),', '''            clock: EnumParam::new("CPU clock", Clock::Mhz240).non_automatable(),
             transport_sync: EnumParam::new("Musical clock", host_sync::Source::Internal).non_automatable(),
-            transport_feedback: host_sync::Feedback::default(),''')
+            transport_feedback: host_sync::Feedback::default(),
+            audio_diagnostics: audio_timing::Diagnostics::default(),''')
     text = replace_once(text, '    ratio: f64,', '    ratio: f64,\n    musical_clock: host_sync::Clock,')
     text = replace_once(text, '            ratio: 1.0,', '            ratio: 1.0,\n            musical_clock: host_sync::Clock::default(),')
     text = replace_once(text, '''    taken: u64,
@@ -66,8 +68,8 @@ def main():
             cur: [0.0; 2],
             next: [0.0; 2],''', '            playback: audio_timing::Playback::default(),')
     text = replace_once(text, '        let link = self.start();\n        self.ratio = RATE / cfg.sample_rate as f64;',
-                        '        self.params.controls.resync();\n        self.musical_clock.reset();\n        let link = self.start();\n        self.ratio = RATE / cfg.sample_rate as f64;')
-    text = replace_once(text, '        let start = self.taken;', '        self.params.controls.publish();\n        let start = self.playback.position;')
+                        '        self.params.controls.resync();\n        self.musical_clock.reset();\n        self.params.audio_diagnostics.configure(cfg.sample_rate, cfg.max_buffer_size);\n        let link = self.start();\n        self.ratio = RATE / cfg.sample_rate as f64;')
+    text = replace_once(text, '        let start = self.taken;', '        self.params.controls.publish();\n        self.params.audio_diagnostics.observe_block(buffer.samples() as u32);\n        let start = self.playback.position;')
     midi_start = text.index('        let ch = self.params.channel.value() as u8;')
     midi_end = text.index('        let Some(rx) = self.audio.as_mut()', midi_start)
     if text[midi_start:midi_end].count('while let Some(ev) = ctx.next_event()') != 1:
@@ -112,9 +114,19 @@ def main():
     engine = plugin / "src/engine.rs"
     text = engine.read_text()
     text = replace_once(text, '    let mut m: Option<Machine> = None;',
-                        '    let mut controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n    let mut m: Option<Machine> = None;')
+                        '''    let mut controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());
+    // Publish audio frequently; large instruction batches can miss host deadlines
+    // even when the firmware's average emulation speed exceeds real time.
+    #[cfg(not(test))]
+    let render_slice = 8_000;
+    #[cfg(test)]
+    let render_slice = std::env::var("FM1_TEST_ENGINE_SLICE").ok().and_then(|s| s.parse().ok()).unwrap_or(8_000);
+    #[cfg(test)]
+    let mut render_max = (0u128, 0usize);
+    let mut m: Option<Machine> = None;''')
     text = replace_once(text, '                    active_pkg = m.as_ref().map(|_| pkg);',
                         '                    controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n                    active_pkg = m.as_ref().map(|_| pkg);')
+    text = replace_once(text, '                    v.booted = m.is_some();', '                    v.booted = m.is_some();\n                    v.late = 0;')
     text = replace_once(text, 'Cmd::Key { id, down } => apply(&mut m, Action::Key { id, down }),',
                         '''Cmd::Key { id, down } => {
                     if m.as_ref().is_some_and(|m| m.soc.board == Board::Fm1) {
@@ -152,6 +164,23 @@ def main():
         }''')
     text = replace_once(text, 'fill >= lead && last_take.elapsed() >= Duration::from_millis(50)',
         'fill >= lead && last_take.elapsed() >= Duration::from_secs_f64((lead as f64 / RATE).max(0.05) + 0.025) && params.transport_sync.value() == crate::host_sync::Source::Internal')
+    if text.count('mm.run(20_000);') != 2:
+        raise SystemExit('Unexpected worker render-slice baseline')
+    text = text.replace('mm.run(20_000);', 'mm.run(render_slice);')
+    text = replace_once(text, '            let a = std::mem::take(&mut mm.soc.periph.audio);', '''            #[cfg(test)]
+            { render_max.0 = render_max.0.max(t0.elapsed().as_micros()); render_max.1 = render_max.1.max(mm.soc.periph.audio.len() / 2); }
+            let a = std::mem::take(&mut mm.soc.periph.audio);''')
+    text = replace_once(text, '''    }
+}
+
+fn apply(m: &mut Option<Machine>, a: Action) {''', '''    }
+    #[cfg(test)]
+    if std::env::var_os("FM1_REALTIME_DIAGNOSTIC").is_some() {
+        eprintln!("RENDER slice={} max_us={} max_batch_frames={}", render_slice, render_max.0, render_max.1);
+    }
+}
+
+fn apply(m: &mut Option<Machine>, a: Action) {''')
     text += '''
 // Host panel controls run on the machine thread, never the audio callback.
 fn panel_event(m: &mut Option<Machine>, event: crate::controls::Event) {
@@ -180,10 +209,10 @@ fn panel_event(m: &mut Option<Machine>, event: crate::controls::Event) {
     periph.write_text(text)
     # Only this integration's plugin version changes; dependency pins remain intact.
     manifest = plugin / "Cargo.toml"
-    manifest.write_text(replace_once(manifest.read_text(), 'version = "0.2.0"', 'version = "0.2.4"'))
+    manifest.write_text(replace_once(manifest.read_text(), 'version = "0.2.0"', 'version = "0.2.5"'))
     lock = plugin / "Cargo.lock"
     lock.write_text(replace_once(lock.read_text(), 'name = "fm1-plugin"\nversion = "0.2.0"',
-                                'name = "fm1-plugin"\nversion = "0.2.4"'))
+                                'name = "fm1-plugin"\nversion = "0.2.5"'))
     entries = json.loads((ROOT / "firmware/manifest.json").read_text())["firmwares"]
     generated = "// Generated from firmware/manifest.json. Do not edit.\npub static ENTRIES: &[Entry] = &[\n"
     for e in entries:

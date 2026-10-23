@@ -1,5 +1,5 @@
 #requires -Version 7.0
-param([string]$Version = '0.2.4', [string]$Iscc = '')
+param([string]$Version = '0.2.5', [string]$Iscc = '')
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw 'Version must be numeric major.minor.patch.' }

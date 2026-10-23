@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-version=0.2.4
+version=0.2.5
 python3 tools/macos-artifacts.py verify
 codesign --verify --deep --strict 'dist/macos/VST3/Wave FM-1.vst3'
 mkdir -p dist/macos-downloads

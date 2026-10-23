@@ -43,6 +43,15 @@ jobs:
           CARGO_TARGET_DIR: ${{ github.workspace }}/build/macos-rust
           MACOSX_DEPLOYMENT_TARGET: '11.0'
         run: cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --lib online::tests::author_release_download_uses_real_https -j 3 -- --ignored --nocapture
+      - name: Real-time X0X at 48 kHz and 512 samples
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/build/macos-rust
+          MACOSX_DEPLOYMENT_TARGET: '11.0'
+          FM1_REALTIME_DIAGNOSTIC: '1'
+        run: |
+          set -euo pipefail
+          cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --lib audio_timing::tests::realtime_x0x_48k_512 -j 3 -- --ignored --nocapture 2>&1 | tee dist/macos/REALTIME_X0X.txt
+          cat dist/macos/REALTIME_X0X.txt >> "$GITHUB_STEP_SUMMARY"
       - name: Official VST3 validation
         run: |
           cmake -S tools/validator -B build/macos-validator -G Ninja -DCMAKE_BUILD_TYPE=Release -DVST3_SDK_ROOT="$PWD/build/macos/cpm/vst3sdk"

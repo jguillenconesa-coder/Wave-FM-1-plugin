@@ -6,6 +6,41 @@ not an independent penetration test or a complete audit of upstream Rust/C++
 code. Windows x64 binaries have been built and checked under Wine 10; native
 release workflows gate publication. User-machine acceptance remains separate.
 
+## Version 0.2.5 audio scheduling and diagnostics (2026-10-24)
+
+Generated worker render slices decrease from 20,000 to 8,000 instructions,
+allowing the audio ring to be published more frequently. Recovery reads are
+bounded by twice the current block's expected 44.1 kHz frames instead of a
+fixed 16,384-frame budget. The audio timeline, ring size, reported latency and
+host configuration are unchanged. Recovery must have headroom beyond one block
+to reduce existing debt while the timeline advances. No wait, allocation, I/O
+or additional mutex is introduced in the callback.
+
+Host rate and current block size are published through relaxed atomics for
+the editor. A dedicated footer keeps emulation speed and missing-frame counts
+visible. Its explicit copy button copies only firmware name, version and audio
+diagnostics to the clipboard; it sends nothing over the network. Clock guidance
+explains that increasing virtual MHz costs host CPU. No new host parameters,
+dependencies, downloads, installer permissions, services or firmware binaries
+are added. Original attribution remains unchanged.
+
+An isolated opt-in wall-clock regression runs the actual bundled X0X engine
+with 48 kHz / 512-frame callbacks, PLAY, held notes and repeated GM percussion.
+It requires finite non-silent output, no halt and zero missing frames after
+two seconds of startup. Native Windows/macOS gates retain its timing report in
+their ZIPs. Startup misses are measured separately, not hidden in the UI.
+The persistent failure reported by the user was not reproduced locally under
+the previous scheduling policy; improvement here does not prove that their
+specific machine's symptom is resolved. Real Ableton/ASIO acceptance remains
+necessary. See the validation record for completed measurements.
+
+The FM-1 editor also applies an 8% brightness deadband to multiplexed LED
+readings. Small duty-cycle jitter no longer continuously recolours button caps
+or flips their label colour; full on/off transitions remain immediate.
+This is per-window display state only. It does not send input, filter MIDI,
+alter sequencer events or change the firmware. A rendered-pixel regression
+checks stable tint around the previous ink-colour boundary and real flashes.
+
 ## Version 0.2.4 host clock and timing (2026-10-23)
 
 An optional, non-automatable `transport_sync` parameter defaults to internal;
