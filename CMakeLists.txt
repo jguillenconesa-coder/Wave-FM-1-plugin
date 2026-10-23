@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.27)
 project(WaveFM1Windows VERSION 0.2.0 LANGUAGES C CXX)
+if(APPLE)
+    enable_language(OBJCXX)
+endif()
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8 OR (NOT APPLE AND (NOT WIN32 OR (NOT MSVC AND NOT MINGW))))
     message(FATAL_ERROR "This packaging project requires Windows x64 or macOS 64-bit.")
 endif()
