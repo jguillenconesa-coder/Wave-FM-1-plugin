@@ -1,4 +1,44 @@
-# Validation record · Preview 0.2.2 · 2026-10-23
+# Validation record · Preview 0.2.3 · 2026-10-23
+
+Published release: **v0.2.3-preview.1**, source `d166566`. Subsequent
+documentation-only commits update links and this record.
+
+- [Native Windows build/publication 40021097292](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/40021097292): success, 13m 40s.
+- [Native Universal macOS build/publication 40021097255](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/40021097255): success, 7m 29s.
+- **26 plugin unit tests** passed locally. The new regression tests observe all
+  seven host references, check editor reopening and instance separation, preserve
+  endless mouse movement, and verify actual rendered indicator pixels at MIDI
+  references 0, 64 and 127 without mouse commands. Restoring those references
+  emits no engine events. Both native gates run these tests plus the two
+  portable-state and two catalogue integration tests.
+- All **16 Python integrity/packaging tests** passed. A clean export of tracked
+  source passed Gitleaks 8.24.2 with no findings. No dependency, firmware binary,
+  serialized host ID, VST3 identity, audio callback or installer scope changed.
+- All four public downloads were retrieved and matched their release checksums.
+  Both build manifests identify source `d166566`; all **345 Windows** and
+  **991 macOS** bundle hashes match. Both Windows modules are x64; both macOS
+  modules contain Intel/arm64. Original author notices, 23 bundled packages,
+  83 community references and 64 original author release links were verified.
+- The published native macOS report records **47 passed, zero failed** official
+  VST3 tests. The actual downloaded native Windows bundle additionally passed
+  **47 official tests under Wine**, in addition to the native CI gate. Reports:
+  [macOS](../../docs/validation/macos-023-preview1-vst3.txt) and
+  [Windows](../../docs/validation/windows-023-preview1-vst3.txt).
+- The native gates also require actual Felucca and Melodee HTTPS downloads,
+  reference hashes, package parsing and saving through the primary resolver.
+  Windows additionally requires installer/factory/uninstall checks.
+
+No interactive Ableton/controller session was automated. These tests verify
+host references, rendering and unchanged routing; mapping/Takeover settings
+and feedback from the user's specific controller require user-machine acceptance.
+The indicator represents the host's 0–127 reference, not a firmware parameter's
+internal musical value. Close Live before updating and first try an empty Set
+with important projects backed up. Windows has no own Authenticode signature;
+macOS uses ad-hoc signatures without Developer ID/notarization and its PKG is
+not Apple-signed. Zero risk is not guaranteed.
+
+## Historical record · Preview 0.2.2 · 2026-10-23
+
 
 Published release: **v0.2.2-preview.1**, source `79f89b8`. Subsequent
 documentation-only commits update links and this record.

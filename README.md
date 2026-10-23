@@ -9,11 +9,11 @@ repositorio no se presenta como autora de ese trabajo; consulta
 
 ## Descargar e instalar
 
-- [Instalador Windows 0.2.2](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.2-preview.1/Wave-FM-1-0.2.2-Windows-x64-Setup.exe)
-- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.2-preview.1/Wave-FM-1-0.2.2-Windows-x64-Portable.zip)
-- [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.2-preview.1/Wave-FM-1-0.2.2-macOS-Universal.pkg)
-- [macOS Universal: ZIP por usuario](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.2-preview.1/Wave-FM-1-0.2.2-macOS-Universal.zip)
-- [Versión publicada, hashes y todos los archivos](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.2-preview.1)
+- [Instalador Windows 0.2.3](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.3-preview.1/Wave-FM-1-0.2.3-Windows-x64-Setup.exe)
+- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.3-preview.1/Wave-FM-1-0.2.3-Windows-x64-Portable.zip)
+- [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.3-preview.1/Wave-FM-1-0.2.3-macOS-Universal.pkg)
+- [macOS Universal: ZIP por usuario](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.3-preview.1/Wave-FM-1-0.2.3-macOS-Universal.zip)
+- [Versión publicada, hashes y todos los archivos](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.3-preview.1)
 - [Instalar/desinstalar en Windows](docs/WINDOWS.md) · [macOS Intel y Apple Silicon](docs/MACOS.md)
 
 Si la descarga directa falla, abre la página de la versión y selecciona el
@@ -39,6 +39,11 @@ importantes cerrados y respaldados; no se garantiza riesgo cero.
 los siete encoders y 14 botones asignables. Incluye instrucciones de Configure
 y MIDI Map; los nombres coinciden con los parámetros de Live. Consulta
 [cómo mapear tu controlador y qué representan los valores](docs/MIDI_LIVE.md).
+
+Desde **0.2.3**, los indicadores de los siete encoders del panel, incluidos
+**Knob 1–4**, siguen la referencia 0–127 recibida desde Live mediante MIDI o
+automatización. Se recuperan al reabrir la ventana. El dibujo usa un recorrido
+de 270°; la función musical de cada encoder depende del firmware.
 
 **Community firmwares…** permite buscar entre 83 referencias conocidas,
 consultar novedades en Firmware Hub y guardar un `.fwsc` sin actualizar un Set

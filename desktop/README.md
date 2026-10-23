@@ -10,10 +10,19 @@ verified sidecar packages, confirmation before replacing a running setup,
 per-instance skin persisted with the host project, recolourable panel, clearly
 labelled MIDI/Live view, 21 new host parameters, and an optional community browser.
 `tools/prepare-desktop.py` verifies the upstream baseline and generates a
-separate build tree. It never edits the pinned upstream checkout. The core,
-SoC and file loader remain unchanged. Verified patches to the engine route host
+separate build tree. It never edits the pinned upstream checkout. The core
+and file loader remain unchanged. Verified patches to the engine route host
 encoder changes and finite button pulses on its worker thread; its audio callback
 does not perform network/file I/O or allocate for these controls.
+
+From 0.2.4, the separate generated SoC has a hash-checked MIT timing patch:
+it records the last audio DMA deadline and inserts timestamped MIDI input into
+the existing peripheral event queue, invalidating its JIT deadline cache. The
+pristine pinned SoC checkout is unchanged. `host_sync.rs` generates optional
+24-PPQN MIDI Clock and transport from host blocks; `midi_timing.rs` schedules it
+on emulated cycles. `audio_timing.rs` preserves the host timeline during missing
+audio and discards late frames with a finite recovery budget. The additional
+clock-source parameter defaults to internal and keeps every prior host ID.
 
 `controls.rs` and `online.rs` are integration additions (MIT). The community
 index metadata derives from `web/firmwares.json` of the same fm1-emu revision,

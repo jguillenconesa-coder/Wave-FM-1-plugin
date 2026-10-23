@@ -1,4 +1,16 @@
-# Wave FM-1 Preview 0.2.3 · Windows y macOS
+# Wave FM-1 Preview 0.2.4 · Windows y macOS
+
+Añade **Musical clock → Internal / firmware o Ableton / DAW** por instancia.
+El modo DAW genera MIDI Clock de 24 PPQN y Start/Stop desde el tempo y transporte
+del host. Cada inicio o salto de posición reinicia la secuencia; el firmware
+debe admitir reloj externo y usar su entrada TRS/MIDI. Consulta `docs/DAW_SYNC.md`.
+
+Corrige la recuperación de audio cuando el motor se retrasa: mantiene la línea
+de tiempo y descarta muestras tardías en lugar de estirar la reproducción.
+Los eventos MIDI se programan por ciclos emulados, evitando agrupar los pulsos
+en los límites de bloques DMA. Se limita la cola pendiente y se muestra un
+aviso de underruns. Estas correcciones son comunes a todos los firmwares.
+Una CPU que no alcanza tiempo real todavía puede producir cortes.
 
 Corrige la posición visual de los knobs al mover un controlador MIDI asignado
 en Ableton o una automatización del host. **Knob 1–4, Select, Presets y Algorithm**
@@ -44,10 +56,10 @@ firmware, flash y skin independientes. El instrumento sigue apareciendo como
 
 ## Descargas
 
-- **Windows x64**: `Wave-FM-1-0.2.3-Windows-x64-Setup.exe`, con desinstalador
+- **Windows x64**: `Wave-FM-1-0.2.4-Windows-x64-Setup.exe`, con desinstalador
   en Agregar o quitar programas. Ruta predeterminada:
   `C:\Program Files\Common Files\VST3\Wave FM-1.vst3`.
-- **Windows portátil**: `Wave-FM-1-0.2.3-Windows-x64-Portable.zip`. Mantén unido
+- **Windows portátil**: `Wave-FM-1-0.2.4-Windows-x64-Portable.zip`. Mantén unido
   todo el bundle `VST3/FM-1.vst3`; evita dos copias simultáneas.
 - **macOS Universal 2**: ZIP y PKG para Intel/Apple Silicon, compilados con
   mínimo macOS 11. El ZIP permite instalar por usuario; el PKG instala el bundle

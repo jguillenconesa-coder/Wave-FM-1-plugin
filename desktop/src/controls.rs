@@ -354,10 +354,11 @@ mod tests {
     fn stable_host_ids_are_unique_and_old_parameters_remain_present() {
         let params = crate::Fm1Params::default();
         let ids: Vec<_> = params.param_map().into_iter().map(|(id, _, _)| id).collect();
-        assert_eq!(ids.len(), 24);
+        assert_eq!(ids.len(), 25);
         assert!(ids.iter().any(|id| id == "master"));
         assert!(ids.iter().any(|id| id == "channel"));
         assert!(ids.iter().any(|id| id == "clock"));
+        assert!(ids.iter().any(|id| id == "transport_sync"));
         assert!(ids.iter().any(|id| id == "enc_7"));
         assert!(ids.iter().any(|id| id == "btn_14"));
         let mut unique = ids.clone(); unique.sort(); unique.dedup();

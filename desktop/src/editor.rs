@@ -187,6 +187,14 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 bar.add(widgets::ParamSlider::for_param(&params.channel, setter).with_width(90.0));
                 bar.label("CPU clock").on_hover_text("The emulated FM-1's clock, 240 MHz as on the chip. Raise it if a firmware runs out of time; each step costs this computer's CPU. Changing it restarts the firmware");
                 bar.add(widgets::ParamSlider::for_param(&params.clock, setter).with_width(90.0));
+                bar.label("Musical clock");
+                bar.add(widgets::ParamSlider::for_param(&params.transport_sync, setter).with_width(165.0))
+                    .on_hover_text("Internal / firmware: use the firmware's own tempo. Ableton / DAW: send 24-PPQN MIDI Clock and Start/Stop from the host. Set the firmware's clock input to external TRS/MIDI; USB clock is not the emulated MIDI IN. CPU clock is unrelated to musical tempo.");
+                if params.transport_sync.value() == crate::host_sync::Source::Daw {
+                    bar.label(params.transport_feedback.label(params.transport_sync.value()));
+                    bar.label("Firmware clock: external TRS / MIDI")
+                        .on_hover_text("Load and configure the firmware before starting Live. Every DAW start or timeline jump restarts the sequence; firmware support is required. Return its clock setting to Internal when leaving DAW sync.");
+                }
                 bar.separator();
                 bar.toggle_value(&mut ui.mapping, "MIDI / Live")
                     .on_hover_text("Show clearly labelled controls you can expose with Live's Configure button, then map to your MIDI keyboard or controller");
@@ -204,6 +212,10 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                     if speed > 0.0 { format!("could run {speed:.1}x real time{late}") } else { format!("starting{late}") }
                 };
                 bar.label(status);
+                if late > 0 {
+                    bar.colored_label(egui::Color32::YELLOW, "Audio underruns · increase Live's buffer or reduce CPU load")
+                        .on_hover_text("Late samples are discarded to preserve the timeline. DAW sync cannot prevent audio gaps when the machine thread cannot keep up. Try a larger audio buffer or fewer active instances.");
+                }
             });
         });
 

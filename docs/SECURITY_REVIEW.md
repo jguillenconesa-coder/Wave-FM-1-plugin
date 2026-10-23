@@ -6,6 +6,36 @@ not an independent penetration test or a complete audit of upstream Rust/C++
 code. Windows x64 binaries have been built and checked under Wine 10; native
 release workflows gate publication. User-machine acceptance remains separate.
 
+## Version 0.2.4 host clock and timing (2026-10-23)
+
+An optional, non-automatable `transport_sync` parameter defaults to internal;
+old host parameter IDs and the VST3 identity are preserved. DAW mode generates
+24-PPQN MIDI Clock and Start/Stop in process-block time, merging with note events
+in timestamp order. Stop is sent on leaving DAW mode or losing valid tempo;
+loops/seeks restart explicitly. Invalid/non-finite tempo/rate data is rejected.
+Missing beat position falls back to continuous tempo-based phase. Song Position
+Pointer and per-sample tempo ramps are not implemented. Firmware external-clock
+configuration is user-controlled and no firmware binary is changed.
+
+The audio callback advances its timeline during an underrun and discards late
+replacements, with a finite recovery budget. It does not allocate, wait for the
+machine, perform network/file I/O or alter the host's audio settings. Missing
+audio can still cause gaps under excess load. MIDI timestamps use the same
+declared latency and are scheduled on the worker against the last DMA cycle,
+using the existing peripheral event queue. A hash-checked patch is applied only
+to the generated SoC copy: record that cycle, insert input in stable order and
+invalidate the cached JIT deadline. Pending MIDI has backpressure; ring overflow
+is reported and transport resynchronization retried. Free-running while the host
+does not consume audio is restricted to internal mode and accounts for lead time.
+
+Tests cover forced underruns, discard/recovery budgets, instance separation,
+clock frequency at several rates/buffers, fractional tempo without drift,
+tempo changes, Stop/Start/loops, invalid data, queue overflow, note/clock ordering
+and exact emulated-cycle delivery. The standard real-firmware/state and native
+VST3 gates also apply. There are no new dependencies, permissions, services or
+installer-scope changes; original notices remain intact. These tests do not
+establish controller/Live acceptance or every firmware's external-clock support.
+
 ## Version 0.2.3 knob display fix (2026-10-23)
 
 The editor now observes the seven existing host encoder references to draw

@@ -29,8 +29,8 @@ python3 - "$clap" <<'PY'
 import plistlib, sys
 from pathlib import Path
 plist = {'CFBundleExecutable': 'FM-1', 'CFBundleIdentifier': 'io.github.jguillenconesa.wave-fm1.clap',
-         'CFBundleName': 'FM-1', 'CFBundlePackageType': 'BNDL', 'CFBundleVersion': '0.2.3',
-         'CFBundleShortVersionString': '0.2.3', 'LSMinimumSystemVersion': '11.0'}
+         'CFBundleName': 'FM-1', 'CFBundlePackageType': 'BNDL', 'CFBundleVersion': '0.2.4',
+         'CFBundleShortVersionString': '0.2.4', 'LSMinimumSystemVersion': '11.0'}
 with (Path(sys.argv[1]) / 'Contents/Info.plist').open('wb') as f: plistlib.dump(plist, f)
 PY
 python3 tools/firmware.py --platform macos --bundle "$bundle"
