@@ -1,4 +1,17 @@
-# Wave FM-1 Preview 0.2.1 · Windows y macOS
+# Wave FM-1 Preview 0.2.2 · Windows y macOS
+
+Corrige las descargas de **Community firmwares…**: el botón principal prioriza
+la publicación original del autor en GitHub, en lugar del enlace del Hub que
+puede responder HTTP 403. Melodee se comprueba con una descarga real desde el
+mismo flujo que usa el botón principal. Se muestran la versión, el proveedor,
+el progreso y la ruta guardada, o el error en rojo. Un archivo existente idéntico
+se reutiliza tras verificarlo; uno diferente se conserva. Se añade descarga en
+el navegador como alternativa para redes que bloqueen la conexión del plugin.
+
+La consulta del Hub conserva las referencias del autor aunque el repositorio
+venga como URL completa o cambie de mayúsculas. El fallback automático mantiene
+versión y hash; no permite eludir una comprobación de integridad fallida.
+Se conservan los controles MIDI, skins, firmwares incluidos e identidad VST3.
 
 Nueva vista **MIDI / Live** con etiquetas legibles, siete encoders y 14 botones
 expuestos como parámetros de host, además de Master. La guía integrada explica
@@ -22,10 +35,10 @@ firmware, flash y skin independientes. El instrumento sigue apareciendo como
 
 ## Descargas
 
-- **Windows x64**: `Wave-FM-1-0.2.1-Windows-x64-Setup.exe`, con desinstalador
+- **Windows x64**: `Wave-FM-1-0.2.2-Windows-x64-Setup.exe`, con desinstalador
   en Agregar o quitar programas. Ruta predeterminada:
   `C:\Program Files\Common Files\VST3\Wave FM-1.vst3`.
-- **Windows portátil**: `Wave-FM-1-0.2.1-Windows-x64-Portable.zip`. Mantén unido
+- **Windows portátil**: `Wave-FM-1-0.2.2-Windows-x64-Portable.zip`. Mantén unido
   todo el bundle `VST3/FM-1.vst3`; evita dos copias simultáneas.
 - **macOS Universal 2**: ZIP y PKG para Intel/Apple Silicon, compilados con
   mínimo macOS 11. El ZIP permite instalar por usuario; el PKG instala el bundle

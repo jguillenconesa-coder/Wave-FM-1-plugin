@@ -47,6 +47,7 @@ struct Ui {
     browser_job: Option<BrowserJob>,
     browser_pick: Option<(online::Entry, Answer)>,
     browser_status: String,
+    browser_error: bool,
     downloaded: Option<std::path::PathBuf>,
 }
 
@@ -80,6 +81,7 @@ impl Default for Ui {
             browser_job: None,
             browser_pick: None,
             browser_status: "Included index · 83 references from fm1-emu; not a live Hub check".into(),
+            browser_error: false,
             downloaded: None,
         }
     }
@@ -198,6 +200,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
 
         if let Some(result) = ui.browser_job.as_ref().and_then(|job| job.lock().unwrap().take()) {
             ui.browser_job = None;
+            ui.browser_error = result.is_err();
             match result {
                 Ok(BrowserResult::Catalogue(entries)) => {
                     let changed = entries.iter().filter(|entry| !ui.community.iter().any(|old|
@@ -206,7 +209,9 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                     ui.community = entries;
                 }
                 Ok(BrowserResult::Download(download)) => {
-                    ui.browser_status = format!("Saved {}\nSHA-256: {}\nPackage parsed; execution/audio not tested. Load only if you trust its source.", download.path.display(), download.sha256);
+                    ui.browser_status = format!("{} · {}\nArchivo: {}\nOrigen: {}\nSHA-256: {}\nPara usarlo, pulsa «Load downloaded firmware into this instance…».",
+                        if download.reused { "El archivo ya estaba descargado y se ha verificado" } else { "Descarga guardada correctamente" },
+                        download.version, download.path.display(), download.source, download.sha256);
                     ui.downloaded = Some(download.path);
                 }
                 Err(error) => ui.browser_status = error,
@@ -220,9 +225,11 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 if path.extension().is_none() { path.set_extension("fwsc"); }
                 let job: BrowserJob = Default::default(); let result = job.clone();
                 ui.browser_job = Some(job);
-                ui.browser_status = format!("Downloading {} {}…", entry.name, entry.version);
+                let target = online::preferred(&entry);
+                ui.browser_error = false;
+                ui.browser_status = format!("Descargando {} {} desde {}…", target.name, target.version, online::provider(&target));
                 link.background(move || { *result.lock().unwrap() = Some(online::download(&entry, &path).map(BrowserResult::Download)); });
-            }
+            } else { ui.browser_error = false; ui.browser_status = "Descarga cancelada: no se ha guardado ningún archivo.".into(); }
         }
         if ui.browser {
             let mut open = true;
@@ -234,11 +241,15 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                         if row.add_enabled(idle, egui::Button::new("Check Hub for new firmwares")).clicked() {
                             let job: BrowserJob = Default::default(); let result = job.clone();
                             ui.browser_job = Some(job); ui.browser_status = "Checking https://thefirmwarehub.com/catalog.json…".into();
+                            ui.browser_error = false;
                             link.background(move || { *result.lock().unwrap() = Some(online::check().map(BrowserResult::Catalogue)); });
                         }
                         row.hyperlink_to("Open Firmware Hub", "https://thefirmwarehub.com/#play");
                     });
-                    browser.label(&ui.browser_status);
+                    if ui.browser_job.is_some() {
+                        browser.horizontal(|row| { row.spinner(); row.label("Operación en curso…"); });
+                    }
+                    browser.colored_label(if ui.browser_error { egui::Color32::LIGHT_RED } else { egui::Color32::LIGHT_GREEN }, &ui.browser_status);
                     browser.small("Downloads contact the displayed provider only on request. They save a new .fwsc file where you choose; existing files are not overwritten and open Sets are not updated.");
                     if let Some(path) = &ui.downloaded {
                         if browser.add_enabled(ui.job.is_none() && ui.picking.is_none(), egui::Button::new("Load downloaded firmware into this instance…"))
@@ -265,16 +276,18 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                                 }
                                 card.horizontal_wrapped(|row| {
                                     let idle = ui.browser_job.is_none() && ui.browser_pick.is_none();
-                                    if row.add_enabled(idle && online::downloadable(entry), egui::Button::new("Download .fwsc…"))
-                                        .on_hover_text(format!("{}\nReview the author's terms before use or redistribution. No automatic loading.", entry.package)).clicked() {
-                                        ui.browser_pick = Some((entry.clone(), pick(FileAction::Download, &format!("{}-{}", entry.id, entry.version))));
+                                    let target = online::preferred(entry);
+                                    if row.add_enabled(idle && online::downloadable(&target), egui::Button::new("Download .fwsc…"))
+                                        .on_hover_text(format!("{} {} · {}\n{}\nReview the author's terms. Saving does not load firmware automatically.", target.name, target.version, online::provider(&target), target.package)).clicked() {
+                                        ui.browser_error = false;
+                                        ui.downloaded = None;
+                                        ui.browser_status = format!("Elige dónde guardar {} {}. Si cancelas la ventana no se descargará ningún archivo.", target.name, target.version);
+                                        ui.browser_pick = Some((entry.clone(), pick(FileAction::Download, &format!("{}-{}", entry.id, target.version))));
                                     }
-                                    if let Some(alternate) = online::alternative(entry) {
-                                        if row.add_enabled(idle, egui::Button::new(format!("GitHub {}…", alternate.version)))
-                                            .on_hover_text(format!("Direct author release · SHA-256 checked against this preview's index\n{}", alternate.package)).clicked() {
-                                            let answer = pick(FileAction::Download, &format!("{}-{}", alternate.id, alternate.version));
-                                            ui.browser_pick = Some((alternate, answer));
-                                        }
+                                    row.label(format!("{} · {}", online::provider(&target), target.version));
+                                    if online::downloadable(&target) {
+                                        row.hyperlink_to("Download in browser", &target.package)
+                                            .on_hover_text("Alternativa si Windows, el proxy o el servidor bloquean la conexión del plugin. Después usa Load firmware / save… para abrir el archivo descargado.");
                                     }
                                     if entry.repo.starts_with("https://github.com/") { row.hyperlink_to("Author / terms", &entry.repo); }
                                     if !entry.hub.is_empty() { row.hyperlink_to("Hub card", format!("https://thefirmwarehub.com/#fw-{}", entry.hub)); }

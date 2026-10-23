@@ -6,6 +6,26 @@ not an independent penetration test or a complete audit of upstream Rust/C++
 code. Windows x64 binaries have been built and checked under Wine 10; native
 release workflows gate publication. User-machine acceptance remains separate.
 
+## Version 0.2.2 download fix (2026-10-23)
+
+The primary community button now resolves a pinned original author release
+before using a Hub URL, addressing the reproduced Melodee Hub HTTP 403. Its
+GitHub package was downloaded independently and matches the recorded SHA-256.
+Native release gates exercise the same primary resolver with actual Felucca
+and Melodee downloads, instead of testing only an explicitly selected alternative.
+Transport TLS, host/redirect allowlists and size/time bounds remain unchanged.
+
+Fallback is permitted only after a transport failure, for the same version and
+the same pinned hash. Hash failures never trigger a weaker alternate download.
+The existing-file path is bounded and compared byte for byte: an identical
+regular file is reused; different content, links or directories are preserved
+and rejected. No overwrite path is introduced. Failed/cancelled new downloads
+clear the previous load target. Errors and the saved path are visible in the UI.
+An explicit browser link offers a manual alternative when local network policy
+blocks the plugin. Browser downloads are not claimed to be hash-verified by the
+plugin. No firmware redistribution, new dependencies or installer/host permissions
+were added. Existing project/controller state IDs remain unchanged.
+
 ## Version 0.2.1 additions (2026-10-23)
 
 - MIDI/Live adds 21 stable host parameters without changing the existing

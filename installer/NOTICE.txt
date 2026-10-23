@@ -1,4 +1,4 @@
-Wave FM-1 Preview 0.2.1 - Experimental Windows x64 VST3
+Wave FM-1 Preview 0.2.2 - Experimental Windows x64 VST3
 
 Close Ableton Live and other hosts before installing or uninstalling.
 Default: C:\Program Files\Common Files\VST3\Wave FM-1.vst3
@@ -21,6 +21,8 @@ Changing firmware resets only that instance: export what you wish to keep.
 
 MIDI / Live shows labelled assignable host controls. Community firmwares is an
 optional online browser, with 83 references and direct author GitHub alternatives.
+The main firmware download prefers the author release, reports the saved path
+or an explicit error, and can reuse an already identical .fwsc without overwriting it.
 Only explicit checks/downloads use the network. External packages are saved to
 a user-selected new .fwsc file, never automatically loaded or added to this installer.
 Their original authors and terms remain applicable; availability is not full

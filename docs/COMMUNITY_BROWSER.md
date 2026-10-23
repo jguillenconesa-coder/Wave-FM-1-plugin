@@ -16,13 +16,26 @@ estos resultados: [informe, versiones y hashes](COMMUNITY_COMPATIBILITY.md).
   `https://thefirmwarehub.com/catalog.json` y muestra cuántos nombres/versiones
   han cambiado respecto del índice mostrado. Solo compara etiquetas de versión;
   no certifica qué versión es más reciente ni detecta cambios bajo la misma etiqueta.
-- **Download .fwsc…** descarga el paquete que indica el Hub. **GitHub [versión]…**
-  usa una publicación original del autor como alternativa. Se localizaron y
+- **Download .fwsc…** usa preferentemente la publicación original del autor en
+  GitHub, con versión y SHA-256 de referencia. Así no depende de un enlace del
+  Hub que pueda devolver HTTP 403. La fuente y versión elegidas aparecen junto
+  al botón. Se localizaron y
   descargaron 64 publicaciones con un archivo FM-1 identificable en esta revisión.
-  Las versiones alternativas pueden diferir del índice del Hub: se muestra
+  Las versiones del autor pueden diferir del índice del Hub: se muestra
   expresamente la etiqueta de GitHub y se comprueba su SHA-256 de referencia.
-- Se pide una ubicación y nombre para guardar un archivo nuevo `.fwsc`.
-  No se sobrescriben archivos existentes ni se modifica el bundle del plugin.
+- Si la conexión con el autor falla, solo se intenta el Hub cuando ofrece la
+  misma versión y el resultado puede comprobarse con el mismo hash. Un error
+  de integridad detiene la operación; no se elude usando otra fuente.
+- Se pide una ubicación y nombre para guardar un `.fwsc`. Si ya existe un
+  archivo idéntico, se verifica y se reutiliza. Si es distinto, se conserva y
+  se indica que elijas otro nombre. No se sobrescribe ni se modifica el bundle.
+- El resultado aparece en el explorador: confirmación y ruta al guardarse,
+  cancelación si cierras el diálogo, o error visible en rojo si falla. Una
+  descarga fallida no deja disponible el botón para cargar un archivo anterior.
+- **Download in browser** permite usar el navegador si un proxy, Windows o
+  el servidor impiden la conexión del plugin. Después abre el archivo con
+  **Load firmware / save…**. Ese enlace no verifica por sí mismo la descarga
+  realizada por el navegador.
 - Tras guardar, **Load downloaded firmware into this instance…** permite
   cargarlo expresamente. Sustituye firmware y patches de esa instancia;
   exporta antes el estado que quieras conservar. Descargar no lo ejecuta ni

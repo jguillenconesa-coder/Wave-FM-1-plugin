@@ -61,10 +61,11 @@ pub fn parse_catalogue(bytes: &[u8]) -> Result<Vec<Entry>, String> {
             else { format!("{HUB}{}", package.strip_prefix('/').unwrap_or(&package)) };
         // An unsupported address can still be listed, but cannot be fetched.
         let repo = text(item, "repo", 256)?;
+        let repo = repo.strip_prefix("https://github.com/").unwrap_or(&repo).trim_end_matches('/');
         let repo = if valid_repo(&repo) { format!("https://github.com/{repo}") } else { String::new() };
         let name = text(item, "name", 160)?;
         if name.is_empty() { return Err("Hub entry has no name".into()); }
-        let known = known_entries.iter().find(|e| (e.hub == id || e.id == id) && e.repo == repo);
+        let known = known_entries.iter().find(|e| (e.hub == id || e.id == id) && e.repo.eq_ignore_ascii_case(&repo));
         entries.push(Entry { id: id.clone(), hub: id, name,
             version: text(item, "version", 96)?, author: text(item, "author", 160)?,
             license: "See the author's terms; not verified by this plugin".into(), repo, package,
@@ -118,6 +119,18 @@ pub fn alternative(entry: &Entry) -> Option<Entry> {
     Some(alternate)
 }
 
+/// The main download button and the network worker must resolve the same source.
+/// Pinned author releases take priority over Hub links that may reject downloads.
+pub fn preferred(entry: &Entry) -> Entry {
+    alternative(entry).unwrap_or_else(|| entry.clone())
+}
+
+pub fn provider(entry: &Entry) -> &'static str {
+    if entry.package.starts_with("https://github.com/") { "GitHub del autor" }
+    else if entry.package.starts_with(HUB) { "Firmware Hub" }
+    else { "sitio del autor" }
+}
+
 struct Response { status: u32, location: Option<String>, body: Vec<u8> }
 
 fn fetch_with(url: &str, limit: usize, mut transport: impl FnMut(&str, usize) -> Result<Response, String>) -> Result<Vec<u8>, String> {
@@ -144,17 +157,50 @@ pub fn check() -> Result<Vec<Entry>, String> {
     parse_catalogue(&fetch_with(CATALOGUE_URL, MAX_CATALOGUE, transport::get)?)
 }
 
-pub struct Download { pub path: PathBuf, pub sha256: String }
+#[derive(Debug)]
+pub struct Download {
+    pub path: PathBuf,
+    pub sha256: String,
+    pub source: String,
+    pub version: String,
+    pub reused: bool,
+}
 
 /// Saves only to a user-selected .fwsc file, never the bundle or a firmware in an open Set.
 pub fn download(entry: &Entry, path: &Path) -> Result<Download, String> {
-    if !downloadable(entry) { return Err("No supported direct .fwsc download; open the author's page".into()); }
-    let bytes = fetch_with(&entry.package, crate::savefile::MAX_PACKAGE, transport::get)?;
-    if entry.package == entry.alternate_package && !entry.alternate_sha256.is_empty() &&
-        format!("{:x}", Sha256::digest(&bytes)) != entry.alternate_sha256 {
-        return Err("Author's release file changed: SHA-256 mismatch. Download from the author manually and review the change.".into());
+    download_with(entry, path, transport::get)
+}
+
+fn download_with(entry: &Entry, path: &Path, mut transport: impl FnMut(&str, usize) -> Result<Response, String>) -> Result<Download, String> {
+    let mut target = preferred(entry);
+    if !downloadable(&target) { return Err("No hay una descarga .fwsc directa compatible. Abre la página del autor.".into()); }
+    if path.extension().and_then(|s| s.to_str()).is_none_or(|s| !s.eq_ignore_ascii_case("fwsc")) {
+        return Err("Elige un nombre de archivo terminado en .fwsc.".into());
     }
-    save(&bytes, path)
+    let pinned = target.package == entry.alternate_package && !entry.alternate_sha256.is_empty();
+    let fetched = fetch_with(&target.package, crate::savefile::MAX_PACKAGE, &mut transport);
+    let bytes = match fetched {
+        Ok(bytes) => bytes,
+        Err(first_error) => {
+            // Retry only the SAME version against the known pinned hash. Never
+            // silently substitute the Hub's older/newer firmware or bypass a hash error.
+            let same_version = |a: &str, b: &str| a.trim_start_matches(['v', 'V']) == b.trim_start_matches(['v', 'V']);
+            if !pinned || target.package == entry.package || !same_version(&target.version, &entry.version) || !downloadable(entry) {
+                return Err(format!("No se pudo descargar {} {} desde {}: {first_error} Usa «Download in browser» si tu red bloquea la conexión del plugin.", entry.name, target.version, provider(&target)));
+            }
+            let bytes = fetch_with(&entry.package, crate::savefile::MAX_PACKAGE, &mut transport)
+                .map_err(|second_error| format!("Falló GitHub del autor: {first_error}\nTambién falló Firmware Hub: {second_error}\nPrueba «Download in browser»."))?;
+            target.package = entry.package.clone();
+            bytes
+        }
+    };
+    if pinned && format!("{:x}", Sha256::digest(&bytes)) != entry.alternate_sha256 {
+        return Err("La descarga no coincide con el SHA-256 de referencia. No se ha guardado ni cargado ningún firmware.".into());
+    }
+    let mut downloaded = save(&bytes, path)?;
+    downloaded.source = target.package;
+    downloaded.version = target.version;
+    Ok(downloaded)
 }
 
 fn save(bytes: &[u8], path: &Path) -> Result<Download, String> {
@@ -168,13 +214,38 @@ fn save(bytes: &[u8], path: &Path) -> Result<Download, String> {
     std::panic::catch_unwind(|| fm1_soc::stock_from_package(bytes, None))
         .map_err(|_| "Invalid firmware package")?.map_err(|e| format!("Invalid firmware package: {e}"))?;
     let sha256 = format!("{:x}", Sha256::digest(bytes));
+    if same_file(path, bytes)? {
+        return Ok(Download { path: path.into(), sha256, source: String::new(), version: String::new(), reused: true });
+    }
     let parent = path.parent().ok_or("Choose a local firmware file")?;
     let mut temporary = tempfile::NamedTempFile::new_in(parent).map_err(|e| e.to_string())?;
     use std::io::Write;
     temporary.write_all(bytes).map_err(|e| e.to_string())?;
     temporary.as_file().sync_all().map_err(|e| e.to_string())?;
-    temporary.persist_noclobber(path).map_err(|_| "File already exists or could not be saved; choose a new filename")?;
-    Ok(Download { path: path.into(), sha256 })
+    if let Err(error) = temporary.persist_noclobber(path) {
+        if same_file(path, bytes)? {
+            return Ok(Download { path: path.into(), sha256, source: String::new(), version: String::new(), reused: true });
+        }
+        return Err(format!("No se pudo guardar {}: {}. Elige otra carpeta o un nombre nuevo; no se ha sobrescrito ningún archivo.", path.display(), error.error));
+    }
+    Ok(Download { path: path.into(), sha256, source: String::new(), version: String::new(), reused: false })
+}
+
+fn same_file(path: &Path, bytes: &[u8]) -> Result<bool, String> {
+    let metadata = match std::fs::symlink_metadata(path) {
+        Ok(metadata) => metadata,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+        Err(error) => return Err(format!("No se puede comprobar el destino: {error}")),
+    };
+    if !metadata.is_file() || metadata.file_type().is_symlink() || metadata.len() != bytes.len() as u64 {
+        return Err("Ya existe otro archivo o enlace con ese nombre. Elige un nombre nuevo; se conserva el archivo existente.".into());
+    }
+    use std::io::Read;
+    let mut existing = Vec::new();
+    std::fs::File::open(path).map_err(|e| format!("No se puede leer el archivo existente: {e}"))?
+        .take((crate::savefile::MAX_PACKAGE + 1) as u64).read_to_end(&mut existing).map_err(|e| e.to_string())?;
+    if existing != bytes { return Err("Ya existe un archivo distinto con ese nombre. Elige un nombre nuevo; no se ha sobrescrito el archivo existente.".into()); }
+    Ok(true)
 }
 
 #[cfg(windows)]
@@ -208,7 +279,7 @@ mod transport {
         let null = std::ptr::null();
         let start = std::time::Instant::now();
         unsafe {
-            let session = Owned::new(WinHttpOpen(wide("Wave-FM-1/0.2.1").as_ptr(), 4, null, null, 0))?;
+            let session = Owned::new(WinHttpOpen(wide("Wave-FM-1/0.2.2").as_ptr(), 4, null, null, 0))?;
             ok(WinHttpSetTimeouts(session.0, 5000, 5000, 5000, 5000))?;
             let connection = Owned::new(WinHttpConnect(session.0, wide(host).as_ptr(), 443, 0))?;
             let request = Owned::new(WinHttpOpenRequest(connection.0, wide("GET").as_ptr(), wide(&format!("/{path}")).as_ptr(), null, null, std::ptr::null(), 0x00800000))?;
@@ -323,8 +394,61 @@ mod tests {
         let downloaded = save(bytes, &path).unwrap();
         assert_eq!(downloaded.sha256, format!("{:x}", Sha256::digest(bytes)));
         assert_eq!(std::fs::read(&path).unwrap(), bytes);
-        assert!(save(bytes, &path).is_err());
+        assert!(save(bytes, &path).unwrap().reused);
         assert_eq!(std::fs::read(path).unwrap(), bytes);
+    }
+
+    #[test]
+    fn melodee_main_download_uses_the_author_when_hub_is_blocked() {
+        let mut entry = offline().into_iter().find(|e| e.id == "melodee").unwrap();
+        // Redistributable fixture exercises download/save; the explicit network
+        // test below fetches the actual original Melodee package from its author.
+        let bytes = include_bytes!("../../../reference/firmwares/felucca.fwsc");
+        entry.alternate_sha256 = format!("{:x}", Sha256::digest(bytes));
+        let directory = tempfile::tempdir().unwrap(); let path = directory.path().join("melodee.fwsc");
+        let mut urls = Vec::new();
+        let downloaded = download_with(&entry, &path, |url, _| {
+            urls.push(url.to_owned());
+            if url.starts_with(HUB) { Ok(Response { status: 403, location: None, body: Vec::new() }) }
+            else { Ok(Response { status: 200, location: None, body: bytes.to_vec() }) }
+        }).unwrap();
+        assert_eq!(urls, [entry.alternate_package.clone()]);
+        assert_eq!(downloaded.source, entry.alternate_package);
+        assert_eq!(downloaded.version, "v1.4.5");
+        assert_eq!(std::fs::read(path).unwrap(), bytes);
+    }
+
+    #[test]
+    fn fallback_preserves_version_and_hash_and_does_not_bypass_integrity() {
+        let mut entry = offline().into_iter().find(|e| e.id == "melodee").unwrap();
+        let bytes = include_bytes!("../../../reference/firmwares/felucca.fwsc");
+        entry.alternate_sha256 = format!("{:x}", Sha256::digest(bytes));
+        let directory = tempfile::tempdir().unwrap(); let path = directory.path().join("firmware.fwsc");
+        let result = download_with(&entry, &path, |url, _| {
+            if url == entry.alternate_package { Err("author temporarily unavailable".into()) }
+            else { Ok(Response { status: 200, location: None, body: bytes.to_vec() }) }
+        }).unwrap();
+        assert_eq!(result.source, entry.package);
+        std::fs::remove_file(&path).unwrap();
+        let mut calls = 0;
+        assert!(download_with(&entry, &path, |_, _| {
+            calls += 1; Ok(Response { status: 200, location: None, body: b"modified release".to_vec() })
+        }).unwrap_err().contains("SHA-256"));
+        assert_eq!(calls, 1); assert!(!path.exists());
+        entry.version = "different-version".into(); calls = 0;
+        assert!(download_with(&entry, &path, |_, _| { calls += 1; Err("offline".into()) }).is_err());
+        assert_eq!(calls, 1);
+    }
+
+    #[test]
+    fn an_existing_different_file_is_preserved_and_refresh_keeps_author_links() {
+        let bytes = include_bytes!("../../../reference/firmwares/felucca.fwsc");
+        let directory = tempfile::tempdir().unwrap(); let path = directory.path().join("existing.fwsc");
+        let mut other = bytes.to_vec(); other[0] ^= 1; std::fs::write(&path, &other).unwrap();
+        assert!(save(bytes, &path).is_err());
+        assert_eq!(std::fs::read(&path).unwrap(), other);
+        let entries = parse_catalogue(br#"{"firmwares":[{"id":"melodee","name":"Melodee","version":"1.4.5","repo":"https://github.com/KEREMIMO/MELODEE/","pkg":"fw/melodee-1.4.5.fwsc"}]}"#).unwrap();
+        assert_eq!(preferred(&entries[0]).package, offline().iter().find(|e| e.id == "melodee").unwrap().alternate_package);
     }
 
     #[test]
@@ -343,11 +467,16 @@ mod tests {
     #[test]
     #[ignore = "Explicit opt-in network test; native release CI runs it separately"]
     fn author_release_download_uses_real_https() {
-        let entry = offline().iter().find(|e| e.id == "felucca").and_then(alternative).unwrap();
         let directory = tempfile::tempdir().unwrap();
-        let path = directory.path().join("Felucca.fwsc");
-        let result = download(&entry, &path).expect("real author HTTPS download failed");
-        assert_eq!(result.sha256, entry.alternate_sha256);
-        assert!(path.is_file());
+        for id in ["felucca", "melodee"] {
+            let entry = offline().into_iter().find(|e| e.id == id).unwrap();
+            let path = directory.path().join(format!("{id}.fwsc"));
+            // Pass the ORIGINAL browser entry, exactly as the primary UI button does.
+            let result = download(&entry, &path).expect("real primary-button HTTPS download failed");
+            assert_eq!(result.source, entry.alternate_package);
+            assert_eq!(result.sha256, entry.alternate_sha256);
+            assert!(path.is_file());
+            eprintln!("{id}: primary download saved {} bytes from the author; SHA-256 verified", std::fs::metadata(&path).unwrap().len());
+        }
     }
 }
