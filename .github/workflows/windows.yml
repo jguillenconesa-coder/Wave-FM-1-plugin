@@ -53,11 +53,19 @@ jobs:
         run: cargo test --manifest-path .deps/fm1-emu/Cargo.toml --locked --release -p fm1-core -p fm1-soc -j 2
       - name: Build Windows CLAP and VST3
         shell: pwsh
-        run: ./tools/build-windows.ps1
+        run: |
+          try {
+            & ./tools/build-windows.ps1 *>&1 | Tee-Object -FilePath msvc-build.log
+          } finally {
+            '### Windows build output (last 100 lines)' >> $env:GITHUB_STEP_SUMMARY
+            '```text' >> $env:GITHUB_STEP_SUMMARY
+            if (Test-Path msvc-build.log) { Get-Content msvc-build.log -Tail 100 >> $env:GITHUB_STEP_SUMMARY }
+            '```' >> $env:GITHUB_STEP_SUMMARY
+          }
       - name: Install Inno Setup
         shell: pwsh
         run: |
-          choco install innosetup --no-progress --yes --version=6.4.3
+          choco install innosetup --no-progress --yes --version=7.1.0
           if ($LASTEXITCODE -ne 0) { throw 'Inno Setup installation failed' }
       - name: Package Windows installer
         shell: pwsh

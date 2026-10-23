@@ -1,21 +1,39 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.27)
 project(WaveFM1Windows VERSION 0.1.0 LANGUAGES C CXX)
-if(NOT WIN32 OR NOT MSVC OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-    message(FATAL_ERROR "This packaging project requires 64-bit Windows and MSVC.")
+if(NOT WIN32 OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8 OR (NOT MSVC AND NOT MINGW))
+    message(FATAL_ERROR "This packaging project requires Windows x64, with MSVC or MinGW-w64.")
 endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_TLS_VERIFY TRUE CACHE BOOL "Verify TLS certificates for dependency downloads" FORCE)
-add_compile_options(/guard:cf)
-add_link_options(/DYNAMICBASE /NXCOMPAT /HIGHENTROPYVA /guard:cf)
+if(MSVC)
+    add_compile_options(/guard:cf)
+    add_link_options(/DYNAMICBASE /NXCOMPAT /HIGHENTROPYVA /guard:cf)
+else()
+    add_compile_options(-fstack-protector-strong)
+    add_link_options(-static -static-libgcc -static-libstdc++ -Wl,--dynamicbase,--nxcompat,--high-entropy-va)
+endif()
 set(CLAP_WRAPPER_DOWNLOAD_DEPENDENCIES TRUE CACHE BOOL "" FORCE)
 include(FetchContent)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 FetchContent_Declare(clap-wrapper
     GIT_REPOSITORY https://github.com/free-audio/clap-wrapper.git
-    GIT_TAG 1cca996e96f29ab2be7ae9f8cfe532bbc92e1dd6)
+    GIT_TAG 1cca996e96f29ab2be7ae9f8cfe532bbc92e1dd6
+    PATCH_COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tools/private_companion.py" "<SOURCE_DIR>")
 FetchContent_MakeAvailable(clap-wrapper)
 add_library(wave_fm1 MODULE)
-# Keep the upstream name: clap-wrapper searches standard CLAP directories for
-# a module with the same basename as its VST3 binary.
+# Keep matching binary basenames. The pin-checked patch loads the private
+# companion beside this VST3, never a module from global CLAP directories.
 target_add_vst3_wrapper(TARGET wave_fm1 OUTPUT_NAME "FM-1"
-    BUNDLE_VERSION "${PROJECT_VERSION}" WINDOWS_FOLDER_VST3 FALSE)
-install(TARGETS wave_fm1 RUNTIME DESTINATION VST3 LIBRARY DESTINATION VST3)
+    SINGLE_PLUGIN_TUID "763245F44C814116B23B2268F75ADC65"
+    BUNDLE_VERSION "${PROJECT_VERSION}" WINDOWS_FOLDER_VST3 TRUE
+    ASSET_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bundle")
+set_target_properties(wave_fm1 PROPERTIES PREFIX "" OUTPUT_NAME "FM-1")
+if(MINGW)
+    target_link_libraries(wave_fm1 PRIVATE ssp)
+endif()
+install(DIRECTORY "${CMAKE_BINARY_DIR}/bundle/FM-1.vst3" DESTINATION VST3)
+add_executable(wave_fm1_probe EXCLUDE_FROM_ALL tools/probe-plugin.cpp)
+if(MINGW)
+    target_link_options(wave_fm1_probe PRIVATE -municode)
+    target_link_libraries(wave_fm1_probe PRIVATE ssp)
+endif()

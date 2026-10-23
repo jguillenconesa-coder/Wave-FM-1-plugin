@@ -9,7 +9,8 @@ import subprocess
 from bootstrap import REVISION
 
 ROOT = Path(__file__).resolve().parents[1]
-FILES = ("VST3/FM-1.vst3", "CLAP/FM-1.clap")
+FILES = ("VST3/FM-1.vst3/Contents/x86_64-win/FM-1.vst3",
+         "VST3/FM-1.vst3/Contents/x86_64-win/FM-1.clap")
 
 
 def digest(path):

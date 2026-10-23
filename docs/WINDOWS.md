@@ -1,73 +1,85 @@
-# Installation and Ableton acceptance (Windows x64)
+# Instalar y probar Wave FM-1 Preview en Windows
 
-This is an experimental build, not a validated release. Close Ableton before installation.
-The wrapper requires its matching CLAP module, although Live does not load CLAP directly.
-Keep both files from the same build and retain the accompanying licence notices.
+Esta es una versión experimental para Windows 10/11 de 64 bits. El VST3 supera
+47 pruebas del validador oficial bajo Wine 10 y el motor Windows tiene pruebas
+de firmware, MIDI/audio y guardado de estado. Eso **no sustituye una prueba en
+Ableton Live real** ni permite garantizar riesgo cero.
 
-## Installer
+## Instalación independiente
 
-After building, install Inno Setup 6.3+ and run `./tools/package-windows.ps1`
-in PowerShell 7 or later. The output is
-`dist/installer/Wave-FM-1-0.1.0-Windows-x64-Setup.exe`, accompanied by a SHA-256 file.
-The GitHub Actions workflow also packages it and tests installation, VST3 factory
-loading and uninstallation on a disposable Windows runner. That workflow has not
-yet been executed here; no Windows binary or installer is currently validated.
+1. Cierra Ableton Live y cualquier otro host de audio.
+2. Ejecuta `Wave-FM-1-0.1.0-Windows-x64-Setup.exe` desde la descarga del proyecto.
+3. El instalador copia el paquete privado en
+   `%LOCALAPPDATA%\Wave FM-1 Preview\VST3` y registra **Wave FM-1 Preview**
+   en Agregar o quitar programas. No necesita permisos de administrador.
 
-Run the installer with Ableton closed. It requests administrator access and
-installs both modules into the system Common Files VST3 and CLAP folders,
-plus documentation, licence notices and an entry in Windows Installed apps.
-It bundles Microsoft's Visual C++ x64 runtime (downloaded over HTTPS and checked
-for a valid Microsoft Authenticode signature during packaging).
-Uninstallation retains the shared runtime and your projects/firmware files.
-The experimental installer is unsigned; Windows may show an unknown publisher.
-It refuses to replace a pre-existing installation it does not own. Remove or
-back up other FM-1 builds, including those in custom plugin folders, first.
-For upgrades, the installed module hashes must match the installer's ownership
-record. Uninstallation preserves modules replaced outside this installer.
+El instalador no modifica Ableton, sus preferencias, proyectos, licencias,
+controladores ni plugins existentes. Tampoco instala runtimes compartidos,
+crea servicios, cambia PATH, añade exclusiones al antivirus ni activa el plugin.
+El módulo CLAP va dentro del paquete VST3, aislado de otros módulos del equipo.
+No se instala firmware y no se escribe en el FM-1 físico.
 
-No firmware is bundled. After installation, continue at step 3 below.
+La carpeta de esta preview queda fuera de las carpetas estándar de exploración
+automática: instalarla no hace que Ableton la cargue por sí solo.
 
-## Manual installation alternative
+## Primera prueba sin abrir proyectos importantes
 
-1. Copy `CLAP/FM-1.clap` from the build output to
-   `%LOCALAPPDATA%\Programs\Common\CLAP\FM-1.clap` (create the directory if needed).
-2. Copy `VST3/FM-1.vst3` to `C:\Program Files\Common Files\VST3\FM-1.vst3`.
-   This destination usually requires administrator permission. Alternatively, use
-   a writable custom VST3 folder and select it in Live's plug-in preferences.
-3. Start Live, enable the relevant VST3 folder in Preferences > Plug-Ins and rescan.
-   The instrument retains upstream's name **FM-1**, vendor **fm1-emu**.
-   Avoid installing alongside another build of the same plugin identity.
-4. Add it to a MIDI track, open its window and use **Load firmware / save…**
-   to select a `.fwsc` from the firmware author's release.
-5. Enable track monitoring and send notes on the firmware's expected MIDI channel.
-   Upstream documents channel 2 for the stock firmware; the plugin can remap channels.
+Haz una copia de seguridad de tus proyectos y abre un **Set vacío**. Ningún
+plugin nuevo ofrece garantía de riesgo cero al cargarse dentro de un DAW.
 
-## Required acceptance checks — still pending
+- Si no utilizas una carpeta VST3 personalizada, puedes seleccionar
+  `%LOCALAPPDATA%\Wave FM-1 Preview\VST3` en las preferencias de plugins de
+  Live para esta prueba. Anota el ajuste anterior para restaurarlo después.
+- **Si ya utilizas una carpeta VST3 personalizada, no la sustituyas.** Para
+  preservar tus preferencias actuales, prueba desde un perfil de Windows
+  separado antes de añadir esta preview a tu configuración habitual.
+- No mantengas dos versiones del mismo emulador activadas simultáneamente.
+  El instrumento conserva la identidad de upstream: **FM-1**, fabricante **fm1-emu**.
+  El nombre procede de upstream; esta preview tiene un identificador VST3 propio
+  para no reemplazar las referencias a otro FM-1 en tus proyectos.
 
-- Load firmware A, send MIDI and confirm non-silent output without stuck notes.
-- Create a second instance with firmware B; confirm both sound independently.
-- Change one instance's controls and verify the other remains unchanged.
-- Save patches/settings using each firmware's own Save operation. Allow its flash
-  write and upstream's periodic state refresh to complete before saving Live's set.
-- Close Live, reopen the set and verify each instance's firmware and saved patches.
-- Exercise 44.1 and 48 kHz and buffers of 128, 256 and 512 samples. Record CPU,
-  underruns and reported latency; do not assume heavy firmware runs at every setting.
-- Render/export a short MIDI clip and verify the output has the expected notes
-  and timing; compare with real-time playback.
-- Close/reopen plugin windows, replace a firmware while stopped, remove instances,
-  and confirm Live remains stable.
+En el Set vacío, añade FM-1 a una pista MIDI, abre su interfaz y selecciona
+**Load firmware / save…** para abrir un `.fwsc` obtenido de su autor. Activa la
+monitorización y envía notas en el canal que espere ese firmware. Para el
+firmware original, upstream documenta el canal 2; el plugin permite remapearlo.
+Empieza con un volumen bajo. Los archivos de firmware no están incluidos.
 
-Also run Steinberg's VST3 validator against the Windows binary before describing
-it as a validated build. Upstream's macOS validator results do not validate this port.
+## Desinstalación completa de esta preview
 
-If Live does not list the plugin, first verify the CLAP location and identical
-`FM-1` basenames, then check x64 architecture and build/runtime dependency errors.
+1. Cierra Live y los demás hosts de audio.
+2. Abre **Configuración de Windows > Aplicaciones > Aplicaciones instaladas**
+   (o **Agregar o quitar programas**).
+3. Busca **Wave FM-1 Preview**, elige **Desinstalar** y sigue el asistente.
 
-## Downloading a successful GitHub build
+Se eliminan el paquete VST3 privado, su módulo interno, documentación, licencias
+instaladas y la entrada de desinstalación. Tus proyectos de Live y los firmwares
+que guardaste aparte se conservan. No se borran plugins de otros fabricantes ni
+se modifican las preferencias de Live. Si habilitaste manualmente la carpeta
+para la prueba, restaura tú el ajuste anterior en Live.
 
-Open the repository's **Actions** tab, select **Windows VST3 prototype** and then
-a successful run (green check). Under **Artifacts**, download
-`Wave-FM-1-Windows-x64-experimental` and extract it. The installer is under
-`installer/` inside the download. A failed or pending run is not a usable release.
-GitHub normally requires signing in to download workflow artifacts, and they
-expire after 14 days. The project does not publish stable releases automatically.
+## Qué falta probar en Ableton
+
+- Dos instancias con firmwares distintos, controles y ajustes independientes.
+- Guardar desde el propio firmware, guardar el Set, cerrar y recuperar ambos.
+- Audio a 44,1/48 kHz y buffers de 128/256/512 muestras; CPU, latencia y exportación.
+- Abrir/cerrar ventanas y quitar instancias sin fallos.
+
+Las pruebas bajo Wine no verifican tu instalación de Live, drivers ni hardware.
+No pruebes esta preview por primera vez sobre un proyecto importante.
+
+## Desarrolladores
+
+En Windows, utiliza PowerShell 7, Python 3, Git, Rust 1.99.1, CMake >=3.27,
+VS2022 C++/Windows SDK e Inno Setup 6.3+:
+
+```powershell
+./tools/build-windows.ps1
+./tools/package-windows.ps1
+```
+
+La compilación cruzada usa `tools/build-windows-cross.sh` con MinGW-w64 POSIX.
+Las bibliotecas de ejecución se enlazan estáticamente; se conservan las llamadas
+necesarias a DLL de Windows. El instalador no requiere descargas al ejecutarse.
+Los hashes SHA-256 sirven para comprobar integridad, no identidad del editor.
+La preview no tiene firma Authenticode propia: no desactives SmartScreen ni el
+antivirus para probarla.

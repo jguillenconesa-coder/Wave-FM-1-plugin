@@ -10,7 +10,7 @@ release yet. The current development revision is the only maintained version.
   a sandbox. A parser or native JIT bug can crash or compromise that process.
 - Upstream's Windows JIT uses executable, writable memory. Firmware hashes
   detect corruption; they do not prove who authored a firmware or that it is safe.
-- Use Ableton as an ordinary user. Only the machine-wide installer needs elevation.
+- Use Ableton as an ordinary user. The isolated per-user installer needs no elevation.
   Back up projects before testing. Multiple heavy instances may exhaust CPU.
 - Build only trusted source checkouts on disposable runners. Cargo build scripts,
   procedural macros, CMake dependencies and installer compilers execute code.

@@ -3,13 +3,16 @@
 Scope: the initial Windows packaging source, CI workflow, installer and pinned
 fm1-emu dependency manifests. This was a focused source/configuration review,
 not an independent penetration test or a complete audit of upstream Rust/C++
-code. No Windows executable has been validated by this Linux session.
+code. Windows x64 binaries have been built and checked under Wine 10. Native
+Windows/Ableton acceptance remains outstanding.
 
 ## Changes made
 
-- GitHub Actions use immutable full commit pins, read-only repository permissions,
+- GitHub Actions use immutable full commit pins, read-only build-job permissions,
   no persisted checkout credentials, time limits and bounded artifact retention.
-  No signing secret or write-capable token is requested. Dependabot checks Actions
+  Only the tag-triggered publishing job gets a short-lived GitHub token with
+  contents-write permission to create the requested prerelease. No personal token
+  or signing secret is requested. Dependabot checks Actions
   weekly. PR workflows do not use `pull_request_target` or elevated secrets.
 - Emulator and wrapper revisions are fixed. Bootstrap rejects a linked checkout,
   changed revisions, modified tracked files and extra nonignored source files.
@@ -19,31 +22,47 @@ code. No Windows executable has been validated by this Linux session.
 - A build manifest records hashes of both plugin binaries and the emulator/source
   revisions. Packaging rejects a missing companion, non-x64 PE file or changed
   binary pair. A failed rebuild invalidates the previous manifest.
-- The installer compiler is versioned in CI. Microsoft's runtime is fetched over
-  HTTPS and must have a valid Microsoft Authenticode signature before packaging.
-  Compiler failure and missing output are fatal. Installer SHA-256 is emitted.
-- The installer uses administrator-owned Common Files locations. It checks its
-  ownership record and previous file hashes before replacing installed modules.
-  Uninstallation removes shared-location files only while their hashes match its
-  ownership record; externally replaced files are preserved. It leaves user
-  projects, firmware and the shared Microsoft runtime alone. These installer
-  behaviors still need execution on Windows.
+- The installer compiler is versioned in CI. The tested cross-build uses the
+  official Authenticode-verified Inno Setup 7.1.0 x64 compiler. Plugin runtime
+  libraries are linked statically; the installer does not download or install
+  shared system runtimes. Compiler failure and missing output are fatal.
+- Installation is per-user under `%LOCALAPPDATA%\Wave FM-1 Preview`, requires
+  no elevation and leaves standard plugin folders and Ableton settings alone.
+  The installer registers its own uninstaller in HKCU. No services, drivers,
+  antivirus exclusions or PATH changes are installed.
+- A local patch verifies the exact wrapper source SHA-256 before adding private
+  companion loading. The VST3 only loads the CLAP inside its own bundle. It does
+  not fall back to another FM-1 installation in a shared folder.
+- The preview has its own VST3 class ID
+  `763245F44C814116B23B2268F75ADC65`, separate from upstream's instrument ID.
+  It does not claim to be the same plugin when Live resolves existing projects.
 - Own packaging licence and original third-party notices are separate. Windows
-  Rust metadata resolves 121 packages; their notices and font licences are collected
+  Rust GNU-target metadata resolves 128 packages (121 on MSVC); their notices and font licences are collected
   for distribution, and missing notices fail the build.
-- Secrets, keys, build caches, downloaded sources and binaries are excluded from
-  the source repository. Only source, tests, documentation and licence notices
-  are intended for the initial Git commit.
+- Secrets, keys, build caches and downloaded dependencies remain excluded. The
+  intentionally published preview snapshots under `downloads/windows/` have
+  SHA-256 checksums and a separate release tag; they are not build-cache uploads.
 
 ## Checks executed
 
-- 9 packaging/dependency integrity tests pass, including rejected binary mutation,
+- 13 packaging/dependency integrity tests pass, including rejected binary mutation,
   missing companion, wrong architecture, truncated PE, wrong revision and local
   upstream modifications. Tests use synthetic files, not fabricated plugin builds.
+- Inno Setup 7.1.0's generated Windows x64 installer was installed and reinstalled
+  under Wine 10. The registered Installed apps entry was inspected and the
+  installed VST3 factory loaded successfully. Uninstallation removed the complete
+  private application directory and its registration without rebooting. Five
+  protected test fixtures representing Ableton files, preferences, an important
+  project, another VST3 and another global FM-1 CLAP were hash-checked unchanged.
+  These fixtures are not a test of the user's actual machine or projects.
+- A negative runtime check removed the private companion while leaving a valid
+  global FM-1 CLAP available: the VST3 refused to load instead of using that
+  other installation. The private file was restored before uninstall testing.
 - The pinned emulator's 58 CPU and 38 SoC tests passed on Linux (96 total).
 - PowerShell parser accepted all three scripts; workflow and Dependabot YAML
   parsed, and every Actions reference was checked for a full commit pin.
-- Rust licence collection completed for all 121 Windows-target metadata packages.
+- Rust licence collection completed for all 128 Windows GNU-target metadata packages,
+  including font notices and the GCC/MinGW runtime notices and exception.
 - Gitleaks 8.24.2 scanned the exact source-file publication set and reported no
   detected secrets. Build caches, downloaded dependencies and binary outputs are
   not in that set. This is a detection check, not a guarantee that no secret can exist.
@@ -70,9 +89,13 @@ fixed. Audits of the Cargo graph do not scan the C++ SDK, runtime or compiler.
 
 ## Remaining release requirements
 
-1. Execute the Windows build, installation/factory-loading/uninstallation tests
-   and Steinberg's VST3 validator; complete the Ableton multi-instance/state/audio
-   checklist in WINDOWS.md. Merely uploading source does not validate an installer.
+1. Windows x64 compilation and Steinberg's validator completed under Wine 10:
+   47 tests pass, 0 fail. The Windows plugin's 7 unit tests, 2 firmware/MIDI/audio
+   tests and 2 portable-state tests also pass under Wine 10 with Felucca 1.6.1
+   obtained from the author's GitHub release (SHA-256
+   `dff3a38f7e5b9833e15aba322558c9485e9e422e3ff813c616c91b3584a2d909`).
+   These do not replace the native Ableton multi-instance/state/audio checklist
+   in WINDOWS.md. The firmware is a local test input, not a distributed asset.
 2. Address or explicitly reassess the open dependency findings before calling a
    release stable. Review trust in transitive CMake downloads and the Chocolatey
    installer-compiler package when updating toolchains.
@@ -80,7 +103,7 @@ fixed. Audits of the Cargo graph do not scan the C++ SDK, runtime or compiler.
    firmware execution occurs inside the DAW, not in an OS sandbox. Only trusted
    firmware, saved setups and DAW projects should be opened. No firmware binaries
    are bundled and no hardware flashing is performed by this packaging project.
-4. Sign/notarize as appropriate for distribution: Windows Authenticode signing is
+4. Sign as appropriate for Windows distribution: Authenticode signing is
    not configured. Do not disable SmartScreen or antivirus. Installer hashes are
    integrity metadata, not proof of a known publisher. No signing credentials
    were created or committed.

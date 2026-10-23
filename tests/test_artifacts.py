@@ -28,7 +28,7 @@ class BuildIntegrityTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         for name in artifacts.FILES:
             file = self.root / name
-            file.parent.mkdir(parents=True)
+            file.parent.mkdir(parents=True, exist_ok=True)
             file.write_bytes(pe())
 
     def record(self):

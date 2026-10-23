@@ -1,0 +1,32 @@
+name: Publish verified preview downloads
+on:
+  push:
+    tags: ['v*-preview.*']
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify download hashes
+        working-directory: downloads/windows
+        run: sha256sum --check SHA256SUMS
+      - name: Publish prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PREVIEW_TAG: ${{ github.ref_name }}
+        run: |
+          [[ "$PREVIEW_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-preview\.[0-9]+$ ]] || exit 1
+          gh release create "$PREVIEW_TAG" \
+            downloads/windows/Wave-FM-1-0.1.0-Windows-x64-Setup.exe \
+            downloads/windows/Wave-FM-1-0.1.0-Windows-x64-Portable.zip \
+            downloads/windows/SHA256SUMS \
+            --verify-tag --prerelease --title "Wave FM-1 Windows Preview 0.1.0" \
+            --notes-file docs/RELEASE_NOTES.md

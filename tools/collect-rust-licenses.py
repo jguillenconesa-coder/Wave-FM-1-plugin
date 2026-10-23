@@ -1,5 +1,6 @@
 """Collect source notices and SPDX metadata for the Windows Cargo dependency graph."""
 import json
+import argparse
 from pathlib import Path
 import re
 import shutil
@@ -9,13 +10,13 @@ ROOT = Path(__file__).resolve().parents[1]
 PATTERN = re.compile(r"^(licen[cs]e|copying|copyright|notice|ofl|ufl)([._-]|$)", re.I)
 SUPPLEMENTAL = {"ecolor": "egui-MIT.txt", "egui": "egui-MIT.txt", "egui_glow": "egui-MIT.txt",
     "emath": "egui-MIT.txt", "epaint": "egui-MIT.txt", "profiling": "profiling-MIT.txt",
-    "clipboard-win": "clipboard-win-BSL-1.0.txt"}
+    "clipboard-win": "clipboard-win-BSL-1.0.txt", "winapi-x86_64-pc-windows-gnu": "winapi-MIT.txt"}
 
 
-def main():
+def main(target="x86_64-pc-windows-msvc"):
     manifest = ROOT / ".deps/fm1-emu/crates/fm1-plugin/Cargo.toml"
     metadata = json.loads(subprocess.check_output(["cargo", "metadata", "--locked",
-        "--manifest-path", str(manifest), "--filter-platform", "x86_64-pc-windows-msvc",
+        "--manifest-path", str(manifest), "--filter-platform", target,
         "--format-version", "1"], text=True))
     out = ROOT / "dist/licenses/rust"
     out.mkdir(parents=True, exist_ok=True)
@@ -48,4 +49,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--target", choices=("x86_64-pc-windows-msvc", "x86_64-pc-windows-gnu"), default="x86_64-pc-windows-msvc")
+    main(parser.parse_args().target)

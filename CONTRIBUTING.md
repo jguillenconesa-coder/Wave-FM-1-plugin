@@ -8,7 +8,8 @@ The initial repository is a Windows packaging prototype around third-party code.
 Preserve upstream copyright notices and cite sources for any reused work.
 Updating a dependency requires reviewing its changes, security advisories and
 licences. Do not silently change the pinned emulator or edit its downloaded
-checkout; propose a deliberate update or a documented source patch instead.
+checkout; propose a deliberate update or a documented source patch instead. The wrapper
+patch is reviewed separately and checks the pinned original hash before applying.
 
 Local checks:
 

@@ -15,7 +15,7 @@ listed here. Their product names remain their respective owners' marks.
 | [profiling](https://github.com/aclysma/profiling) | Philip Degarmo and contributors | MIT option. |
 | [clipboard-win](https://github.com/DoumanAsh/clipboard-win) | Douman and contributors | Boost Software License 1.0. |
 | [Inno Setup](https://jrsoftware.org/isinfo.php) | Jordan Russell, Martijn Laan and contributors | Installer compiler; its own terms apply, not this project's MIT licence. |
-| Microsoft Visual C++ Redistributable | Microsoft Corporation | Proprietary Microsoft runtime, redistributed unmodified; Microsoft terms apply. |
+| [MinGW-w64](https://www.mingw-w64.org/) and GCC runtime libraries (cross build) | MinGW-w64 and GCC contributors, Free Software Foundation | Original notices and GPL-3.0/GCC Runtime Library Exception are included in `licenses/toolchain/`. The preview links runtime libraries statically and does not install shared runtimes. |
 
 The project's root MIT licence covers its own packaging code, not all bundled
 components. Original source notices are retained in `LICENSES/` where needed;
@@ -47,7 +47,14 @@ These unmodified texts supply notices omitted from some Cargo crate archives:
   `8271551172eb6fa4cba47369aedd93790c623df9`, `LICENSE-MIT` (crate 1.0.18).
 - `LICENSES/clipboard-win-BSL-1.0.txt`: DoumanAsh/clipboard-win, commit
   `3b27cf2bfd1adcfa6e0264eb51c1025ddaf0f342`, `LICENSE` (crate 5.4.1).
+- `LICENSES/winapi-MIT.txt`: original winapi-rs Developers MIT text from the
+  Cargo-checksummed `winapi 0.3.9` crate; also retained for the Windows GNU
+  import-library companion, whose manifest declares the same MIT/Apache-2.0 terms.
 
 When updating these crate versions, review and refresh the corresponding
 supplemental licence text too. The files are fetched from immutable upstream
 commit URLs during maintenance, not from mutable branches during packaging.
+
+The wrapper has a local, hash-checked patch in `tools/private_companion.py` to
+load only the CLAP inside this preview's private VST3 bundle. This changes the
+Windows loading path, not the firmware engine. The emulator sources are unmodified.
