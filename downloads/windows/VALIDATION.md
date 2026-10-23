@@ -1,4 +1,57 @@
-# Validation record · Preview 0.2.3 · 2026-10-23
+# Validation record · Preview 0.2.4 · 2026-10-23
+
+Published release: **v0.2.4-preview.1**, source `a7b7e4a`. Subsequent
+documentation-only commits update links and this record.
+
+- [Native Windows build/publication 40024024923](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/40024024923): success, 15m 3s.
+- [Native Universal macOS build/publication 40024025060](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/40024025060): success, 8m 12s.
+- Local checks passed **36 plugin unit tests**, **16 Python integrity/packaging
+  tests**, both portable-state tests and both catalogue tests. The catalogue
+  test boots all **23 real packages**, including Skiff 1.4 and X0X 1.1.0, and
+  checks eight seconds of finite audio, MIDI/panel input, LCD and no CPU halt.
+  Native gates rerun the unit, firmware and state tests against the tagged source.
+- Timing regressions force missing audio and verify that the host timeline
+  advances, late replacements are discarded and callback recovery has a finite
+  budget. Clock tests check 24 PPQN across several sample rates and buffer sizes,
+  one minute at fractional BPM with irregular blocks and no accumulating drift
+  (within one host sample of the pulse grid), tempo changes, Start/Stop, loops,
+  invalid/missing transport data, queue failure, instance isolation, ordered
+  note/clock frames and emulated-cycle scheduling without DMA-block rounding.
+  Knob pixel/reopen regressions from 0.2.3 are retained.
+- A clean tracked-source export passed Gitleaks 8.24.2 with no findings. Upstream
+  pins, original checkout, author notices and firmware binaries remain intact.
+  A hash-verified timing patch applies only to the separate generated SoC copy.
+- All four public downloads matched their release checksums. Both manifests
+  identify source `a7b7e4a`; all **346 Windows** and **992 macOS** bundle file
+  hashes match, including the new offline DAW_SYNC.md guide. Both Windows
+  modules are x64; both macOS modules contain Intel/arm64. Original credits,
+  23 bundled packages, 83 community references and 64 author links were checked.
+- The published native macOS report records **47 passed, zero failed** official
+  VST3 tests. The actual published native Windows bundle additionally passed
+  **47 official tests under Wine**, in addition to its native CI gate. Reports:
+  [macOS](../../docs/validation/macos-024-preview1-vst3.txt) and
+  [Windows](../../docs/validation/windows-024-preview1-vst3.txt).
+- Native gates also require actual Felucca and Melodee author HTTPS downloads,
+  SHA/package checks and file saving. Windows requires installer/factory/uninstall
+  checks. Installer scope and VST3/previous parameter identities are unchanged;
+  the new transport_sync parameter defaults to internal for existing projects.
+
+No interactive Ableton/controller session was automated. The firmware smoke test
+is not a measurement of each firmware's external-clock musical response. The
+clock and recovery tests verify the common scheduling paths; the user's reported
+tempo variation still requires confirmation in their Live setup. The firmware
+must support external TRS/MIDI clock and be configured accordingly. Song Position
+Pointer and within-block tempo ramps are not implemented. CPU overload can still
+cause audio gaps; preserving the timeline does not create missing samples. See
+[DAW sync and troubleshooting](../../docs/DAW_SYNC.md).
+
+Close Live before updating and first test an empty Set with important projects
+backed up. Windows has no own Authenticode signature; macOS uses ad-hoc signatures
+without Developer ID/notarization and its PKG is not Apple-signed. Zero risk is
+not guaranteed. This is not a complete independent security audit.
+
+## Historical record · Preview 0.2.3 · 2026-10-23
+
 
 Published release: **v0.2.3-preview.1**, source `d166566`. Subsequent
 documentation-only commits update links and this record.

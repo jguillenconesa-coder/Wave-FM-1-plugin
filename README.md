@@ -9,11 +9,11 @@ repositorio no se presenta como autora de ese trabajo; consulta
 
 ## Descargar e instalar
 
-- [Instalador Windows 0.2.3](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.3-preview.1/Wave-FM-1-0.2.3-Windows-x64-Setup.exe)
-- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.3-preview.1/Wave-FM-1-0.2.3-Windows-x64-Portable.zip)
-- [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.3-preview.1/Wave-FM-1-0.2.3-macOS-Universal.pkg)
-- [macOS Universal: ZIP por usuario](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.3-preview.1/Wave-FM-1-0.2.3-macOS-Universal.zip)
-- [Versión publicada, hashes y todos los archivos](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.3-preview.1)
+- [Instalador Windows 0.2.4](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.4-preview.1/Wave-FM-1-0.2.4-Windows-x64-Setup.exe)
+- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.4-preview.1/Wave-FM-1-0.2.4-Windows-x64-Portable.zip)
+- [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.4-preview.1/Wave-FM-1-0.2.4-macOS-Universal.pkg)
+- [macOS Universal: ZIP por usuario](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.4-preview.1/Wave-FM-1-0.2.4-macOS-Universal.zip)
+- [Versión publicada, hashes y todos los archivos](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.4-preview.1)
 - [Instalar/desinstalar en Windows](docs/WINDOWS.md) · [macOS Intel y Apple Silicon](docs/MACOS.md)
 
 Si la descarga directa falla, abre la página de la versión y selecciona el
@@ -34,6 +34,13 @@ los firmwares. Prueba la actualización en un Set vacío con tus proyectos
 importantes cerrados y respaldados; no se garantiza riesgo cero.
 
 ## Firmwares y aspecto
+
+**Musical clock** permite elegir el reloj propio del firmware o sincronizar tempo
+y reproducción con **Ableton / DAW**. El firmware debe admitir clock externo por
+TRS/MIDI y tenerlo seleccionado. La versión 0.2.4 también corrige la recuperación
+de faltas de audio para conservar el tiempo y programa el MIDI por ciclos del
+emulador. Si falta capacidad de CPU todavía puede haber cortes, indicados con
+un aviso amarillo. Consulta [configuración y límites de la sincronización](docs/DAW_SYNC.md).
 
 **MIDI / Live** muestra etiquetas de alto contraste y una columna con Master,
 los siete encoders y 14 botones asignables. Incluye instrucciones de Configure
@@ -99,8 +106,11 @@ Visual Studio 2022 C++/Windows SDK e Inno Setup 7.1.0.
 
 También hay una compilación cruzada Linux/MinGW-w64 POSIX en
 `tools/build-windows-cross.sh`. `cmake/windows-mingw.cmake` configura Windows
-x64. El emulador se descarga en `.deps/fm1-emu` con revisión fija, sin modificar
-sus fuentes. El wrapper recibe un parche local verificado por hash para cargar
+x64. El emulador se descarga en `.deps/fm1-emu` con revisión fija y la copia
+original permanece intacta. Las adaptaciones de interfaz y temporización se
+aplican a un árbol de compilación separado con el origen verificado por hash;
+consulta [los cambios y su procedencia](desktop/README.md).
+El wrapper recibe un parche local verificado por hash para cargar
 únicamente su módulo CLAP privado. El bundle VST3 incluye ambos binarios y las
 bibliotecas de ejecución se enlazan estáticamente.
 

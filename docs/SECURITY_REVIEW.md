@@ -36,6 +36,17 @@ VST3 gates also apply. There are no new dependencies, permissions, services or
 installer-scope changes; original notices remain intact. These tests do not
 establish controller/Live acceptance or every firmware's external-clock support.
 
+Native Windows and Universal macOS 0.2.4 preview.1 publication gates completed
+successfully at source `a7b7e4a`. All four actual public assets matched their
+release checksums. Every one of the 346 Windows / 992 macOS bundle file hashes,
+architectures, original author notices and offline DAW guide was verified.
+The published macOS native report and additional official validation of the
+actual published Windows bundle under Wine each record 47 passed, zero failed.
+Local checks passed 36 unit tests, 16 integrity/packaging tests and real-firmware
+and portable-state integration tests. The clean source export passed Gitleaks
+with no findings. Exact workflow links, measurements and acceptance limits:
+`downloads/windows/VALIDATION.md`.
+
 ## Version 0.2.3 knob display fix (2026-10-23)
 
 The editor now observes the seven existing host encoder references to draw
