@@ -42,7 +42,7 @@ jobs:
         env:
           CARGO_TARGET_DIR: ${{ github.workspace }}/build/macos-rust
           MACOSX_DEPLOYMENT_TARGET: '11.0'
-        run: cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --lib online::tests::author_release_download_uses_real_https -j 3 -- --ignored --nocapture
+        run: cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --lib online::tests::author_release_download_uses_real_https -j 3 -- --ignored --nocapture 2>&1 | tee macos-online.log
       - name: Real-time X0X at 48 kHz and 512 samples
         env:
           CARGO_TARGET_DIR: ${{ github.workspace }}/build/macos-rust
@@ -72,7 +72,7 @@ jobs:
       - name: Report build error context
         if: failure()
         run: |
-          for log in macos-build.log macos-tests.log macos-validator.log; do
+          for log in macos-build.log macos-tests.log macos-online.log dist/macos/REALTIME_X0X.txt macos-validator.log; do
             if [[ -f "$log" ]]; then
               context=$(tail -n 30 "$log" | tr '\n' ' ')
               context=${context//%/%25}

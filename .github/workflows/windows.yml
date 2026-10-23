@@ -81,8 +81,14 @@ jobs:
           FM1_REALTIME_DIAGNOSTIC: '1'
         run: |
           cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --target x86_64-pc-windows-msvc --lib audio_timing::tests::realtime_x0x_48k_512 -j 2 -- --ignored --nocapture 2>&1 | Tee-Object dist/REALTIME_X0X.txt
-          if ($LASTEXITCODE -ne 0) { throw 'Real-time X0X diagnostic failed; inspect timing/load report' }
+          $TestExit = $LASTEXITCODE
           Get-Content dist/REALTIME_X0X.txt >> $env:GITHUB_STEP_SUMMARY
+          if ($TestExit -ne 0) {
+            $Context = (Get-Content dist/REALTIME_X0X.txt -Tail 30) -join ' | '
+            $Context = $Context.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=X0X real-time diagnostic::$Context"
+            throw 'Real-time X0X diagnostic failed; inspect timing/load report'
+          }
       - name: Official VST3 validation
         shell: pwsh
         run: |
