@@ -7,10 +7,13 @@ Los créditos y licencias originales se conservan.
 
 ## Descargar e instalar
 
-- [Instalador Windows](downloads/windows/Wave-FM-1-0.1.0-Windows-x64-Setup.exe?raw=true)
-- [Paquete portátil](downloads/windows/Wave-FM-1-0.1.0-Windows-x64-Portable.zip?raw=true)
+- [Instalador Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.1.0-preview.1/Wave-FM-1-0.1.0-Windows-x64-Setup.exe)
+- [Paquete portátil](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.1.0-preview.1/Wave-FM-1-0.1.0-Windows-x64-Portable.zip)
 - [Hashes SHA-256](downloads/windows/SHA256SUMS)
 - [Versiones publicadas](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases)
+
+Si la descarga directa falla, abre [la página de esta versión](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.1.0-preview.1)
+y selecciona el archivo `.exe` en **Assets**.
 
 El instalador coloca **Wave FM-1 Preview** en tu carpeta de usuario, sin permisos
 administrativos, y ofrece desinstalación desde **Agregar o quitar programas**.
