@@ -373,6 +373,40 @@
       "source": "waveloop-1.0.5.2-midi23-source.tar.gz",
       "source_sha256": "3672e43f34ed95c62d62c0abd7594206bf33d6317f4f2820751e9cb22e400546",
       "source_commit": "7bce76090a076cf488ac03b53c83960b7c14e81e"
+    },
+    {
+      "id": "ketch",
+      "name": "Ketch",
+      "version": "0.1-beta",
+      "author": "Adrien Risser-Zhuang; Hügelton Instruments; isod89; zvenson",
+      "license": "GPL-3.0-only",
+      "description": "Tracker beta: press REC for panel notes; incoming MIDI notes are not played by this firmware version",
+      "file": "ketch-0.1-beta.fwsc",
+      "size": 610775,
+      "sha256": "1402e84bd2499a0861dc7c58f406bb0b52cd741f23e93944c04af04cee0904cf",
+      "download": "https://github.com/risseraka/fm1-tracker-ketch/releases/download/v0.1-beta/ketch-0.1-beta.fwsc",
+      "repository": "https://github.com/risseraka/fm1-tracker-ketch",
+      "tag": "v0.1-beta",
+      "source": "ketch-0.1-beta-source.tar.gz",
+      "source_sha256": "63757ccaba061640c841b95313308677137efa2508f05ab775c0c6c09851c8cf",
+      "source_commit": "58146f3509861506fa5cfdb5e1c01172aba4955e"
+    },
+    {
+      "id": "grimm",
+      "name": "GR!MM",
+      "version": "1.0",
+      "author": "GRiMMBIENT / GR!MM; zvenson; Hügelton Instruments; isod89",
+      "license": "GPL-3.0-only",
+      "description": "Four-track drone synthesizer, samples and effects",
+      "file": "grimm.fwsc",
+      "size": 610110,
+      "sha256": "8f1f6c0bc6c0afb58a400f4ea99a7a03302b98b38e4905527aa1fa2c665f5f65",
+      "download": "https://github.com/GRiMMBIENT/grimm/releases/download/v1.0/grimm.fwsc",
+      "repository": "https://github.com/GRiMMBIENT/grimm",
+      "tag": "v1.0",
+      "source": "grimm-1.0-source.tar.gz",
+      "source_sha256": "4f5cec7f0bc0d013cf18518e03580c7587ec4fb77052d92320a567572128eedf",
+      "source_commit": "815ca6be81d973445851238dbaf12b4536d1e6d8"
     }
   ]
 }

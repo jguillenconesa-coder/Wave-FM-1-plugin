@@ -19,7 +19,7 @@ mkdir -p dist/VST3/FM-1.vst3/Contents/x86_64-win dist/licenses
 cp .deps/fm1-emu/crates/fm1-plugin/target/x86_64-pc-windows-gnu/release/fm1_plugin.dll dist/VST3/FM-1.vst3/Contents/x86_64-win/FM-1.clap
 cp .deps/fm1-emu/LICENSE dist/licenses/fm1-emu-MIT.txt
 cp LICENSE dist/licenses/packaging-MIT.txt
-cp THIRD_PARTY_NOTICES.md dist/licenses/
+cp THIRD_PARTY_NOTICES.md AUTHORS.md dist/licenses/
 mkdir -p dist/licenses/toolchain
 cp /usr/share/doc/gcc-mingw-w64-base/copyright dist/licenses/toolchain/GCC-runtime-copyright.txt
 cp /usr/share/doc/mingw-w64-common/copyright dist/licenses/toolchain/MinGW-copyright.txt

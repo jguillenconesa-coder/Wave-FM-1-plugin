@@ -11,7 +11,9 @@ copies. Keep your projects and exported .fm1save files. The new installer
 refuses to overwrite an existing folder not managed by this installer.
 
 The instrument appears as FM-1 by fm1-emu. Its emulator and original panel are
-by Joakim Eriksson. The offline menu includes 21 firmware packages. Original
+by Joakim Eriksson. The repository owner maintains this distribution and is
+not credited as author of the emulator, firmwares or instrument. See
+licenses/AUTHORS.md and THIRD_PARTY_NOTICES.md. The offline menu includes 23 firmware packages. Original
 authors, licences and full sources are included in the bundle under
 Contents/Resources. See FIRMWARES.md for the full list. Manual firmware/save
 loading is retained. Six reference colour palettes are available per instance.

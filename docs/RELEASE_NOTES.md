@@ -1,7 +1,7 @@
 # Wave FM-1 Preview 0.2.0 · Windows y macOS
 
 VST3 experimental basado en fm1-emu de Joakim Eriksson. Añade un menú sin conexión
-con **21 firmwares originales**, carga manual `.fwsc`/`.fm1save` y **seis skins**
+con **23 firmwares originales**, carga manual `.fwsc`/`.fm1save` y **seis skins**
 basadas en los acabados de la imagen de referencia. Cada instancia conserva
 firmware, flash y skin independientes. El instrumento sigue apareciendo como
 **FM-1**, fabricante **fm1-emu**, con la identidad VST3 de la preview anterior.
@@ -30,7 +30,7 @@ Live puede descubrirlo automáticamente al explorar la carpeta VST3 estándar.
 
 Felucca, X0X, AMB-1, FoMni-1, Polly, Skiff, DUB-1, fm1-chord, CTL-1 (USB),
 FiMba-1, MIN-1, Niagara Drift, TRIBE, Chipbox, Frodhes, FMini-1, Felucca 8
-Patterns, Pocket GammaWave, NOIZ DEMONS, Unholy Union y WaveLoop FM-1.
+Patterns, Pocket GammaWave, NOIZ DEMONS, Unholy Union, WaveLoop FM-1, Ketch y GR!MM.
 Las versiones, autores y licencias están en `firmware/README.md`. Los paquetes
 conservan sus fuentes completas, submódulos necesarios y avisos dentro del bundle.
 No se incluye firmware propietario de fábrica. `firmware/RESEARCH.md` registra

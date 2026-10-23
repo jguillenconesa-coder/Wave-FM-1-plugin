@@ -28,6 +28,8 @@ El emulador interpreta el firmware dentro del proceso del host; no es un sandbox
 | [NOIZ DEMONS 666](https://github.com/SPIKE-the-Percussionist/noiz_demons/releases/tag/v666) | SPIKE the Percussionist; upstream contributors credited in LICENSING.md | Felucca with randomization as a ritual: every new sound summons one of 30 demons of the Ars Goetia, its sigil takes the screen and its rank decides how wild the sound gets. | GPL-3.0-only |
 | [Unholy Union 0.2.3](https://github.com/actuallysparky/FM-1-Unholy-Union-generative-drone-firmware/releases/tag/v0.2.3) | actuallysparky; upstream contributors credited in LICENSING.md | Generative ambient and drone: Immaculate Permutation rolls an arrangement in one key, a pad, a sequence and a chord arpeggio under a fourth voice for your hands. Keep a sermon you like, evolve it, or reveal another. | GPL-3.0-only |
 | [WaveLoop FM-1 1.0.5.2-midi23](https://github.com/ELI7VH/Felucca/releases/tag/1.0.5.2-midi23) | ELI7VH; upstream contributors credited in LICENSING.md | A Felucca mod: standalone Arturia MiniLab 3 control, fine track mixing, a DJ filter, momentary effects and MIDI feedback. | GPL-3.0-only |
+| [Ketch 0.1-beta](https://github.com/risseraka/fm1-tracker-ketch/releases/tag/v0.1-beta) | Adrien Risser-Zhuang; Hügelton Instruments; isod89; zvenson | Tracker beta; REC activa notas desde el panel; no interpreta notas MIDI entrantes en esta versión | GPL-3.0-only |
+| [GR!MM 1.0](https://github.com/GRiMMBIENT/grimm/releases/tag/v1.0) | GRiMMBIENT / GR!MM; zvenson; Hügelton Instruments; isod89 | Cuatro pistas de drones, síntesis y efectos | GPL-3.0-only |
 
 `manifest.json` fija versión, revisión de fuente, URL original, tamaño y SHA-256
 del paquete y de sus fuentes. Las licencias de recursos, bibliotecas, muestras,
@@ -78,6 +80,6 @@ The Firmware Hub y ambas búsquedas de YouTube aportadas por el usuario devolvie
 HTTP 403 desde el entorno. El catálogo del emulador sirvió para localizar
 candidatos del Hub; las comprobaciones se hicieron sobre publicaciones originales.
 La cobertura y los motivos individuales de exclusión o revisión pendiente están en
-[RESEARCH.md](RESEARCH.md). No se afirma que estos 21 paquetes sean todos los
+[RESEARCH.md](RESEARCH.md). No se afirma que estos 23 paquetes sean todos los
 firmwares actuales del Hub. No se incluyen firmwares propietarios ni versiones
 cuya redistribución no se haya podido justificar.

@@ -10,10 +10,10 @@ hashes are in `SHA256SUMS` and `SHA256SUMS-macos` on the release page.
 | Python dependency/packaging integrity tests | 15 passed |
 | Emulator CPU / SoC baseline | 58 + 38 passed |
 | Windows plugin unit tests under Wine 10 | 9 passed; all six panel palettes render distinctly and preserve LCD pixels |
-| 21 real firmware packages, Windows engine | All booted, drew LCD, produced 352,800 finite audio frames each; no CPU halt |
+| 23 real firmware packages, Windows engine | All booted, drew LCD, produced 352,800 finite audio frames each; no CPU halt |
 | Independent instance configuration and firmware state | Passed; catalogue save encode/decode checked for every package |
 | Portable save round-trip and transactional replacement, real Felucca fixture | 2 passed |
-| Official Windows VST3 validator, final 21-package cross-build | 47 passed, 0 failed |
+| Official Windows VST3 validator, final 23-package cross-build | 47 passed, 0 failed |
 | Native Windows MSVC build, firmware tests, installer/factory/uninstall | Prior seven-package build passed; expanded build must pass before release publication |
 | Install/reinstall to standard VST3 path, uninstall and HKLM registration (Wine) | Passed again on final expanded package; all installed bundle hashes matched; factory load and removal verified |
 | Silent rejection of unowned directory and legacy 0.1.0 registration | Passed; existing fixture preserved |
@@ -23,7 +23,7 @@ hashes are in `SHA256SUMS` and `SHA256SUMS-macos` on the release page.
 | User's actual Live installation / native audio drivers / long sessions | Not tested here; user confirmed the prior plugin worked in Live Windows |
 
 The firmware test applies MIDI on every channel, a timed PLAY-button press and a
-panel note, in groups of four independent engine instances. Eight seconds per
+panel note (REC note-entry mode for Ketch), in groups of four independent engine instances. Eight seconds per
 package checks basic operation, not every menu, sequencer, input, sample bank,
 USB/BLE/SD function or sustained real-time performance. Some firmware features
 require hardware unavailable to the emulator. A finite peak is not a listening

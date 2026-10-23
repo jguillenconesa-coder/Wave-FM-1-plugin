@@ -7,7 +7,7 @@ The Firmware Hub, YouTube y tiendas devolvieron HTTP 403 desde este entorno.
 Se consultaron los repositorios originales y los avisos de la versión concreta.
 La etiqueta general del catálogo no sustituye las licencias de recursos.
 
-**21 incluidos**: paquetes originales, hashes y fuentes completas en el manifiesto;
+**23 incluidos**: paquetes originales, hashes y fuentes completas en el manifiesto;
 arranque, LCD y 352.800 frames de audio finito por paquete comprobados con el
 motor Windows. Esto no prueba todas sus funciones, entrada de audio, USB/BLE,
 SD, cada canal MIDI, ni estabilidad prolongada en Ableton. CTL es la variante
@@ -57,13 +57,13 @@ versiones futuras. La carga manual permanece disponible para archivos propios.
 | Pocket GammaWave 1.0-GW | [Repositorio](https://github.com/fvalente/GammaWave-FM1) | Incluido; licencia, fuentes y pruebas de arranque/LCD/audio comprobadas. |
 | GHOULBOX 2.3.2 | [Repositorio](https://github.com/jasonpersinger/ghoulbox-fm1-dungeon-synth) | Pendiente: no se localizó LICENSING.md específico de la versión; revisar licencia de código, recursos y paquete antes de probar. |
 | Golana 1.2 | [Repositorio](https://github.com/Gadlele/Golana) | Pendiente: no se localizó LICENSING.md específico de la versión; revisar licencia de código, recursos y paquete antes de probar. |
-| GR!MM 1.0 | [Repositorio](https://github.com/GRiMMBIENT/grimm) | Pendiente: revisión de recursos y prueba de ejecución sin completar; no se distribuye. |
+| GR!MM 1.0 | [Repositorio](https://github.com/GRiMMBIENT/grimm) | Incluido; licencia, fuentes y pruebas de arranque/LCD/audio comprobadas. |
 | Hortator 0.16.0 | [Repositorio](https://github.com/DeadActive/hortator) | Pendiente: no se localizó LICENSING.md específico de la versión; revisar licencia de código, recursos y paquete antes de probar. |
 | HYP-1 1.5.46 | [Repositorio](https://github.com/RustyPawz/fm1-HYP1) | Pendiente: no se localizó LICENSING.md específico de la versión; revisar licencia de código, recursos y paquete antes de probar. |
 | Jangada 1.0.1 | [Repositorio](https://github.com/zednaked/jangada) | No incluido por ahora: falta aclarar la redistribución de recursos heredados reservados; revisar la versión exacta antes de integrar. |
 | JIANT FM 0.9.9-6968b20 | [Repositorio](https://github.com/juanjiant-bit/JIANT) | Pendiente: no se localizó LICENSING.md específico de la versión; revisar licencia de código, recursos y paquete antes de probar. |
 | KAWA 0.5 | [Repositorio](https://github.com/Guizmoh/Kawa-Tracker-Fm1) | Pendiente: no se localizó LICENSING.md específico de la versión; revisar licencia de código, recursos y paquete antes de probar. |
-| Ketch 0.1-beta | [Repositorio](https://github.com/risseraka/fm1-tracker-ketch) | Pendiente: revisión de recursos y prueba de ejecución sin completar; no se distribuye. |
+| Ketch 0.1-beta | [Repositorio](https://github.com/risseraka/fm1-tracker-ketch) | Incluido; licencia, fuentes y pruebas de arranque/LCD/audio comprobadas. |
 | MAKU 1.0 | [Repositorio](https://github.com/okumurari2/maku) | Pendiente: no se localizó LICENSING.md específico de la versión; revisar licencia de código, recursos y paquete antes de probar. |
 | MC-1 1.2.0 | [Repositorio](https://github.com/dspaudio/mc-1) | Pendiente: no se localizó LICENSING.md específico de la versión; revisar licencia de código, recursos y paquete antes de probar. |
 | Melodee 1.4.5 | [Repositorio](https://github.com/keremimo/melodee) | No incluido: documentación declara presets de fábrica de terceros sin licencia concedida. |
@@ -75,15 +75,15 @@ versiones futuras. La carga manual permanece disponible para archivos propios.
 | Niagara Drift 0.2 | [Repositorio](https://github.com/evanyerburgh/niagara-drift) | Incluido; licencia, fuentes y pruebas de arranque/LCD/audio comprobadas. |
 | No Man Sky FM 0.5 | [Repositorio](https://github.com/hericdk/nomanskyFM) | Pendiente: no se localizó LICENSING.md específico de la versión; revisar licencia de código, recursos y paquete antes de probar. |
 | NOIZ DEMONS 666 | [Repositorio](https://github.com/SPIKE-the-Percussionist/noiz_demons) | Incluido; licencia, fuentes y pruebas de arranque/LCD/audio comprobadas. |
-| OberVave 1.5.3 | [Repositorio](https://github.com/zvenson/obervave) | Pendiente: revisión de avisos de fuentes/gráficos y prueba de ejecución. |
+| OberVave 1.5.3 | [Repositorio](https://github.com/zvenson/obervave) | Pendiente: el aviso URW concede excepción para PostScript/PDF, mientras el logo usa SVG/bitmap; aclarar condiciones de esos gráficos antes de distribuir. |
 | OPN-1 2.0.0 | [Repositorio](https://github.com/putchdev/opn-1) | Pendiente: completar revisión y prueba con datos musicales de prueba redistribuibles. |
 | ORBIT 0.7.1 | [Repositorio](https://github.com/dspaudio/orbit) | Pendiente: revisión de recursos y prueba de ejecución sin completar; no se distribuye. |
-| PIGEON 0.4.1 | [Repositorio](https://github.com/TheShrimpBlimp/pigeon) | Pendiente: revisión de recursos y prueba de ejecución sin completar; no se distribuye. |
+| PIGEON 0.4.1 | [Repositorio](https://github.com/TheShrimpBlimp/pigeon) | Pendiente: la documentación acredita el logo de Dendy0097 sin especificar su permiso de redistribución. |
 | Polly 0.5 | [Repositorio](https://github.com/charlesvestal/fm1-polly) | Incluido; licencia, fuentes y pruebas de arranque/LCD/audio comprobadas. |
 | PurpleMonkey 0.11 | [Repositorio](https://github.com/Quixotic7/PurpleMonkeyFM1) | No incluido: documentación declara presets de fábrica de terceros sin licencia concedida. |
 | FM1 Quest 38 | [Repositorio](https://github.com/hericdk/fm1-quest) | Pendiente: no se localizó LICENSING.md específico de la versión; revisar licencia de código, recursos y paquete antes de probar. |
 | Rainbow Mode 1.1.5-rb | [Repositorio](https://github.com/joshbartlettband-web/felucca-rainbow) | Pendiente: no se localizó LICENSING.md específico de la versión; revisar licencia de código, recursos y paquete antes de probar. |
-| Shine On 1.2.3 | [Repositorio](https://github.com/zvenson/shineon) | Pendiente: revisión de avisos de fuentes/gráficos y prueba de ejecución. |
+| Shine On 1.2.3 | [Repositorio](https://github.com/zvenson/shineon) | Pendiente: el aviso URW concede excepción para PostScript/PDF, mientras el logo usa SVG/bitmap; aclarar condiciones de esos gráficos antes de distribuir. |
 | FM-1 SID 0.1 | [Repositorio](https://github.com/joakimeriksson/fm1-emu/tree/master/fm1-sid) | Pendiente: no se localizó LICENSING.md específico de la versión; revisar licencia de código, recursos y paquete antes de probar. |
 | SID-1 1.0.0 | [Repositorio](https://github.com/putchdev/sid-1) | Pendiente: completar revisión y prueba con datos SID redistribuibles. |
 | Skiff 1.4 | [Repositorio](https://github.com/illuminus5/skiff) | Incluido; licencia, fuentes y pruebas de arranque/LCD/audio comprobadas. |
@@ -101,7 +101,7 @@ versiones futuras. La carga manual permanece disponible para archivos propios.
 | winampFM Synth 0.12 | [Repositorio](https://github.com/hericdk/winampFM) | Pendiente: no se localizó LICENSING.md específico de la versión; revisar licencia de código, recursos y paquete antes de probar. |
 | X0X 1.1.0 | [Repositorio](https://github.com/charlesvestal/fm1-x0x) | Incluido; licencia, fuentes y pruebas de arranque/LCD/audio comprobadas. |
 | X0X-RMX 1.1.0 | [Repositorio](https://github.com/Mr-Roboto/fm1-x0x-rmx) | No incluido: LICENSING deja sin resolver derechos de patrones transcritos de Future Retro Orb. |
-| ZEN-1 1.1 | [Repositorio](https://github.com/aceyprime/zen-1) | Pendiente: completar revisión de todos los recursos y bancos comunitarios, y pruebas. |
+| ZEN-1 1.1 | [Repositorio](https://github.com/aceyprime/zen-1) | Pendiente: contiene bancos comunitarios de autor desconocido o identificado, sin permiso explícito de redistribución documentado en sus generadores. |
 | zp12 2.4.4 | [Repositorio](https://github.com/zvenson/zp12) | Pendiente: no se localizó LICENSING.md específico de la versión; revisar licencia de código, recursos y paquete antes de probar. |
 
 Los avisos de los paquetes incluidos están en `licenses/<id>/`; el resto no se

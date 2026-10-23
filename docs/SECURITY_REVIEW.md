@@ -8,7 +8,7 @@ release workflows gate publication. User-machine acceptance remains separate.
 
 ## Version 0.2.0 additions (2026-10-23)
 
-- Twenty-one original firmware packages are distributed as separate interpreted
+- Twenty-three original firmware packages are distributed as separate interpreted
   programs, not linked into the plugin. Exact versions, authors and licences are
   listed in `firmware/README.md` and `manifest.json`. Complete corresponding
   sources, recursive submodules and original notices travel inside every bundle.

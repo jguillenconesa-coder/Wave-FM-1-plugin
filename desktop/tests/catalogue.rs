@@ -52,15 +52,18 @@ fn exercise_entry(entry: &catalogue::Entry, directory: &std::path::Path) {
         }
         let start = Instant::now(); let mut frames = 0; let mut peak = 0.0f32; let mut finite = true;
         let mut played = false; let mut released_play = false; let mut keyed = false;
+        // Ketch boots into tracker navigation. Its documented REC button enables
+        // note entry/audition; its beta does not route incoming MIDI to voices.
+        let play_button = if entry.id == "ketch" { 13 } else { 12 };
         while frames < 8 * 44100 && start.elapsed() < Duration::from_secs(40) {
             if frames >= 2 * 44100 && !played {
-                tx.send(Cmd::Key { id: 12, down: true }).unwrap();
+                tx.send(Cmd::Key { id: play_button, down: true }).unwrap();
                 played = true;
             }
             // Matrix buttons must stay down across emulated scan ticks. Sending
             // down/up in the same command drain is an invisible zero-length tap.
             if frames >= 2 * 44100 + 4410 && !released_play {
-                tx.send(Cmd::Key { id: 12, down: false }).unwrap(); released_play = true;
+                tx.send(Cmd::Key { id: play_button, down: false }).unwrap(); released_play = true;
             }
             if frames >= 3 * 44100 && !keyed {
                 tx.send(Cmd::Key { id: 26, down: true }).unwrap(); keyed = true;

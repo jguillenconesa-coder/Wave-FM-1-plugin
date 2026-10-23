@@ -43,6 +43,7 @@ def package(bundle, platform):
         shutil.copytree(src, dst)
     shutil.copyfile(ROOT / "firmware/manifest.json", resources / "firmware-manifest.json")
     shutil.copyfile(ROOT / "firmware/README.md", resources / "FIRMWARES.md")
+    shutil.copyfile(ROOT / "firmware/RESEARCH.md", resources / "RESEARCH.md")
 
 
 def verify_bundle(bundle, platform="windows"):
@@ -57,6 +58,7 @@ def verify_bundle(bundle, platform="windows"):
                 expected[f"{dst}/{file.relative_to(src).as_posix()}"] = sha(file)
     expected["Contents/Resources/firmware-manifest.json"] = sha(ROOT / "firmware/manifest.json")
     expected["Contents/Resources/FIRMWARES.md"] = sha(ROOT / "firmware/README.md")
+    expected["Contents/Resources/RESEARCH.md"] = sha(ROOT / "firmware/RESEARCH.md")
     for name, value in expected.items():
         if sha(bundle / name) != value:
             raise ValueError(f"Packaged firmware/source/licence mismatch: {name}")

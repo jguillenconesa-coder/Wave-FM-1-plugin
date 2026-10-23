@@ -34,10 +34,9 @@ jobs:
           version=${PREVIEW_TAG#v}
           version=${version%-preview.*}
           if ! gh release view "$PREVIEW_TAG" >/dev/null 2>&1; then
-            gh release create "$PREVIEW_TAG" --verify-tag --prerelease --title "Wave FM-1 Preview $version" --notes-file docs/RELEASE_NOTES.md
-          else
-            gh release edit "$PREVIEW_TAG" --prerelease --title "Wave FM-1 Preview $version" --notes-file docs/RELEASE_NOTES.md
+            gh release create "$PREVIEW_TAG" --verify-tag --prerelease --title "Wave FM-1 Preview $version" --notes-file docs/RELEASE_NOTES.md || gh release view "$PREVIEW_TAG" >/dev/null
           fi
+          gh release edit "$PREVIEW_TAG" --prerelease --title "Wave FM-1 Preview $version" --notes-file docs/RELEASE_NOTES.md
           gh release upload "$PREVIEW_TAG" \
             "verified-build/installer/Wave-FM-1-$version-Windows-x64-Setup.exe" \
             "verified-build/installer/Wave-FM-1-$version-Windows-x64-Portable.zip" \

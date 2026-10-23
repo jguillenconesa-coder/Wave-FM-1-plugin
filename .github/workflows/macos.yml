@@ -34,7 +34,7 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: '11.0'
         run: |
           uname -m
-          cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --lib --test catalogue --test portable -j 3 -- --nocapture
+          cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --lib --test catalogue --test portable -j 3 -- --nocapture 2>&1 | tee macos-tests.log
       - name: Official VST3 validation
         run: |
           cmake -S tools/validator -B build/macos-validator -G Ninja -DCMAKE_BUILD_TYPE=Release -DVST3_SDK_ROOT="$PWD/build/macos/cpm/vst3sdk"
@@ -46,11 +46,13 @@ jobs:
       - name: Report build error context
         if: failure()
         run: |
-          if [[ -f macos-build.log ]]; then
-            context=$(tail -n 30 macos-build.log | tr '\n' ' ')
-            context=${context//%/%25}
-            echo "::error title=macOS build context::$context"
-          fi
+          for log in macos-build.log macos-tests.log; do
+            if [[ -f "$log" ]]; then
+              context=$(tail -n 30 "$log" | tr '\n' ' ')
+              context=${context//%/%25}
+              echo "::error title=$log context::$context"
+            fi
+          done
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: Wave-FM-1-macOS-Universal
@@ -78,6 +80,6 @@ jobs:
           cd artifacts
           shasum -a 256 --check SHA256SUMS-macos
           if ! gh release view "$PREVIEW_TAG" >/dev/null 2>&1; then
-            gh release create "$PREVIEW_TAG" --verify-tag --prerelease --title "Wave FM-1 Preview ${PREVIEW_TAG#v}" --notes 'Universal macOS VST3; see repository installation and validation documentation.'
+            gh release create "$PREVIEW_TAG" --verify-tag --prerelease --title "Wave FM-1 Preview ${PREVIEW_TAG#v}" --notes 'Universal macOS VST3; see repository installation and validation documentation.' || gh release view "$PREVIEW_TAG" >/dev/null
           fi
           gh release upload "$PREVIEW_TAG" ./*.zip ./*.pkg SHA256SUMS-macos build-info-macos.json --clobber

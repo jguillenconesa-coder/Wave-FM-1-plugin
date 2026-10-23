@@ -33,7 +33,7 @@ copias simultáneas de la preview en carpetas estándar y personalizadas.
 
 ## Firmware y skin por instancia
 
-**Firmware…** incluye [21 paquetes originales](../firmware/README.md), sin
+**Firmware…** incluye [23 paquetes originales](../firmware/README.md), sin
 conexión y con tamaño y SHA-256 comprobados al abrirlos. **Open firmware / save
 file…** y **Load firmware / save…** conservan la carga manual `.fwsc` y `.fm1save`.
 **Export save…** exporta el estado portátil.

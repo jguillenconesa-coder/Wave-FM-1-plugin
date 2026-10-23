@@ -4,6 +4,10 @@ Wave FM-1 is an independent Windows/macOS instrument packaging project. It is no
 M-VAVE product and is not endorsed by M-VAVE, Ableton, Steinberg or the authors
 listed here. Their product names remain their respective owners' marks.
 
+The repository owner is the maintainer/publisher, not the author of the original
+emulator, plugin, firmware or hardware. See [AUTHORS.md](AUTHORS.md) for roles
+and AI-assisted integration disclosure. Original copyright notices are retained.
+
 | Component | Credit | Licence / use |
 | --- | --- | --- |
 | [fm1-emu](https://github.com/joakimeriksson/fm1-emu) | Joakim Eriksson and contributors | MIT; CPU/SoC emulation, firmware loading, instrument engine and original interactive panel. Pinned to `72adb810c4409c4b7302ca56906c05083834faee`. |
@@ -40,7 +44,9 @@ The offline firmware catalogue distributes separate unmodified interpreted progr
 The additional catalogue entries and their authors are listed in
 [`firmware/README.md`](firmware/README.md): fm1-chord, CTL-1 (USB), FiMba-1,
 MIN-1, Niagara Drift, TRIBE, Chipbox, Frodhes, FMini-1, Felucca 8 Patterns,
-Pocket GammaWave, NOIZ DEMONS, Unholy Union and WaveLoop FM-1. Each has its own
+Pocket GammaWave, NOIZ DEMONS, Unholy Union, WaveLoop FM-1, Ketch (Adrien
+Risser-Zhuang) and GR!MM (GRiMMBIENT), with zvenson, isod89 and Hügelton
+Instruments foundation credits. Each has its own
 `firmware/licenses/<id>/` notices, including inherited DSP, font and SDK credits.
 
 Full upstream notices are in `firmware/licenses/<id>/`, and complete corresponding

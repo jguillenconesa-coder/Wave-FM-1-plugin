@@ -34,7 +34,7 @@ plist = {'CFBundleExecutable': 'FM-1', 'CFBundleIdentifier': 'io.github.jguillen
 with (Path(sys.argv[1]) / 'Contents/Info.plist').open('wb') as f: plistlib.dump(plist, f)
 PY
 python3 tools/firmware.py --platform macos --bundle "$bundle"
-cp LICENSE THIRD_PARTY_NOTICES.md "$out/licenses/"
+cp LICENSE THIRD_PARTY_NOTICES.md AUTHORS.md "$out/licenses/"
 cp .deps/fm1-emu/LICENSE "$out/licenses/fm1-emu-MIT.txt"
 python3 tools/collect-rust-licenses.py --target aarch64-apple-darwin --output "$out/licenses/rust-arm64"
 python3 tools/collect-rust-licenses.py --target x86_64-apple-darwin --output "$out/licenses/rust-x86_64"

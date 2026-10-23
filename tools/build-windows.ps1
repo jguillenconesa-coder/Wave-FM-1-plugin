@@ -27,6 +27,7 @@ try {
     Copy-Item '.deps/fm1-emu/LICENSE' 'dist/licenses/fm1-emu-MIT.txt'
     Copy-Item 'LICENSE' 'dist/licenses/packaging-MIT.txt'
     Copy-Item 'THIRD_PARTY_NOTICES.md' 'dist/licenses/THIRD_PARTY_NOTICES.md'
+    Copy-Item 'AUTHORS.md' 'dist/licenses/AUTHORS.md'
     Invoke-Checked -Program python -Arguments @('tools/collect-rust-licenses.py')
     # Preserve the wrapper and SDK licence notices beside the binary distribution.
     $BuildRoot = Join-Path $Root 'build/windows'

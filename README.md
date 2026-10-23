@@ -3,13 +3,17 @@
 Plugin **VST3 de 64 bits** que emula el M-VAVE FM-1 y permite cargar firmwares
 `.fwsc`. Se basa en [fm1-emu de Joakim Eriksson](https://github.com/joakimeriksson/fm1-emu):
 el motor, el panel interactivo y la pantalla del firmware proceden de ese proyecto.
-Los créditos y licencias originales se conservan.
+Los créditos y licencias originales se conservan. La cuenta que mantiene este
+repositorio no se presenta como autora de ese trabajo; consulta
+[autoría y procedencia](AUTHORS.md).
 
 ## Descargar e instalar
 
 - [Instalador Windows 0.2.0](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.1/Wave-FM-1-0.2.0-Windows-x64-Setup.exe)
 - [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.1/Wave-FM-1-0.2.0-Windows-x64-Portable.zip)
-- [Versión publicada y archivos de macOS](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.0-preview.1)
+- [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.1/Wave-FM-1-0.2.0-macOS-Universal.pkg)
+- [macOS Universal: ZIP por usuario](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.1/Wave-FM-1-0.2.0-macOS-Universal.zip)
+- [Versión publicada, hashes y todos los archivos](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.0-preview.1)
 - [Instalar/desinstalar en Windows](docs/WINDOWS.md) · [macOS Intel y Apple Silicon](docs/MACOS.md)
 
 Si la descarga directa falla, abre la página de la versión y selecciona el
@@ -31,7 +35,7 @@ importantes cerrados y respaldados; no se garantiza riesgo cero.
 
 ## Firmwares y aspecto
 
-El menú **Firmware…** incluye **21 firmwares sin conexión**, con versiones
+El menú **Firmware…** incluye **23 firmwares sin conexión**, con versiones
 fijadas y pruebas reales de arranque, pantalla y audio. Entre ellos: Felucca,
 X0X, AMB-1, FoMni-1, Polly, Skiff, DUB-1, Chipbox, Frodhes y Niagara Drift.
 Consulta [la lista completa, autores, licencias y fuentes](firmware/README.md)
