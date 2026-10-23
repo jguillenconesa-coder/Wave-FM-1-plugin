@@ -1,9 +1,0 @@
-{
-  "schema": 1,
-  "source_commit": "64df594446bc69cee5777764ecab237018129c7b",
-  "emulator_commit": "72adb810c4409c4b7302ca56906c05083834faee",
-  "sha256": {
-    "VST3/FM-1.vst3/Contents/x86_64-win/FM-1.vst3": "5384c17a910f0abbee395781b9ea4a7dec21e58ab260f138350caad4bf0d807f",
-    "VST3/FM-1.vst3/Contents/x86_64-win/FM-1.clap": "82ac4592327f998925a7d0a7a948e3b96f53ecb00e6efff145980d3f96e369c0"
-  }
-}

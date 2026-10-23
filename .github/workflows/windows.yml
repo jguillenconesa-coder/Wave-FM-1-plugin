@@ -68,6 +68,15 @@ jobs:
           CARGO_TARGET_DIR: ${{ github.workspace }}/.deps/fm1-emu/crates/fm1-plugin/target
           RUSTFLAGS: '-C target-feature=+crt-static'
         run: cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --target x86_64-pc-windows-msvc --lib --test catalogue --test portable -j 2 -- --nocapture
+      - name: Official VST3 validation
+        shell: pwsh
+        run: |
+          cmake -S tools/validator -B build/windows-validator -G 'Visual Studio 17 2022' -A x64 "-DVST3_SDK_ROOT=$PWD/build/windows/cpm/vst3sdk"
+          if ($LASTEXITCODE -ne 0) { throw 'Validator configuration failed' }
+          cmake --build build/windows-validator --config Release --target validator --parallel 2
+          if ($LASTEXITCODE -ne 0) { throw 'Validator compilation failed' }
+          & build/windows-validator/bin/Release/validator.exe 'dist/VST3/FM-1.vst3' | Tee-Object dist/VALIDATION.txt
+          if ($LASTEXITCODE -ne 0) { throw 'VST3 validation failed' }
       - name: Report build error context
         if: failure()
         shell: pwsh

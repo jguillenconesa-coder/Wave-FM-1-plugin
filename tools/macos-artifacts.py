@@ -11,7 +11,7 @@ directory = ROOT / "dist/macos"
 bundle = directory / "VST3/Wave FM-1.vst3"
 firmware.verify_bundle(bundle, "macos")
 for name in ("Contents/MacOS/FM-1", "Contents/PlugIns/FM-1.clap/Contents/MacOS/FM-1"):
-    subprocess.run(["lipo", "-verify_arch", "arm64", "x86_64", str(bundle / name)], check=True)
+    subprocess.run(["lipo", str(bundle / name), "-verify_arch", "arm64", "x86_64"], check=True)
 hashes = {p.relative_to(bundle).as_posix(): firmware.sha(p) for p in sorted(bundle.rglob("*")) if p.is_file()}
 manifest = directory / "build-info.json"
 if sys.argv[1] == "record":

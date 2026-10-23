@@ -53,7 +53,7 @@ cp docs/MACOS.md "$out/INSTALL.md"
 codesign --force --sign - "$clap"
 codesign --force --sign - "$bundle"
 codesign --verify --deep --strict "$bundle"
-lipo -verify_arch arm64 x86_64 "$bundle/Contents/MacOS/FM-1"
-lipo -verify_arch arm64 x86_64 "$clap/Contents/MacOS/FM-1"
+lipo "$bundle/Contents/MacOS/FM-1" -verify_arch arm64 x86_64
+lipo "$clap/Contents/MacOS/FM-1" -verify_arch arm64 x86_64
 python3 tools/macos-artifacts.py record
 echo 'Built Universal 2 VST3. Native validation must pass before packaging.'

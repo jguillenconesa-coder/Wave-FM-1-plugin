@@ -3,8 +3,8 @@
 Scope: the initial Windows packaging source, CI workflow, installer and pinned
 fm1-emu dependency manifests. This was a focused source/configuration review,
 not an independent penetration test or a complete audit of upstream Rust/C++
-code. Windows x64 binaries have been built and checked under Wine 10. Native
-Windows/Ableton acceptance remains outstanding.
+code. Windows x64 binaries have been built and checked under Wine 10; native
+release workflows gate publication. User-machine acceptance remains separate.
 
 ## Version 0.2.0 additions (2026-10-23)
 
@@ -36,6 +36,13 @@ Windows/Ableton acceptance remains outstanding.
 - Current release evidence is in `downloads/windows/VALIDATION.md`. The checks
   below are the prior 0.1.0 baseline where not explicitly superseded; they must
   not be read as new native Ableton or macOS results.
+
+Source secret scans were repeated with Gitleaks 8.24.2 on the working tree and
+on safely extracted corresponding firmware source archives: no findings. No
+upstream source build scripts were executed during catalogue research. This
+scan cannot establish that a firmware is harmless or free of vulnerabilities.
+The final expanded Windows installer, installed file hashes, factory loading,
+complete uninstallation and five protected fixtures were rechecked under Wine.
 
 ## Changes made
 

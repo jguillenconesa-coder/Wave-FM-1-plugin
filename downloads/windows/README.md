@@ -1,17 +1,13 @@
-# Windows Preview 0.1.0
+# Windows Preview 0.2.0
 
-- [Descargar instalador](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.1.0-preview.1/Wave-FM-1-0.1.0-Windows-x64-Setup.exe)
-- [Descargar ZIP portátil](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.1.0-preview.1/Wave-FM-1-0.1.0-Windows-x64-Portable.zip)
-- [Hashes SHA-256](SHA256SUMS)
-- [Instalación y desinstalación](../../docs/WINDOWS.md)
-- [Validación realizada](VALIDATION.md)
+Los instaladores se publican en **GitHub Releases**, donde pueden alojarse los
+paquetes completos con fuentes y licencias. No se usan enlaces `raw` a ejecutables.
 
-Si la descarga directa falla, abre [la página de esta versión](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.1.0-preview.1)
-y selecciona el archivo `.exe` en **Assets**.
+- [Descargar instalador Windows x64](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.1/Wave-FM-1-0.2.0-Windows-x64-Setup.exe)
+- [Descargar ZIP portátil](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.0-preview.1/Wave-FM-1-0.2.0-Windows-x64-Portable.zip)
+- [Todos los archivos y hashes de esta versión](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.0-preview.1)
+- [Instalación y desinstalación](../../docs/WINDOWS.md) · [Validación](VALIDATION.md)
 
-El instalador es por usuario y no cambia Ableton ni sus preferencias. Incluye
-el VST3 y su módulo privado; no requiere instalar herramientas de desarrollo.
-Se elimina desde Agregar o quitar programas como **Wave FM-1 Preview**.
-La preview no tiene firma propia y la prueba nativa en Ableton sigue pendiente.
-Usa primero un Set vacío; si ya tienes una carpeta VST3 personalizada, no la
-sustituyas: utiliza un perfil de Windows separado para la primera prueba.
+La [versión anterior](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.1.0-preview.1)
+se conserva como archivo histórico. Sus binarios ya no se duplican en la rama
+principal; su validación está en `docs/VALIDATION_0.1.0.md`.

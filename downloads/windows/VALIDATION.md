@@ -1,33 +1,41 @@
-# Validation record — Windows Preview 0.1.0
+# Validation record · Preview 0.2.0 · 2026-10-23
 
-Source commit: `64df594446bc69cee5777764ecab237018129c7b`. Emulator commit:
-`72adb810c4409c4b7302ca56906c05083834faee`. Binary hashes are in build-info.json; download hashes
-are in SHA256SUMS. Build date: 2026-10-23.
+Emulator: `72adb810c4409c4b7302ca56906c05083834faee`; wrapper: v0.16.0.
+Exact source revision, compiler, desktop fingerprint, firmware packages, matching
+sources, notices and binary hashes are recorded by each build. Release asset
+hashes are in `SHA256SUMS` and `SHA256SUMS-macos` on the release page.
 
-Built with Rust 1.99.1, MinGW-w64 GCC 12.2 POSIX, CMake 3.31.6, clap-wrapper
-v0.16.0 and Steinberg VST3 SDK 3.8.0. The local wrapper patch verifies the original
-source SHA-256 and restricts Windows CLAP loading to the private bundle. Runtime
-libraries are statically linked. Final installer: Inno Setup 7.1.0 x64 from the
-official release, whose Authenticode signature was verified before use. This
-preview installer itself is unsigned.
-
-| Check | Actual result |
+| Check | Observed result |
 | --- | --- |
-| Packaging and dependency integrity tests | 13 passed |
-| Emulator CPU / SoC tests on Linux | 58 + 38 passed |
-| Windows plugin unit tests under Wine 10 | 7 passed |
-| Windows firmware boot / MIDI audio / screen tests with Felucca 1.6.1 | 2 passed |
-| Windows portable save and replacement tests | 2 passed |
-| Official Windows VST3 validator, final private bundle and preview class ID | 47 passed, 0 failed |
-| Installed private VST3 factory load | Passed; 1 registered class, clean shutdown |
-| Missing private CLAP with a valid global CLAP present | Refused to load, as intended |
-| Install and reinstall, Inno Setup 7.1.0 x64 package under Wine 10 | Passed; per-user HKCU, no restart |
-| Installed app / Add or remove programs entry | Display name and uninstaller inspected |
-| Uninstall private application and registration | Passed; directory and registry entry removed |
-| Protected fixtures (Ableton files, preferences, project, other VST3, global CLAP) | All 5 unchanged |
-| Native Windows desktop and Ableton Live acceptance | NOT RUN |
+| Python dependency/packaging integrity tests | 15 passed |
+| Emulator CPU / SoC baseline | 58 + 38 passed |
+| Windows plugin unit tests under Wine 10 | 9 passed; all six panel palettes render distinctly and preserve LCD pixels |
+| 21 real firmware packages, Windows engine | All booted, drew LCD, produced 352,800 finite audio frames each; no CPU halt |
+| Independent instance configuration and firmware state | Passed; catalogue save encode/decode checked for every package |
+| Portable save round-trip and transactional replacement, real Felucca fixture | 2 passed |
+| Official Windows VST3 validator, final 21-package cross-build | 47 passed, 0 failed |
+| Native Windows MSVC build, firmware tests, installer/factory/uninstall | Prior seven-package build passed; expanded build must pass before release publication |
+| Install/reinstall to standard VST3 path, uninstall and HKLM registration (Wine) | Passed again on final expanded package; all installed bundle hashes matched; factory load and removal verified |
+| Silent rejection of unowned directory and legacy 0.1.0 registration | Passed; existing fixture preserved |
+| Ableton program/preferences/project, other VST3 and global CLAP fixtures | All five unchanged after install/reinstall/uninstall |
+| Native macOS Universal build/signature/validator | Gated by macOS workflow before publishing its assets |
+| Interactive plugin window under Wine | Not validated: software graphics could not provide the required accelerated OpenGL context |
+| User's actual Live installation / native audio drivers / long sessions | Not tested here; user confirmed the prior plugin worked in Live Windows |
 
-Wine validation is not a test of the user's actual Windows installation,
-GPU/audio drivers or important projects. First use an empty Set with backups;
-no experimental in-process plugin can guarantee zero risk. See the security
-review for remaining dependency-maintenance advisories. No firmware is bundled.
+The firmware test applies MIDI on every channel, a timed PLAY-button press and a
+panel note, in groups of four independent engine instances. Eight seconds per
+package checks basic operation, not every menu, sequencer, input, sample bank,
+USB/BLE/SD function or sustained real-time performance. Some firmware features
+require hardware unavailable to the emulator. A finite peak is not a listening
+test or endorsement of sound quality. Alpha/beta upstream versions retain their
+experimental status.
+
+Windows local evidence uses Rust 1.99.1, MinGW-w64 GCC 12.2 POSIX, Wine 10 and
+Inno Setup 7.1.0 x64. Native release builds use the Windows runner toolchain.
+macOS builds both architectures, while native execution tests run only the
+runner architecture shown in Actions. Ad-hoc signatures are not Apple notarization.
+
+Wine fixtures do not access the user's computer or important projects. Test the
+update in an empty Set with backups. No experimental in-process plugin can
+promise zero risk. This is not manufacturer certification or a complete security
+audit; the dependency-maintenance warnings remain in the security review.
