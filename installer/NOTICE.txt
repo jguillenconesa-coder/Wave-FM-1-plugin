@@ -11,9 +11,10 @@ copies. Keep your projects and exported .fm1save files. The new installer
 refuses to overwrite an existing folder not managed by this installer.
 
 The instrument appears as FM-1 by fm1-emu. Its emulator and original panel are
-by Joakim Eriksson. Firmware menu: Felucca 1.6.1, X0X 1.1.0, AMB-1 1.3,
-FoMni-1 0.4, Polly 0.5, Skiff 1.4, DUB-1 1.2.0. Original authors, licences and full sources are included in the
-bundle under Contents/Resources. Manual firmware/save loading is retained.
+by Joakim Eriksson. The offline menu includes 21 firmware packages. Original
+authors, licences and full sources are included in the bundle under
+Contents/Resources. See FIRMWARES.md for the full list. Manual firmware/save
+loading is retained. Six reference colour palettes are available per instance.
 Changing firmware resets only that instance: export what you wish to keep.
 
 Test in an empty Live Set with important projects closed and backed up.

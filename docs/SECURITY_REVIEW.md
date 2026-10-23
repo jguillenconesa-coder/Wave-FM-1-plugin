@@ -8,15 +8,13 @@ Windows/Ableton acceptance remains outstanding.
 
 ## Version 0.2.0 additions (2026-10-23)
 
-- Seven original firmware packages are distributed as separate interpreted programs,
-  not linked into the plugin: Felucca 1.6.1, X0X 1.1.0, AMB-1 1.3 FoMni-1 0.4, Polly 0.5, Skiff 1.4 and DUB-1 1.2.0.
-  The exact release licences, assets and build prerequisites were inspected.
-  Complete corresponding sources (including recursive AMB submodules), original
-  notices and additional SDK/font licence texts travel inside every bundle.
-  SLOOP 2.8 and Dinghy 0.3 were excluded because of unclear reserved-asset
-  redistribution terms; ChoralRoot 0.26.1 declares unlicensed Casio/Sequential
-  factory preset data and was excluded. Polly retains CC BY 4.0 rhythm credits
-  and the upstream description of modifications, as well as EAS/SDK notices.
+- Twenty-one original firmware packages are distributed as separate interpreted
+  programs, not linked into the plugin. Exact versions, authors and licences are
+  listed in `firmware/README.md` and `manifest.json`. Complete corresponding
+  sources, recursive submodules and original notices travel inside every bundle.
+  Polly retains CC BY 4.0 rhythm credits and modification descriptions. The
+  research ledger records excluded or pending candidates and licensing concerns;
+  a catalogue's broad GPL label alone was not accepted as asset clearance.
 - Catalogue loading is offline, fixed at build time, bounded to 8 MiB, and checks
   size and SHA-256 before sending the package to the existing transactional loader.
   It resolves only the loaded CLAP's own folder, not the host executable, current

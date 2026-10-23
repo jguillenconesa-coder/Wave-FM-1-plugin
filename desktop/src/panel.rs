@@ -230,18 +230,51 @@ pub struct Palette {
     pub btn_top: u32, pub btn_bot: u32, pub btn_ink: u32,
     pub key_top: u32, pub key_bot: u32, pub key_line: u32,
     pub knob_top: u32, pub knob_bot: u32,
+    pub keyboard_top: u32, pub keyboard_bot: u32,
 }
+// Drawn from the six factory colour combinations in the user's product reference.
+// Approximate sRGB colours; no product photograph or manufacturer artwork is bundled.
 pub const GRAPHITE: Palette = Palette {
-    body_top: BODY_TOP, body_bot: BODY_BOT, tray: TRAY, silk: SILK,
-    btn_top: BTN_TOP, btn_bot: BTN_BOT, btn_ink: BTN_INK,
-    key_top: KEY_TOP, key_bot: KEY_BOT, key_line: KEY_LINE,
-    knob_top: 0x6d7178, knob_bot: 0x3a3d43,
+    body_top: 0x4c4d4b, body_bot: 0x3d3e3d, tray: 0x262928, silk: 0xc8c6be,
+    btn_top: 0x3a3d3b, btn_bot: 0x292d2b, btn_ink: 0xb6b9b1,
+    key_top: 0x393d3b, key_bot: 0x282c2a, key_line: 0xd1d2c8,
+    knob_top: 0x3d403d, knob_bot: 0x171a18,
+    keyboard_top: 0x2c2f2d, keyboard_bot: 0x242725,
 };
-pub const CREAM: Palette = Palette {
-    body_top: 0xe5e1d4, body_bot: 0xc5c1b4, tray: 0x434a47, silk: 0x343e3b,
-    btn_top: 0x91b6a5, btn_bot: 0x668b7c, btn_ink: 0x172e24,
-    key_top: 0x9ab9ab, key_bot: 0x729484, key_line: 0xd3e0d5,
-    knob_top: 0xb8c7b9, knob_bot: 0x798e7e,
+pub const IVORY: Palette = Palette {
+    body_top: 0xf1eee9, body_bot: 0xe2ddd7, tray: 0x343c3b, silk: 0x514d48,
+    btn_top: 0x4b5351, btn_bot: 0x363e3c, btn_ink: 0xaaa9a1,
+    key_top: 0x4d5552, key_bot: 0x38413f, key_line: 0x282f2b,
+    knob_top: 0x333633, knob_bot: 0x111411,
+    keyboard_top: 0x3d4543, keyboard_bot: 0x303936,
+};
+pub const ORANGE: Palette = Palette {
+    body_top: 0xff8b4c, body_bot: 0xf27438, tray: 0xb55c38, silk: 0xffe5bf,
+    btn_top: 0xd37b50, btn_bot: 0xb35c39, btn_ink: 0x543722,
+    key_top: 0xcf784e, key_bot: 0xb15c3b, key_line: 0x72452e,
+    knob_top: 0x32312a, knob_bot: 0x131711,
+    keyboard_top: 0xc46b44, keyboard_bot: 0xa65436,
+};
+pub const LILAC: Palette = Palette {
+    body_top: 0xcba3dc, body_bot: 0xbd91d0, tray: 0x7563a0, silk: 0xf2e7ed,
+    btn_top: 0x9584c4, btn_bot: 0x7865a8, btn_ink: 0x3d3155,
+    key_top: 0x9480c2, key_bot: 0x7966aa, key_line: 0x4f3c71,
+    knob_top: 0x332c3a, knob_bot: 0x1b1523,
+    keyboard_top: 0x8975b9, keyboard_bot: 0x6e5c9d,
+};
+pub const IVORY_BLUE: Palette = Palette {
+    body_top: IVORY.body_top, body_bot: IVORY.body_bot, tray: 0x365c73, silk: IVORY.silk,
+    btn_top: 0x6086a0, btn_bot: 0x406580, btn_ink: 0x243c4a,
+    key_top: 0x577f99, key_bot: 0x3b617c, key_line: 0x284758,
+    knob_top: IVORY.knob_top, knob_bot: IVORY.knob_bot,
+    keyboard_top: 0x466e89, keyboard_bot: 0x34546b,
+};
+pub const GRAPHITE_MINT: Palette = Palette {
+    body_top: GRAPHITE.body_top, body_bot: GRAPHITE.body_bot, tray: 0x4b9590, silk: GRAPHITE.silk,
+    btn_top: 0x8ad9d0, btn_bot: 0x5dbab3, btn_ink: 0x285d58,
+    key_top: 0x84d5cb, key_bot: 0x5db9b2, key_line: 0x347f78,
+    knob_top: GRAPHITE.knob_top, knob_bot: GRAPHITE.knob_bot,
+    keyboard_top: 0x6bc1b8, keyboard_bot: 0x53a79f,
 };
 
 pub fn base() -> Vec<u32> { base_with_palette(&GRAPHITE) }
@@ -255,7 +288,7 @@ pub fn base_with_palette(p: &Palette) -> Vec<u32> {
     // OCT tray, button tray, keyboard tray
     rrect(&mut b, 50.0, 388.0, 260.0, 64.0, 14.0, p.tray, p.tray);
     rrect(&mut b, 896.0, 222.0, 360.0, 160.0, 16.0, p.tray, p.tray);
-    rrect(&mut b, 34.0, 562.0, 1212.0, 236.0, 26.0, 0x2f2f33, 0x27272a);
+    rrect(&mut b, 34.0, 562.0, 1212.0, 236.0, 26.0, p.keyboard_top, p.keyboard_bot);
     // knob labels
     text(&mut b, POT.0, POT.1 - POT.2 - 24.0, "MASTER", 2, p.silk);
     for (name, _, cx, cy, r) in ENCS.iter() {

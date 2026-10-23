@@ -1,10 +1,14 @@
 // Copyright (c) 2026 Wave-FM-1-plugin contributors. MIT.
-use crate::panel::{Palette, GRAPHITE, CREAM};
+use crate::panel::{Palette, GRAPHITE, IVORY, ORANGE, LILAC, IVORY_BLUE, GRAPHITE_MINT};
 
 pub struct Skin { pub id: &'static str, pub name: &'static str, pub palette: Palette }
 pub static SKINS: &[Skin] = &[
-    Skin { id: "graphite", name: "Graphite / rose", palette: GRAPHITE },
-    Skin { id: "cream", name: "Cream / mint", palette: CREAM },
+    Skin { id: "graphite", name: "Graphite", palette: GRAPHITE },
+    Skin { id: "ivory", name: "Ivory / charcoal", palette: IVORY },
+    Skin { id: "orange", name: "Orange", palette: ORANGE },
+    Skin { id: "lilac", name: "Lilac", palette: LILAC },
+    Skin { id: "ivory-blue", name: "Ivory / blue", palette: IVORY_BLUE },
+    Skin { id: "graphite-mint", name: "Graphite / turquoise", palette: GRAPHITE_MINT },
 ];
 
 pub fn get(id: &str) -> &'static Skin {
@@ -27,7 +31,9 @@ mod tests {
             assert_eq!(image[crate::panel::LCD_Y * crate::panel::W + crate::panel::LCD_X], 0xff00ff);
             images.push(image);
         }
-        assert_ne!(images[0], images[1]);
+        for i in 0..images.len() {
+            for j in 0..i { assert_ne!(images[i], images[j]); }
+        }
         assert_eq!(get("unknown-future-skin").id, "graphite");
     }
 }

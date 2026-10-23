@@ -31,12 +31,12 @@ importantes cerrados y respaldados; no se garantiza riesgo cero.
 
 ## Firmwares y aspecto
 
-El menú **Firmware…** permite cargar sin conexión **Felucca 1.6.1, X0X 1.1.0,
-AMB-1 1.3, FoMni-1 0.4, Polly 0.5, Skiff 1.4 y DUB-1 1.2.0**. Cada paquete original se comprueba por tamaño y
-SHA-256 antes de cargarlo; los siete tienen pruebas reales de arranque,
-pantalla y audio en el motor Windows. Consulta [procedencia, licencias y
-fuentes completas](firmware/README.md). No se incluye firmware propietario de
-fábrica ni paquetes con permiso de redistribución incierto.
+El menú **Firmware…** incluye **21 firmwares sin conexión**, con versiones
+fijadas y pruebas reales de arranque, pantalla y audio. Entre ellos: Felucca,
+X0X, AMB-1, FoMni-1, Polly, Skiff, DUB-1, Chipbox, Frodhes y Niagara Drift.
+Consulta [la lista completa, autores, licencias y fuentes](firmware/README.md)
+y [los candidatos pendientes o excluidos](firmware/RESEARCH.md).
+Cada paquete se comprueba por tamaño y SHA-256 antes de cargarlo.
 
 El menú conserva **Open firmware / save file…** y el botón **Load firmware /
 save…** para `.fwsc` y `.fm1save` propios. Cambiar de firmware reinicia solo esa
@@ -44,10 +44,12 @@ instancia y sus patches; exporta primero para conservarlos. Cada instancia
 mantiene motor, firmware, flash y skin independientes. Guarda los cambios desde
 el firmware antes de guardar el Set: se conserva firmware y flash, no toda la RAM.
 
-**Skin** ofrece **Graphite / rose** y **Cream / mint**. Son interpretaciones
-gráficas, no una reproducción certificada de todas las variantes comerciales.
-Cambian la carcasa, teclas y controles sin teñir la pantalla o los LED del
-firmware; la selección se guarda con cada instancia del proyecto.
+**Skin** ofrece los seis acabados de la imagen de referencia: **Graphite**,
+**Ivory / charcoal**, **Orange**, **Lilac**, **Ivory / blue** y
+**Graphite / turquoise**. Son paletas dibujadas a partir de esa referencia;
+no se incluye la fotografía ni se afirma una equivalencia colorimétrica exacta.
+Cambian carcasa, teclas y controles; pantalla y LED conservan sus colores.
+La selección se guarda con cada instancia del proyecto.
 
 El instrumento sigue apareciendo como **FM-1**, fabricante **fm1-emu**, con
 la identidad VST3 de la preview para recuperar proyectos anteriores.

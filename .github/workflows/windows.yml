@@ -1,5 +1,6 @@
 name: Windows VST3 prototype
 on:
+  workflow_call:
   workflow_dispatch:
   push:
     branches: [main]
@@ -93,6 +94,8 @@ jobs:
       - name: Install, load plugin factory and uninstall
         shell: pwsh
         run: ./tools/smoke-installer.ps1
+      - name: Package complete portable ZIP
+        run: python tools/package-portable.py
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: Wave-FM-1-Windows-x64-experimental

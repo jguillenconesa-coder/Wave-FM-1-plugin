@@ -37,6 +37,12 @@ The offline firmware catalogue distributes separate unmodified interpreted progr
 | DUB-1 1.2.0 | sbegueria; Charles Vestal (AMB-1/FoMni/X0X); Leo Kuroshita / Hügelton Instruments | GPL-3.0-only, with OFL and Apache-2.0 notices. |
 
 
+The additional catalogue entries and their authors are listed in
+[`firmware/README.md`](firmware/README.md): fm1-chord, CTL-1 (USB), FiMba-1,
+MIN-1, Niagara Drift, TRIBE, Chipbox, Frodhes, FMini-1, Felucca 8 Patterns,
+Pocket GammaWave, NOIZ DEMONS, Unholy Union and WaveLoop FM-1. Each has its own
+`firmware/licenses/<id>/` notices, including inherited DSP, font and SDK credits.
+
 Full upstream notices are in `firmware/licenses/<id>/`, and complete corresponding
 sources with recursive submodules are in `firmware/sources/`. Both are also included
 inside every VST3 package. See `firmware/manifest.json` for exact versions, source

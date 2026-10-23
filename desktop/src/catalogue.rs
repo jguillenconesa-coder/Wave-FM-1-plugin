@@ -34,6 +34,8 @@ pub fn read_at(directory: &Path, entry: &Entry) -> Result<Firmware, String> {
 
 pub fn read(entry: &Entry) -> Result<Firmware, String> {
     let directory = module_directory().ok_or("cannot locate the plugin's private firmware folder")?;
+    #[cfg(target_os = "macos")]
+    let directory = directory.parent().ok_or("invalid CLAP bundle layout")?.join("Resources");
     read_at(&directory.join("firmwares"), entry)
 }
 

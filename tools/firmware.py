@@ -33,7 +33,7 @@ def verify_source():
 
 def package(bundle, platform):
     verify_source()
-    module = bundle / "Contents" / ("PlugIns/FM-1.clap/Contents/MacOS" if platform == "macos" else "x86_64-win")
+    module = bundle / "Contents" / ("PlugIns/FM-1.clap/Contents/Resources" if platform == "macos" else "x86_64-win")
     resources = bundle / "Contents/Resources"
     for src, dst in ((ROOT / "firmware/catalogue", module / "firmwares"),
                      (ROOT / "firmware/sources", resources / "firmware-sources"),
@@ -47,7 +47,7 @@ def package(bundle, platform):
 
 def verify_bundle(bundle, platform="windows"):
     verify_source()
-    module = "Contents/PlugIns/FM-1.clap/Contents/MacOS" if platform == "macos" else "Contents/x86_64-win"
+    module = "Contents/PlugIns/FM-1.clap/Contents/Resources" if platform == "macos" else "Contents/x86_64-win"
     expected = {}
     for src, dst in ((ROOT / "firmware/catalogue", module + "/firmwares"),
                      (ROOT / "firmware/sources", "Contents/Resources/firmware-sources"),

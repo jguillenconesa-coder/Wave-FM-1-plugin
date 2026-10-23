@@ -33,7 +33,7 @@ copias simultáneas de la preview en carpetas estándar y personalizadas.
 
 ## Firmware y skin por instancia
 
-**Firmware…** incluye Felucca 1.6.1, X0X 1.1.0, AMB-1 1.3, FoMni-1 0.4, Polly 0.5, Skiff 1.4 y DUB-1 1.2.0, sin
+**Firmware…** incluye [21 paquetes originales](../firmware/README.md), sin
 conexión y con tamaño y SHA-256 comprobados al abrirlos. **Open firmware / save
 file…** y **Load firmware / save…** conservan la carga manual `.fwsc` y `.fm1save`.
 **Export save…** exporta el estado portátil.
@@ -43,10 +43,10 @@ pide confirmación si hay uno cargado. Exporta antes lo que quieras conservar.
 Si falla la integridad o el arranque inicial, se conserva la configuración
 anterior. La carga manual permite versiones modificadas fuera del catálogo.
 
-**Skin** ofrece **Graphite / rose** y **Cream / mint**, interpretaciones dibujadas
-sin imágenes del fabricante. No se certifica la reproducción de todas las
-variantes comerciales. Cambia carcasa, teclas y controles; pantalla y LED
-conservan sus colores. Se guarda con la instancia y no afecta al sonido.
+**Skin** ofrece los seis acabados de la referencia: Graphite, Ivory / charcoal,
+Orange, Lilac, Ivory / blue y Graphite / turquoise. Son paletas dibujadas, sin
+incluir la fotografía del fabricante. Cambian carcasa, teclas y controles;
+pantalla y LED conservan sus colores. La selección se guarda por instancia.
 En firmwares SMK-37 manuales se conserva el panel SMK-37 sin estas skins.
 
 Empieza a volumen bajo y envía MIDI al canal esperado. El plugin permite

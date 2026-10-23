@@ -6,12 +6,14 @@ use std::{sync::{mpsc, Arc, Mutex, atomic::Ordering}, time::{Duration, Instant}}
 fn every_bundled_firmware_boots_draws_and_produces_finite_audio() {
     let directory = std::env::var_os("FM1_CATALOGUE_TEST_DIR").map(std::path::PathBuf::from)
         .unwrap_or_else(|| std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../../firmware/catalogue"));
-    std::thread::scope(|scope| {
-        for entry in catalogue::ENTRIES {
-            let directory = &directory;
-            scope.spawn(move || exercise_entry(entry, directory));
-        }
-    });
+    for group in catalogue::ENTRIES.chunks(4) {
+        std::thread::scope(|scope| {
+            for entry in group {
+                let directory = &directory;
+                scope.spawn(move || exercise_entry(entry, directory));
+            }
+        });
+    }
 }
 
 fn exercise_entry(entry: &catalogue::Entry, directory: &std::path::Path) {
@@ -49,12 +51,16 @@ fn exercise_entry(entry: &catalogue::Entry, directory: &std::path::Path) {
             midi.push(Midi { frame: 5 * 44100, bytes: [0x80 | channel, 60, 0], len: 3 }).unwrap();
         }
         let start = Instant::now(); let mut frames = 0; let mut peak = 0.0f32; let mut finite = true;
-        let mut played = false; let mut keyed = false;
+        let mut played = false; let mut released_play = false; let mut keyed = false;
         while frames < 8 * 44100 && start.elapsed() < Duration::from_secs(40) {
             if frames >= 2 * 44100 && !played {
                 tx.send(Cmd::Key { id: 12, down: true }).unwrap();
-                tx.send(Cmd::Key { id: 12, down: false }).unwrap();
                 played = true;
+            }
+            // Matrix buttons must stay down across emulated scan ticks. Sending
+            // down/up in the same command drain is an invisible zero-length tap.
+            if frames >= 2 * 44100 + 4410 && !released_play {
+                tx.send(Cmd::Key { id: 12, down: false }).unwrap(); released_play = true;
             }
             if frames >= 3 * 44100 && !keyed {
                 tx.send(Cmd::Key { id: 26, down: true }).unwrap(); keyed = true;
@@ -77,7 +83,7 @@ fn exercise_entry(entry: &catalogue::Entry, directory: &std::path::Path) {
 #[test]
 fn skins_and_firmware_are_owned_by_each_instance() {
     let a = Fm1Params::default(); let b = Fm1Params::default();
-    *a.skin.lock().unwrap() = "cream".into();
+    *a.skin.lock().unwrap() = "lilac".into();
     a.firmware.lock().unwrap().name = "instance A".into();
     assert_eq!(*b.skin.lock().unwrap(), "graphite");
     assert!(b.firmware.lock().unwrap().name.is_empty());
