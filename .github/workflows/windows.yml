@@ -77,6 +77,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Validator compilation failed' }
           & build/windows-validator/bin/Release/validator.exe 'dist/VST3/FM-1.vst3' | Tee-Object dist/VALIDATION.txt
           if ($LASTEXITCODE -ne 0) { throw 'VST3 validation failed' }
+          if ((Get-Content dist/VALIDATION.txt -Raw) -notmatch 'Result: [1-9][0-9]* tests passed, 0 tests failed') { throw 'Validator did not report completed, successful plugin tests' }
       - name: Report build error context
         if: failure()
         shell: pwsh

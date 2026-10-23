@@ -6,6 +6,9 @@ on:
     tags: ['v*-preview.*']
 permissions:
   contents: read
+defaults:
+  run:
+    shell: bash
 concurrency:
   group: macos-${{ github.ref }}
   cancel-in-progress: true
@@ -39,14 +42,22 @@ jobs:
         run: |
           cmake -S tools/validator -B build/macos-validator -G Ninja -DCMAKE_BUILD_TYPE=Release -DVST3_SDK_ROOT="$PWD/build/macos/cpm/vst3sdk"
           cmake --build build/macos-validator --target validator --parallel 3
-          build/macos-validator/bin/validator 'dist/macos/VST3/Wave FM-1.vst3' | tee dist/macos/VALIDATION.txt
+          build/macos-validator/bin/validator 'dist/macos/VST3/Wave FM-1.vst3' 2>&1 | tee macos-validator.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          report = Path('macos-validator.log').read_text()
+          if not re.search(r'Result: [1-9][0-9]* tests passed, 0 tests failed', report):
+              raise SystemExit('Validator did not report completed, successful plugin tests')
+          PY
+          cp macos-validator.log dist/macos/VALIDATION.txt
           cp dist/macos/VALIDATION.txt dist/macos-downloads-validation.txt
       - name: Package verified bundle
         run: bash tools/package-macos.sh
       - name: Report build error context
         if: failure()
         run: |
-          for log in macos-build.log macos-tests.log; do
+          for log in macos-build.log macos-tests.log macos-validator.log; do
             if [[ -f "$log" ]]; then
               context=$(tail -n 30 "$log" | tr '\n' ' ')
               context=${context//%/%25}
