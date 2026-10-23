@@ -1,4 +1,18 @@
-# Wave FM-1 Preview 0.2.0 · Windows y macOS
+# Wave FM-1 Preview 0.2.1 · Windows y macOS
+
+Nueva vista **MIDI / Live** con etiquetas legibles, siete encoders y 14 botones
+expuestos como parámetros de host, además de Master. La guía integrada explica
+Configure y MIDI Map. Los botones asignados se liberan tras un pulso de 100 ms;
+la función de cada control depende del firmware. El panel conserva sus controles
+manuales. Consulta `docs/MIDI_LIVE.md` para las referencias relativas de los encoders.
+
+Nuevo explorador **Community firmwares…**: 83 referencias conocidas y consulta
+manual de novedades en el Hub, con descarga opcional de archivos `.fwsc`.
+64 publicaciones de los autores tienen enlaces alternativos de GitHub y hashes
+de referencia. Descargar no ejecuta el paquete ni sustituye un Set. Estos
+archivos externos no se redistribuyen dentro del instalador y no todos pasan
+la prueba genérica de audio; consulta `docs/COMMUNITY_BROWSER.md` y el informe
+de compatibilidad. El menú offline mantiene los 23 paquetes originales revisados.
 
 VST3 experimental basado en fm1-emu de Joakim Eriksson. Añade un menú sin conexión
 con **23 firmwares originales**, carga manual `.fwsc`/`.fm1save` y **seis skins**
@@ -8,10 +22,10 @@ firmware, flash y skin independientes. El instrumento sigue apareciendo como
 
 ## Descargas
 
-- **Windows x64**: `Wave-FM-1-0.2.0-Windows-x64-Setup.exe`, con desinstalador
+- **Windows x64**: `Wave-FM-1-0.2.1-Windows-x64-Setup.exe`, con desinstalador
   en Agregar o quitar programas. Ruta predeterminada:
   `C:\Program Files\Common Files\VST3\Wave FM-1.vst3`.
-- **Windows portátil**: `Wave-FM-1-0.2.0-Windows-x64-Portable.zip`. Mantén unido
+- **Windows portátil**: `Wave-FM-1-0.2.1-Windows-x64-Portable.zip`. Mantén unido
   todo el bundle `VST3/FM-1.vst3`; evita dos copias simultáneas.
 - **macOS Universal 2**: ZIP y PKG para Intel/Apple Silicon, compilados con
   mínimo macOS 11. El ZIP permite instalar por usuario; el PKG instala el bundle

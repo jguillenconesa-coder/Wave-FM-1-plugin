@@ -1,4 +1,4 @@
-# Wave FM-1 Preview 0.2.0 · macOS
+# Wave FM-1 Preview 0.2.1 · macOS
 
 VST3 Universal 2 para **Intel y Apple Silicon**, mínimo de compilación **macOS 11**.
 Requiere un host VST3 como Ableton Live. No incluye AU. Los paquetes aparecen en

@@ -35,6 +35,18 @@ importantes cerrados y respaldados; no se garantiza riesgo cero.
 
 ## Firmwares y aspecto
 
+**MIDI / Live** muestra etiquetas de alto contraste y una columna con Master,
+los siete encoders y 14 botones asignables. Incluye instrucciones de Configure
+y MIDI Map; los nombres coinciden con los parámetros de Live. Consulta
+[cómo mapear tu controlador y qué representan los valores](docs/MIDI_LIVE.md).
+
+**Community firmwares…** permite buscar entre 83 referencias conocidas,
+consultar novedades en Firmware Hub y guardar un `.fwsc` sin actualizar un Set
+automáticamente. Incluye enlaces alternativos a **64 publicaciones originales
+de GitHub**, con hash de referencia. Los paquetes externos no forman parte
+del instalador ni equivalen a firmwares completamente verificados. Consulta
+[el explorador, las descargas y sus límites](docs/COMMUNITY_BROWSER.md).
+
 El menú **Firmware…** incluye **23 firmwares sin conexión**, con versiones
 fijadas y pruebas reales de arranque, pantalla y audio. Entre ellos: Felucca,
 X0X, AMB-1, FoMni-1, Polly, Skiff, DUB-1, Chipbox, Frodhes y Niagara Drift.

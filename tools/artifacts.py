@@ -39,7 +39,7 @@ def process(directory, record=False):
     if actual != set(hashes):
         raise ValueError("Unexpected files in VST3 bundle")
     desktop = hashlib.sha256()
-    for path in sorted((ROOT / "desktop").rglob("*.rs")) + [ROOT / "tools/prepare-desktop.py"]:
+    for path in sorted((ROOT / "desktop").rglob("*.rs")) + [ROOT / "tools/prepare-desktop.py", ROOT / "firmware/community-index.json"]:
         desktop.update(path.relative_to(ROOT).as_posix().encode())
         desktop.update(path.read_bytes())
     desktop_hash = desktop.hexdigest()

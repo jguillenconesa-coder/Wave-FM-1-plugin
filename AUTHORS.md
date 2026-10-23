@@ -17,6 +17,12 @@ archivos originales siguen siendo las que constan en sus avisos.
 - **Joakim Eriksson y colaboradores**: fm1-emu, emulación de CPU/SoC, motor de
   instrumento, carga de firmware, plugin CLAP y panel interactivo original, MIT.
   `desktop/README.md` identifica la revisión y las adaptaciones de esta distribución.
+- **Catálogo comunitario**: las 83 referencias iniciales proceden del índice de
+  fm1-emu de Joakim Eriksson (MIT), que combina el Firmware Hub de zvenson con
+  referencias propias. `firmware/community-index.json` conserva los autores y
+  repositorios de cada firmware. Los enlaces adicionales apuntan a publicaciones
+  originales de sus autores; no se atribuye su creación a esta integración ni
+  se afirma que todos sus recursos permitan redistribución.
 - **Timo Kaluza, Paul Walker y colaboradores de free-audio/clap-wrapper**:
   conversión del CLAP a VST3, MIT.
 - **Robbert van der Helm y colaboradores**: nih-plug, ISC.

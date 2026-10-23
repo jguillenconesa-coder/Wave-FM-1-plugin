@@ -6,6 +6,44 @@ not an independent penetration test or a complete audit of upstream Rust/C++
 code. Windows x64 binaries have been built and checked under Wine 10; native
 release workflows gate publication. User-machine acceptance remains separate.
 
+## Version 0.2.1 additions (2026-10-23)
+
+- MIDI/Live adds 21 stable host parameters without changing the existing
+  parameter IDs or VST3 class identity. Encoder differences and 100 ms button
+  pulses are routed on the emulator worker. Host callbacks only use atomic
+  counters for pulses. Simultaneous host/mouse presses are combined; host pulses
+  always expire. SMK-37 does not receive FM-1 automation control IDs.
+- The optional community browser embeds 83 credited references and 64 direct
+  author release URLs with pinned SHA-256 values. External firmware binaries
+  are not bundled or relicensed. A separate report records basic boot/LCD/audio
+  success for 62 of 64 exact original downloads; BEETLE and PIGEON remained
+  silent in the generic test. This does not establish safety or full compatibility.
+- Network activity requires explicit user actions. Transport uses OS TLS through
+  WinHTTP or macOS's built-in curl with no shell/user curl config. Initial URLs
+  and every redirect use exact public host allowlists; no custom hosts, ports,
+  credentials, insecure protocols, private IP destinations or arbitrary programs.
+  GitHub's asset CDN may use signed HTTPS query strings. Byte counts, redirects
+  and time are bounded. No certificates are bypassed or ambient Windows
+  credentials submitted. No network/file I/O is added to the audio callback.
+- Downloads are parsed as data and saved to a new user-selected `.fwsc` using
+  atomic no-overwrite persistence. They never load automatically, update Sets,
+  flash hardware or replace bundled files. Pinned author release downloads must
+  match the recorded hash; a new Hub package has no independent hash reference
+  and is explicitly unverified. The emulator remains inside the DAW, without
+  a security sandbox. Third-party network providers see normal request metadata.
+- Instance destruction joins owned background jobs before returning to the host,
+  so a download cannot keep running after the host unloads its plugin code.
+  Closing an instance during a network request can wait for its timeout. Existing
+  firmware import/export worker jobs now use the same lifetime ownership.
+- Local unit tests cover host IDs, encoder routes, short pulses and release,
+  instance separation, malformed/oversized catalogues, blocked addresses and
+  redirects, package parsing, hashes and refusal to overwrite user files.
+  Local Wine HTTPS hit DNS error 12007 in the container; it is not accepted as
+  a successful network test. Native Windows/macOS release workflows explicitly
+  require a real author HTTPS download, hash match and package parse in addition
+  to their normal engine and official VST3 checks. No new Rust dependencies
+  were introduced. Actual Live MIDI mapping requires user-machine acceptance.
+
 ## Version 0.2.0 additions (2026-10-23)
 
 - Twenty-three original firmware packages are distributed as separate interpreted

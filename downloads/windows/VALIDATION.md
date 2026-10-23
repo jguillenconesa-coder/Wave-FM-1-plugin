@@ -1,5 +1,14 @@
 # Validation record · Preview 0.2.0 · 2026-10-23
 
+For the upcoming 0.2.1 source changes: local checks add MIDI routing and optional
+community downloads. Original external packages were downloaded from 64 author
+GitHub releases; 62 passed basic engine/LCD/eight-second audio checks, while
+BEETLE/PIGEON were silent with the generic stimulus. See
+[exact external results](../../docs/COMMUNITY_COMPATIBILITY.md).
+Native 0.2.1 release gates include an explicit real HTTPS download and hash
+verification. The completed native evidence below remains specific to 0.2.0
+preview.4 until a separate 0.2.1 result is recorded.
+
 Emulator: `72adb810c4409c4b7302ca56906c05083834faee`; wrapper: v0.16.0.
 Exact source revision, desktop fingerprint, firmware packages, matching sources,
 notices and binary hashes are recorded by each build; compiler output is in CI. Release asset

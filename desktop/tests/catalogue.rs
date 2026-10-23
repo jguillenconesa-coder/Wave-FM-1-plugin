@@ -16,7 +16,7 @@ fn every_bundled_firmware_boots_draws_and_produces_finite_audio() {
     }
 }
 
-fn exercise_entry(entry: &catalogue::Entry, directory: &std::path::Path) {
+pub fn exercise_entry(entry: &catalogue::Entry, directory: &std::path::Path) {
         let firmware = catalogue::read_at(directory, entry).expect(entry.name);
         let shared = Arc::new(Shared {
             view: Mutex::new(View { lcd: vec![0; 240 * 240], leds: [0.0; 41], pads: [0; 16],

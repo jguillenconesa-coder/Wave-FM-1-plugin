@@ -38,6 +38,11 @@ jobs:
         run: |
           uname -m
           cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --lib --test catalogue --test portable -j 3 -- --nocapture 2>&1 | tee macos-tests.log
+      - name: Opt-in real HTTPS author download
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/build/macos-rust
+          MACOSX_DEPLOYMENT_TARGET: '11.0'
+        run: cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --lib online::tests::author_release_download_uses_real_https -j 3 -- --ignored --nocapture
       - name: Official VST3 validation
         run: |
           cmake -S tools/validator -B build/macos-validator -G Ninja -DCMAKE_BUILD_TYPE=Release -DVST3_SDK_ROOT="$PWD/build/macos/cpm/vst3sdk"

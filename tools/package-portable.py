@@ -7,7 +7,7 @@ import artifacts
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 artifacts.process(DIST)
 output = DIST / "installer"
 setup = output / f"Wave-FM-1-{VERSION}-Windows-x64-Setup.exe"

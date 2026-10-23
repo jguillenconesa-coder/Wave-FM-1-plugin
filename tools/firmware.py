@@ -68,6 +68,11 @@ def package(bundle, platform):
     shutil.copyfile(ROOT / "firmware/manifest.json", resources / "firmware-manifest.json")
     shutil.copyfile(ROOT / "firmware/README.md", resources / "FIRMWARES.md")
     shutil.copyfile(ROOT / "firmware/RESEARCH.md", resources / "RESEARCH.md")
+    shutil.copyfile(ROOT / "firmware/community-index.json", resources / "COMMUNITY_INDEX.json")
+    for name in ("MIDI_LIVE.md", "COMMUNITY_BROWSER.md", "COMMUNITY_COMPATIBILITY.md"):
+        shutil.copyfile(ROOT / "docs" / name, resources / name)
+    (resources / "validation").mkdir(exist_ok=True)
+    shutil.copyfile(ROOT / "docs/validation/community-2026-10-23.json", resources / "validation/community-2026-10-23.json")
 
 
 def verify_bundle(bundle, platform="windows"):
@@ -83,6 +88,9 @@ def verify_bundle(bundle, platform="windows"):
     expected["Contents/Resources/firmware-manifest.json"] = sha(ROOT / "firmware/manifest.json")
     expected["Contents/Resources/FIRMWARES.md"] = sha(ROOT / "firmware/README.md")
     expected["Contents/Resources/RESEARCH.md"] = sha(ROOT / "firmware/RESEARCH.md")
+    expected["Contents/Resources/COMMUNITY_INDEX.json"] = sha(ROOT / "firmware/community-index.json")
+    for name in ("MIDI_LIVE.md", "COMMUNITY_BROWSER.md", "COMMUNITY_COMPATIBILITY.md", "validation/community-2026-10-23.json"):
+        expected["Contents/Resources/" + name] = sha(ROOT / "docs" / name)
     for name, value in expected.items():
         if sha(bundle / name) != value:
             raise ValueError(f"Packaged firmware/source/licence mismatch: {name}")

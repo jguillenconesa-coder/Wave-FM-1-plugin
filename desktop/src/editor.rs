@@ -5,7 +5,7 @@
 //! that is the host's "Master" parameter), and a bar to load a firmware package.
 
 use crate::engine::Cmd;
-use crate::{catalogue, skins};
+use crate::{catalogue, controls, online, skins};
 use crate::{panel, panel_smk, Fm1Params, Link};
 use fm1_soc::Board;
 use nih_plug::prelude::*;
@@ -40,6 +40,14 @@ struct Ui {
     job: Option<Job>,
     skin: String,
     pending_firmware: Option<usize>,
+    mapping: bool,
+    browser: bool,
+    search: String,
+    community: Vec<online::Entry>,
+    browser_job: Option<BrowserJob>,
+    browser_pick: Option<(online::Entry, Answer)>,
+    browser_status: String,
+    downloaded: Option<std::path::PathBuf>,
 }
 
 impl Default for Ui {
@@ -65,6 +73,14 @@ impl Default for Ui {
             job: None,
             skin: String::new(),
             pending_firmware: None,
+            mapping: false,
+            browser: false,
+            search: String::new(),
+            community: online::offline(),
+            browser_job: None,
+            browser_pick: None,
+            browser_status: "Included index · 83 references from fm1-emu; not a live Hub check".into(),
+            downloaded: None,
         }
     }
 }
@@ -161,6 +177,11 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 bar.label("CPU clock").on_hover_text("The emulated FM-1's clock, 240 MHz as on the chip. Raise it if a firmware runs out of time; each step costs this computer's CPU. Changing it restarts the firmware");
                 bar.add(widgets::ParamSlider::for_param(&params.clock, setter).with_width(90.0));
                 bar.separator();
+                bar.toggle_value(&mut ui.mapping, "MIDI / Live")
+                    .on_hover_text("Show clearly labelled controls you can expose with Live's Configure button, then map to your MIDI keyboard or controller");
+                bar.toggle_value(&mut ui.browser, "Community firmwares…")
+                    .on_hover_text("Browse known firmwares, check Firmware Hub for new versions, or download a .fwsc file. No network access until you ask.");
+                bar.separator();
                 let status = if !ui.msg.is_empty() {
                     ui.msg.clone()
                 } else if !booted {
@@ -174,6 +195,149 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 bar.label(status);
             });
         });
+
+        if let Some(result) = ui.browser_job.as_ref().and_then(|job| job.lock().unwrap().take()) {
+            ui.browser_job = None;
+            match result {
+                Ok(BrowserResult::Catalogue(entries)) => {
+                    let changed = entries.iter().filter(|entry| !ui.community.iter().any(|old|
+                        (old.id == entry.id || !old.hub.is_empty() && old.hub == entry.hub) && old.version == entry.version)).count();
+                    ui.browser_status = format!("Hub checked · {} entries · {changed} new or changed since the displayed index. Downloads are not functionally verified.", entries.len());
+                    ui.community = entries;
+                }
+                Ok(BrowserResult::Download(download)) => {
+                    ui.browser_status = format!("Saved {}\nSHA-256: {}\nPackage parsed; execution/audio not tested. Load only if you trust its source.", download.path.display(), download.sha256);
+                    ui.downloaded = Some(download.path);
+                }
+                Err(error) => ui.browser_status = error,
+            }
+        }
+        let chosen = ui.browser_pick.as_ref().and_then(|(entry, answer)|
+            answer.lock().unwrap().take().map(|path| (entry.clone(), path)));
+        if let Some((entry, path)) = chosen {
+            ui.browser_pick = None;
+            if let Some(mut path) = path {
+                if path.extension().is_none() { path.set_extension("fwsc"); }
+                let job: BrowserJob = Default::default(); let result = job.clone();
+                ui.browser_job = Some(job);
+                ui.browser_status = format!("Downloading {} {}…", entry.name, entry.version);
+                link.background(move || { *result.lock().unwrap() = Some(online::download(&entry, &path).map(BrowserResult::Download)); });
+            }
+        }
+        if ui.browser {
+            let mut open = true;
+            egui::Window::new("Community firmwares · Firmware Hub").open(&mut open).default_width(640.0)
+                .show(ctx, |browser| {
+                    browser.label("23 bundled/tested firmwares remain in Firmware. This explorer lists additional references; a listing does not verify functionality or redistribution rights.");
+                    browser.horizontal(|row| {
+                        let idle = ui.browser_job.is_none() && ui.browser_pick.is_none();
+                        if row.add_enabled(idle, egui::Button::new("Check Hub for new firmwares")).clicked() {
+                            let job: BrowserJob = Default::default(); let result = job.clone();
+                            ui.browser_job = Some(job); ui.browser_status = "Checking https://thefirmwarehub.com/catalog.json…".into();
+                            link.background(move || { *result.lock().unwrap() = Some(online::check().map(BrowserResult::Catalogue)); });
+                        }
+                        row.hyperlink_to("Open Firmware Hub", "https://thefirmwarehub.com/#play");
+                    });
+                    browser.label(&ui.browser_status);
+                    browser.small("Downloads contact the displayed provider only on request. They save a new .fwsc file where you choose; existing files are not overwritten and open Sets are not updated.");
+                    if let Some(path) = &ui.downloaded {
+                        if browser.add_enabled(ui.job.is_none() && ui.picking.is_none(), egui::Button::new("Load downloaded firmware into this instance…"))
+                            .on_hover_text("Replaces this instance's firmware and patches. Export the current setup first. Downloaded packages have not passed the bundled catalogue's audio tests.").clicked() {
+                            ui.job = Some(file_job(FileAction::Load, path.clone(), params.clone(), link.clone()));
+                        }
+                    }
+                    browser.separator();
+                    browser.horizontal(|row| { row.label("Search"); row.text_edit_singleline(&mut ui.search); });
+                    let query = ui.search.to_lowercase();
+                    egui::ScrollArea::vertical().max_height(300.0).show(browser, |list| {
+                        for entry in &ui.community {
+                            if !format!("{} {} {}", entry.name, entry.author, entry.version).to_lowercase().contains(&query) { continue; }
+                            list.group(|card| {
+                                card.label(egui::RichText::new(format!("{} {} · {}", entry.name, entry.version, entry.author)).strong());
+                                if let Some(bundled) = catalogue::ENTRIES.iter().find(|b| b.id == entry.id || !entry.hub.is_empty() && b.id == entry.hub) {
+                                    card.small(format!("Bundled/tested: {} · {}", bundled.version, bundled.license));
+                                } else { card.small("External firmware · not included or functionally tested by this plugin"); }
+                                card.small(format!("Reported terms: {}", entry.license));
+                                if let Some(passed) = entry.alternate_smoke {
+                                    card.small(format!("GitHub {}: {}", entry.alternate_version,
+                                        if passed { "basic boot/LCD/8-second audio passed; not full verification" }
+                                        else { "no audio in the generic smoke test; not functionally verified" }));
+                                }
+                                card.horizontal_wrapped(|row| {
+                                    let idle = ui.browser_job.is_none() && ui.browser_pick.is_none();
+                                    if row.add_enabled(idle && online::downloadable(entry), egui::Button::new("Download .fwsc…"))
+                                        .on_hover_text(format!("{}\nReview the author's terms before use or redistribution. No automatic loading.", entry.package)).clicked() {
+                                        ui.browser_pick = Some((entry.clone(), pick(FileAction::Download, &format!("{}-{}", entry.id, entry.version))));
+                                    }
+                                    if let Some(alternate) = online::alternative(entry) {
+                                        if row.add_enabled(idle, egui::Button::new(format!("GitHub {}…", alternate.version)))
+                                            .on_hover_text(format!("Direct author release · SHA-256 checked against this preview's index\n{}", alternate.package)).clicked() {
+                                            let answer = pick(FileAction::Download, &format!("{}-{}", alternate.id, alternate.version));
+                                            ui.browser_pick = Some((alternate, answer));
+                                        }
+                                    }
+                                    if entry.repo.starts_with("https://github.com/") { row.hyperlink_to("Author / terms", &entry.repo); }
+                                    if !entry.hub.is_empty() { row.hyperlink_to("Hub card", format!("https://thefirmwarehub.com/#fw-{}", entry.hub)); }
+                                });
+                            });
+                        }
+                    });
+                });
+            ui.browser = open;
+        }
+
+        if ui.mapping {
+            egui::SidePanel::right("midi-live").exact_width(265.0).resizable(false).show(ctx, |map| {
+                egui::ScrollArea::vertical().show(map, |map| {
+                    map.heading("MIDI / Live");
+                    map.label("Assignable host controls");
+                    map.collapsing("How to assign in Ableton Live", |help| {
+                        help.label("1. In Live's device, click Configure.");
+                        help.label("2. Move a slider or click a button here.");
+                        help.label("3. Turn Configure off. Enable MIDI Map (Ctrl+M / Cmd+M).");
+                        help.label("4. Select the new parameter in Live and move your controller. Exit MIDI Map.");
+                        help.label("Enable Remote for that MIDI input in Live's MIDI settings. For encoders, use absolute CC (0–127); for buttons, momentary 127/0.");
+                    });
+                    map.separator();
+                    map.label(egui::RichText::new("Master").strong());
+                    map.add(widgets::ParamSlider::for_param(&params.master, setter).with_width(240.0))
+                        .on_hover_text("Master · absolute level · the same parameter as the panel's MASTER pot");
+                    map.add_enabled_ui(!smk, |map| {
+                        map.label("Encoders · relative reference 0–127")
+                            .on_hover_text("A change of one step sends one encoder click. These positions are not firmware parameter values. The physical panel's encoders remain endless and independent of these references.");
+                        // Put the four performance knobs first, with names matching Live exactly.
+                        for i in [3, 4, 5, 6, 0, 1, 2] {
+                            let param = &params.controls.encoders[i].value;
+                            map.horizontal(|row| {
+                                row.add_sized([78.0, 18.0], egui::Label::new(egui::RichText::new(param.name()).strong()));
+                                row.add(widgets::ParamSlider::for_param(param, setter).with_width(155.0))
+                                    .on_hover_text(format!("{} · assign this slider in Live's Configure view. Its musical function depends on the loaded firmware.", param.name()));
+                            });
+                        }
+                        map.separator();
+                        map.label("Buttons · 100 ms trigger")
+                            .on_hover_text("Each Off → On change sends a short press and releases it automatically, even if the controller stays On. Use the physical panel for long presses.");
+                        egui::Grid::new("midi-buttons").num_columns(2).spacing([6.0, 5.0]).show(map, |grid| {
+                            for (i, button) in params.controls.buttons.iter().enumerate() {
+                                let response = grid.add_sized([117.0, 27.0], egui::Button::new(controls::BUTTONS[i]))
+                                    .on_hover_text(format!("Host name: {}\nConfigure: click here. Controller: momentary 127/0. The action depends on the firmware.", button.value.name()));
+                                if response.clicked() {
+                                    setter.begin_set_parameter(&button.value);
+                                    setter.set_parameter(&button.value, false);
+                                    setter.set_parameter(&button.value, true);
+                                    setter.set_parameter(&button.value, false);
+                                    setter.end_set_parameter(&button.value);
+                                }
+                                if i % 2 == 1 { grid.end_row(); }
+                            }
+                        });
+                    });
+                    if smk { map.label("FM-1 encoders/buttons are disabled for SMK-37 firmware."); }
+                    map.separator();
+                    map.small("Names identify physical controls. Their sound function depends on the firmware and the current screen. MIDI notes still play through the track as usual.");
+                });
+            });
+        }
 
         if let Some(index) = ui.pending_firmware {
             egui::Window::new("Replace firmware in this instance?").collapsible(false).resizable(false)
@@ -337,9 +501,53 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
             if let Some(t) = &ui.tex {
                 c.painter().image(t.id(), rect, egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)), egui::Color32::WHITE);
             }
+            if !smk {
+                if ui.mapping { mapping_labels(c.painter(), rect, k); }
+                if resp.hovered() {
+                    if let Some(p) = pos {
+                        let (x, y) = at(p);
+                        if let Some(name) = control_name(hit(false, x, y)) {
+                            resp.on_hover_text(format!("{name}\nMIDI / Live: find this name in the assignable-controls view. The action depends on your firmware."));
+                        }
+                    }
+                }
+            }
         });
         ctx.request_repaint_after(std::time::Duration::from_millis(33));
     })
+}
+
+fn control_name(ctl: i32) -> Option<String> {
+    match ctl {
+        0..=6 => Some(controls::ENCODERS[ctl as usize].0.into()),
+        7 => Some("Master".into()),
+        100..=113 => Some(format!("{} button", controls::BUTTONS[(ctl - 100) as usize])),
+        _ => None,
+    }
+}
+
+// Readable egui text stays at a useful point size even when the panel texture scales down.
+fn mapping_labels(painter: &egui::Painter, rect: egui::Rect, scale: f32) {
+    let accent = egui::Color32::from_rgb(90, 225, 245);
+    let point = |x, y| rect.min + egui::vec2(x * scale, y * scale);
+    let label = |at: egui::Pos2, name: &str| {
+        let galley = painter.layout_no_wrap(name.into(), egui::FontId::proportional(11.0), accent);
+        let bounds = egui::Rect::from_center_size(at, galley.size() + egui::vec2(6.0, 3.0));
+        painter.rect_filled(bounds, 3.0, egui::Color32::from_rgb(14, 22, 26));
+        painter.galley(bounds.min + egui::vec2(3.0, 1.5), galley, accent);
+    };
+    for (i, &(_, _, x, y, radius)) in panel::ENCS.iter().enumerate() {
+        painter.circle_stroke(point(x, y), (radius + 3.0) * scale, egui::Stroke::new(1.5_f32, accent));
+        label(point(x, y - radius - 23.0), controls::ENCODERS[i].0);
+    }
+    let (x, y, radius) = panel::POT;
+    painter.circle_stroke(point(x, y), (radius + 3.0) * scale, egui::Stroke::new(1.5_f32, accent));
+    label(point(x, y - radius - 23.0), "Master");
+    for (_, id, x, y, w, h) in panel::buttons() {
+        let bounds = egui::Rect::from_min_size(point(x as f32, y as f32), egui::vec2(w as f32 * scale, h as f32 * scale));
+        painter.rect_stroke(bounds, 3.0, egui::Stroke::new(1.0_f32, accent), egui::StrokeKind::Middle);
+        label(bounds.center(), controls::BUTTONS[id as usize]);
+    }
 }
 
 fn start_bundled(ui: &mut Ui, index: usize, params: Arc<Fm1Params>, link: Arc<Link>) {
@@ -349,7 +557,7 @@ fn start_bundled(ui: &mut Ui, index: usize, params: Arc<Fm1Params>, link: Arc<Li
     let job: Job = Default::default();
     let result = job.clone();
     ui.job = Some(job);
-    std::thread::spawn(move || {
+    link.clone().background(move || {
         let run = || -> Result<String, String> {
             let firmware = catalogue::read(entry)?;
             let (tx, rx) = std::sync::mpsc::channel();
@@ -371,8 +579,10 @@ fn start_bundled(ui: &mut Ui, index: usize, params: Arc<Fm1Params>, link: Arc<Li
 /// once the frame is done; the answer lands in the returned slot (a path, or None if cancelled).
 type Answer = Arc<std::sync::Mutex<Option<Option<std::path::PathBuf>>>>;
 type Job = Arc<std::sync::Mutex<Option<Result<String, String>>>>;
+enum BrowserResult { Catalogue(Vec<online::Entry>), Download(online::Download) }
+type BrowserJob = Arc<std::sync::Mutex<Option<Result<BrowserResult, String>>>>;
 #[derive(Clone, Copy)]
-enum FileAction { Load, Export }
+enum FileAction { Load, Export, Download }
 
 fn pick(action: FileAction, name: &str) -> Answer {
     let answer: Answer = Default::default();
@@ -385,6 +595,8 @@ fn pick(action: FileAction, name: &str) -> Answer {
                 .add_filter("FM-1 firmware or shared save", &["fwsc", "fm1save", "json"]).pick_file(),
             FileAction::Export => rfd::FileDialog::new().add_filter("FM-1 shared save", &["fm1save"])
                 .set_file_name(format!("{}.fm1save", if name.is_empty() { "FM-1" } else { &name })).save_file(),
+            FileAction::Download => rfd::FileDialog::new().set_title("Save community firmware · choose a new filename")
+                .add_filter("FM-1 firmware", &["fwsc"]).set_file_name(format!("{name}.fwsc")).save_file(),
         };
         *slot.lock().unwrap() = Some(path);
     };
@@ -400,10 +612,11 @@ fn pick(action: FileAction, name: &str) -> Answer {
 fn file_job(action: FileAction, mut path: std::path::PathBuf, params: Arc<Fm1Params>, link: Arc<Link>) -> Job {
     let job: Job = Default::default();
     let result = job.clone();
-    std::thread::spawn(move || {
+    link.clone().background(move || {
         if matches!(action, FileAction::Export) && path.extension().is_none() { path.set_extension("fm1save"); }
         let run = || -> Result<String, String> {
             match action {
+                FileAction::Download => Err("Use the community download worker".into()),
                 FileAction::Load => {
                     let current = params.firmware.lock().unwrap().clone();
                     let data = crate::savefile::read_with_firmware(&path, Some(&current))?;
