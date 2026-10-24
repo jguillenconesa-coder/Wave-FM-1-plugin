@@ -1,0 +1,4 @@
+Local MinGW/Wine 10 diagnostic; not a native Ableton/ASIO test.
+RENDER slice=8000 max_us=11916 max_batch_frames=512
+REALTIME X0X 48k/512 lead=1495 legacy=false: startup_missing=6585, steady_missing=0, debt=0, position=529199, callback_max_us=46, host_late_max_us=1198, engine_speed=1.880, peak=0.39877, halted=false
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 38 filtered out; finished in 12.00s

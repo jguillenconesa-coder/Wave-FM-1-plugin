@@ -45,6 +45,16 @@ This is per-window display state only. It does not send input, filter MIDI,
 alter sequencer events or change the firmware. A rendered-pixel regression
 checks stable tint around the previous ink-colour boundary and real flashes.
 
+Native Windows and Universal macOS preview.3 gates completed successfully at
+source `6f933c2`. All four public assets matched their release checksums;
+346 Windows / 992 macOS bundle hashes, architectures and original notices were
+verified. Both native X0X diagnostics passed at 48 kHz / 512 samples with zero
+missing frames after startup. The macOS native VST3 report and additional
+validation of the actual downloaded Windows VST3 under Wine each record 47
+passed, zero failed. Local functional/integrity checks and the clean-source
+secret scan also passed. Measurements, failed earlier test pacing and remaining
+acceptance limits: `downloads/windows/VALIDATION.md`.
+
 ## Version 0.2.4 host clock and timing (2026-10-23)
 
 An optional, non-automatable `transport_sync` parameter defaults to internal;

@@ -9,11 +9,11 @@ repositorio no se presenta como autora de ese trabajo; consulta
 
 ## Descargar e instalar
 
-- [Instalador Windows 0.2.4](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.4-preview.1/Wave-FM-1-0.2.4-Windows-x64-Setup.exe)
-- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.4-preview.1/Wave-FM-1-0.2.4-Windows-x64-Portable.zip)
-- [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.4-preview.1/Wave-FM-1-0.2.4-macOS-Universal.pkg)
-- [macOS Universal: ZIP por usuario](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.4-preview.1/Wave-FM-1-0.2.4-macOS-Universal.zip)
-- [Versión publicada, hashes y todos los archivos](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.4-preview.1)
+- [Instalador Windows 0.2.5](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.5-preview.3/Wave-FM-1-0.2.5-Windows-x64-Setup.exe)
+- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.5-preview.3/Wave-FM-1-0.2.5-Windows-x64-Portable.zip)
+- [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.5-preview.3/Wave-FM-1-0.2.5-macOS-Universal.pkg)
+- [macOS Universal: ZIP por usuario](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.5-preview.3/Wave-FM-1-0.2.5-macOS-Universal.zip)
+- [Versión publicada, hashes y todos los archivos](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.5-preview.3)
 - [Instalar/desinstalar en Windows](docs/WINDOWS.md) · [macOS Intel y Apple Silicon](docs/MACOS.md)
 
 Si la descarga directa falla, abre la página de la versión y selecciona el
@@ -35,12 +35,19 @@ importantes cerrados y respaldados; no se garantiza riesgo cero.
 
 ## Firmwares y aspecto
 
+**0.2.5** estabiliza las pequeñas variaciones de color de los botones, conservando
+los flashes del firmware. Ajusta las tandas de emulación y limita el trabajo de
+recuperación de audio por bloque. Una franja inferior muestra siempre **Engine**,
+**Audio late**, **CPU** y **Host**; **Copy audio status** copia el diagnóstico.
+Las pruebas incluyen X0X real a 48 kHz / 512 muestras. El rendimiento en el
+equipo del usuario sigue necesitando comprobación; no se garantiza ausencia de cortes.
+
 **Musical clock** permite elegir el reloj propio del firmware o sincronizar tempo
 y reproducción con **Ableton / DAW**. El firmware debe admitir clock externo por
 TRS/MIDI y tenerlo seleccionado. La versión 0.2.4 también corrige la recuperación
 de faltas de audio para conservar el tiempo y programa el MIDI por ciclos del
-emulador. Si falta capacidad de CPU todavía puede haber cortes, indicados con
-un aviso amarillo. Consulta [configuración y límites de la sincronización](docs/DAW_SYNC.md).
+emulador. Si falta capacidad de CPU todavía puede haber cortes, indicados en
+**Audio late**. Consulta [configuración y límites de la sincronización](docs/DAW_SYNC.md).
 
 **MIDI / Live** muestra etiquetas de alto contraste y una columna con Master,
 los siete encoders y 14 botones asignables. Incluye instrucciones de Configure

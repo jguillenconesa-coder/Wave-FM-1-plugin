@@ -1,4 +1,76 @@
-# Validation record · Preview 0.2.4 · 2026-10-23
+# Validation record · Preview 0.2.5 · 2026-10-24
+
+Published release: **v0.2.5-preview.3**, source `6f933c2`. Subsequent
+updates to links and this record are documentation-only commits.
+
+- [Native Windows build/publication 40043421910](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/40043421910): success, 14m 35s. Includes installer/factory/uninstall checks.
+- [Native Universal macOS build/publication 40043421827](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/40043421827): success, 5m 57s. Includes Universal architecture/signature and official VST3 checks.
+- All four actual public downloads matched their release SHA-256 values.
+  Both source manifests identify `6f933c2`; every one of the **346 Windows** and
+  **992 macOS** bundle file hashes matches. Both Windows modules are x64;
+  both macOS modules contain Intel/arm64. The Windows desktop fingerprint also
+  matches the reviewed source with its Windows checkout line endings.
+- Original notices and author declarations, 23 bundled firmware packages,
+  83 community references, 64 original author release links and the offline
+  DAW guide were verified in the downloads. Firmware binaries/licences are unchanged.
+- The published native macOS report records **47 passed, zero failed** official
+  VST3 tests. The actual downloaded native Windows bundle additionally passed
+  **47 official tests under Wine**, as well as its native CI gate. Reports:
+  [Windows](../../docs/validation/windows-025-preview3-vst3.txt) and
+  [macOS](../../docs/validation/macos-025-preview3-vst3.txt).
+- Local checks passed **37 unit tests**, **16 Python integrity/packaging tests**,
+  two portable-state tests and two catalogue tests exercising all 23 real
+  firmwares. Both native gates repeat functional tests and actual Felucca/Melodee
+  author downloads with hash/parse/save verification. A clean tracked-source
+  export of `6f933c2` passed Gitleaks 8.24.2 with no findings.
+
+## X0X at 48 kHz / 512 samples
+
+The isolated diagnostic runs the real bundled X0X CPU/JIT and audio queue for
+12 seconds, with PLAY, a held note and repeated GM percussion. The first two
+seconds are startup; the following ten seconds require zero missing frames,
+finite non-silent audio and no CPU halt. Virtual CPU: 240 MHz, lead: 1495
+firmware frames. These are observations on each runner, not comparative CPU
+ratings or an Ableton/ASIO driver benchmark.
+
+| Native runner | Engine speed | Missing frames during startup | Missing frames after startup | Maximum callback time | Maximum fake-host deadline lateness |
+| --- | --- | --- | --- | --- | --- |
+| Windows | 1.997x | 8937 | 0 | 1502 µs | 9538 µs |
+| macOS | 2.368x | 4703 | 0 | 18 µs | 15191 µs |
+
+Both peaks were 0.39877 and both engines finished without a halt. Exact
+reports: [Windows](../../docs/validation/windows-025-preview3-x0x.txt),
+[macOS](../../docs/validation/macos-025-preview3-x0x.txt) and
+[local MinGW/Wine](../../docs/validation/windows-025-local-x0x.txt).
+`REALTIME_X0X.txt` is also included at the top level of each portable ZIP.
+
+The first two macOS preview attempts were blocked before publication: the fake
+host's sleep-based pacing missed deadlines by up to 84.6 ms. Preview.3 yields
+until absolute deadlines in this opt-in test instead. That pacing loop is
+**test-only**, not shipped audio processing. These earlier failures do not
+establish a product root cause or successful realtime operation. The final
+reports retain the actual deadline lateness, including remaining runner jitter.
+
+## Display and acceptance limits
+
+A rendered-pixel regression confirms stable button tint around the previous
+label-colour threshold despite small LED duty-cycle changes, while full on/off
+flashes remain immediate. The per-window display filter emits no input and
+changes no MIDI/firmware state. The audio recovery budget scales with the host
+block; worker slices are shorter. Reported latency, host IDs and installer scope
+are preserved. The dedicated footer shows Engine, Audio late, CPU and Host,
+with an explicit Copy audio status button.
+
+The user's persistent Windows failure was not reproduced with the previous
+released scheduling policy locally. A passing 12-second diagnostic does not
+prove their machine is fixed or validate long sessions, every firmware function,
+a graphical Ableton session, controller mapping or native audio drivers. Startup
+misses remain visible in the plugin. User-machine acceptance is still required.
+Close Live before updating and first try an empty Set with important projects
+backed up. Existing signing and dependency-maintenance limits remain documented
+in the security review; no zero-risk guarantee is made.
+
+## Historical record · Preview 0.2.4 · 2026-10-23
 
 Published release: **v0.2.4-preview.1**, source `a7b7e4a`. Subsequent
 documentation-only commits update links and this record.
