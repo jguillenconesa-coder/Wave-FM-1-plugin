@@ -224,7 +224,7 @@ pub fn text(buf: &mut [u32], cx: f32, y: f32, s: &str, scale: usize, color: u32)
 }
 
 /// The parts that never change: body, trays, bezel, labels.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct Palette {
     pub body_top: u32, pub body_bot: u32, pub tray: u32, pub silk: u32,
     pub btn_top: u32, pub btn_bot: u32, pub btn_ink: u32,
@@ -408,18 +408,7 @@ pub fn draw_with_palette(buf: &mut [u32], base: &[u32], st: &State, p: &Palette)
 pub fn draw_with_encoder_angles(buf: &mut [u32], base: &[u32], st: &State, p: &Palette, angles: &[f32; 7]) {
     canvas(W);
     buf.copy_from_slice(base);
-    // the LCD at 2x
-    for y in 0..240 {
-        for x in 0..240 {
-            let p = st.lcd[y * 240 + x] as u32;
-            let c = ((p >> 11) * 255 / 31) << 16 | (((p >> 5) & 63) * 255 / 63) << 8 | (p & 31) * 255 / 31;
-            let o = (LCD_Y + 2 * y) * W + LCD_X + 2 * x;
-            buf[o] = c;
-            buf[o + 1] = c;
-            buf[o + W] = c;
-            buf[o + W + 1] = c;
-        }
-    }
+    draw_lcd(buf, st.lcd);
     // Encoder angles come from the caller; the master pot sweeps 270 degrees.
     for (i, (_, _, cx, cy, r)) in ENCS.iter().enumerate() {
         let glow = (st.turning[i] as f32 / 10.0).min(1.0);
@@ -429,25 +418,184 @@ pub fn draw_with_encoder_angles(buf: &mut [u32], base: &[u32], st: &State, p: &P
     knob_with_palette(buf, POT.0, POT.1, POT.2, pa, (st.turning[7] as f32 / 10.0).min(1.0), p);
     // buttons: pressed sinks, LED tints the cap
     for (name, id, x, y, w, h) in buttons() {
-        let down = st.down[id as usize];
-        let led = bright(st.leds[id as usize]);
-        let tint = if id == 12 { GREEN } else { AMBER };
-        let off = if down { 2.0 } else { 0.0 };
-        rrect(buf, x as f32 + 1.0, y as f32 + 3.0, w as f32, h as f32, 9.0, 0x1c1d20, 0x1c1d20);
-        let (top, bot) = (mix(p.btn_top, tint, led * 0.85), mix(p.btn_bot, tint, led * 0.7));
-        rrect(buf, x as f32, y as f32 + off, w as f32, h as f32, 9.0, top, bot);
-        let ink = if led > 0.5 { 0x2a1a03 } else { p.btn_ink };
-        text(buf, (x + w / 2) as f32, (y + h / 2) as f32 - 7.0 + off, name, 2, ink);
+        draw_button(buf, st, p, name, id, x, y, w, h);
     }
     // note keys: pills with a ridge; pressed and lit keys glow
     for (id, x, y, w, h, _) in keys() {
-        let down = st.down[id as usize];
-        let led = bright(st.leds[id as usize]);
-        let off = if down { 3.0 } else { 0.0 };
-        rrect(buf, x as f32 + 1.0, y as f32 + 4.0, w as f32, h as f32, w as f32 / 2.0, 0x1a1a1c, 0x1a1a1c);
-        let heat = if down { 0.55 } else { led * 0.6 };
-        rrect(buf, x as f32, y as f32 + off, w as f32, h as f32, w as f32 / 2.0, mix(p.key_top, AMBER, heat), mix(p.key_bot, AMBER, heat * 0.8));
-        let line = mix(p.key_line, 0xffe2b0, if down { 1.0 } else { led });
-        rrect(buf, (x + w / 2) as f32 - 2.5, y as f32 + 18.0 + off, 5.0, h as f32 - 36.0, 2.5, line, line);
+        draw_key(buf, st, p, id, x, y, w, h);
+    }
+}
+
+fn draw_lcd(buf: &mut [u32], lcd: &[u16]) {
+    // the LCD at 2x
+    for y in 0..240 {
+        for x in 0..240 {
+            let p = lcd[y * 240 + x] as u32;
+            let c = ((p >> 11) * 255 / 31) << 16 | (((p >> 5) & 63) * 255 / 63) << 8 | (p & 31) * 255 / 31;
+            let o = (LCD_Y + 2 * y) * W + LCD_X + 2 * x;
+            buf[o] = c;
+            buf[o + 1] = c;
+            buf[o + W] = c;
+            buf[o + W + 1] = c;
+        }
+    }
+}
+
+fn draw_button(buf: &mut [u32], st: &State, p: &Palette, name: &str, id: u8, x: usize, y: usize, w: usize, h: usize) {
+    let down = st.down[id as usize];
+    let led = bright(st.leds[id as usize]);
+    let tint = if id == 12 { GREEN } else { AMBER };
+    let off = if down { 2.0 } else { 0.0 };
+    rrect(buf, x as f32 + 1.0, y as f32 + 3.0, w as f32, h as f32, 9.0, 0x1c1d20, 0x1c1d20);
+    let (top, bot) = (mix(p.btn_top, tint, led * 0.85), mix(p.btn_bot, tint, led * 0.7));
+    rrect(buf, x as f32, y as f32 + off, w as f32, h as f32, 9.0, top, bot);
+    let ink = if led > 0.5 { 0x2a1a03 } else { p.btn_ink };
+    text(buf, (x + w / 2) as f32, (y + h / 2) as f32 - 7.0 + off, name, 2, ink);
+}
+
+fn draw_key(buf: &mut [u32], st: &State, p: &Palette, id: u8, x: usize, y: usize, w: usize, h: usize) {
+    let down = st.down[id as usize];
+    let led = bright(st.leds[id as usize]);
+    let off = if down { 3.0 } else { 0.0 };
+    rrect(buf, x as f32 + 1.0, y as f32 + 4.0, w as f32, h as f32, w as f32 / 2.0, 0x1a1a1c, 0x1a1a1c);
+    let heat = if down { 0.55 } else { led * 0.6 };
+    rrect(buf, x as f32, y as f32 + off, w as f32, h as f32, w as f32 / 2.0, mix(p.key_top, AMBER, heat), mix(p.key_bot, AMBER, heat * 0.8));
+    let line = mix(p.key_line, 0xffe2b0, if down { 1.0 } else { led });
+    rrect(buf, (x + w / 2) as f32 - 2.5, y as f32 + 18.0 + off, 5.0, h as f32 - 36.0, 2.5, line, line);
+}
+
+/// Per-window renderer. Only changed controls and LCD pixels are redrawn. The
+/// existing full renderer remains the reference for other native callers.
+/// Reset this cache whenever the caller replaces the base image or canvas.
+#[derive(Default)]
+pub struct Cached {
+    previous: Option<Previous>,
+}
+
+struct Previous {
+    palette: Palette,
+    lcd: Vec<u16>,
+    angles: [f32; 7],
+    pot: u16,
+    down: [bool; 41],
+    leds: [f32; 41],
+    turning: [u32; 8],
+}
+
+fn restore(buf: &mut [u32], base: &[u32], x: usize, y: usize, w: usize, h: usize) {
+    for row in y..(y + h).min(H) {
+        let range = row * W + x..row * W + (x + w).min(W);
+        buf[range.clone()].copy_from_slice(&base[range]);
+    }
+}
+
+impl Cached {
+    /// Returns whether the panel texture needs uploading. Runs only on the GUI
+    /// thread; audio, MIDI, LED timing and the firmware are unaffected.
+    pub fn draw(&mut self, buf: &mut [u32], base: &[u32], st: &State, p: &Palette, angles: &[f32; 7]) -> bool {
+        canvas(W);
+        let Some(old) = self.previous.as_mut().filter(|old| old.palette == *p) else {
+            draw_with_encoder_angles(buf, base, st, p, angles);
+            self.previous = Some(Previous { palette: *p, lcd: st.lcd.to_vec(), angles: *angles,
+                pot: st.pot, down: *st.down, leds: *st.leds, turning: *st.turning });
+            return true;
+        };
+        let mut changed = false;
+        if old.lcd != st.lcd {
+            draw_lcd(buf, st.lcd);
+            old.lcd.copy_from_slice(st.lcd);
+            changed = true;
+        }
+        for i in 0..8 {
+            let moved = if i < 7 { old.angles[i] != angles[i] } else { old.pot != st.pot };
+            if moved || old.turning[i] != st.turning[i] {
+                let (cx, cy, r, angle) = if i < 7 {
+                    let (_, _, x, y, r) = ENCS[i]; (x, y, r, angles[i])
+                } else { (POT.0, POT.1, POT.2, (-135.0 + 270.0 * st.pot as f32 / 1023.0).to_radians()) };
+                // Include the antialiased glow and the offset shadow.
+                let pad = r as usize + 8;
+                restore(buf, base, cx as usize - pad, cy as usize - pad, pad * 2 + 1, pad * 2 + 1);
+                knob_with_palette(buf, cx, cy, r, angle, (st.turning[i] as f32 / 10.0).min(1.0), p);
+                changed = true;
+            }
+        }
+        let dirty = |id: u8| old.down[id as usize] != st.down[id as usize] ||
+            bright(old.leds[id as usize]) != bright(st.leds[id as usize]);
+        for (name, id, x, y, w, h) in buttons() {
+            if dirty(id) {
+                restore(buf, base, x - 2, y - 2, w + 6, h + 8);
+                draw_button(buf, st, p, name, id, x, y, w, h);
+                changed = true;
+            }
+        }
+        for (id, x, y, w, h, _) in keys() {
+            if dirty(id) {
+                restore(buf, base, x - 2, y - 2, w + 6, h + 8);
+                draw_key(buf, st, p, id, x, y, w, h);
+                changed = true;
+            }
+        }
+        old.angles = *angles; old.pot = st.pot;
+        old.down = *st.down; old.leds = *st.leds; old.turning = *st.turning;
+        changed
+    }
+}
+
+#[cfg(test)]
+mod cache_tests {
+    use super::*;
+
+    #[test]
+    fn cached_pixels_match_full_render_through_control_and_skin_changes() {
+        let mut cache = Cached::default();
+        let mut lcd = vec![0u16; 240 * 240];
+        let mut down = [false; 41]; let mut leds = [0.0; 41];
+        let mut turning = [0; 8]; let mut angles = [0.0; 7];
+        let mut pot = 0;
+        for palette in [GRAPHITE, IVORY, ORANGE, LILAC, IVORY_BLUE, GRAPHITE_MINT] {
+            let base = base_with_palette(&palette);
+            let mut cached = base.clone(); let mut full = base.clone();
+            // Skin changes invalidate the old pixels; subsequent frames change
+            // individual controls, the LCD, and then release every control.
+            for frame in 0..48 {
+                if frame < 41 { down[frame] = true; leds[frame] = 0.04; }
+                if frame < 8 {
+                    turning[frame] = 10;
+                    if frame < 7 { angles[frame] += 0.7; } else { pot = 1023; }
+                }
+                if frame == 42 { down.fill(false); leds.fill(0.0); turning.fill(0); pot = 0; }
+                let pixel = (frame * 7919) % (240 * 240);
+                lcd[pixel] = lcd[pixel].wrapping_add(1009);
+                let st = State { lcd: &lcd, enc_clicks: &[0; 7], pot,
+                    down: &down, leds: &leds, turning: &turning };
+                assert!(cache.draw(&mut cached, &base, &st, &palette, &angles));
+                draw_with_encoder_angles(&mut full, &base, &st, &palette, &angles);
+                assert_eq!(cached, full, "frame {frame}");
+                assert!(!cache.draw(&mut cached, &base, &st, &palette, &angles));
+            }
+        }
+    }
+
+    #[test]
+    #[ignore = "Opt-in GUI renderer benchmark; no wall-clock assertion"]
+    fn benchmark_lcd_updates_with_unchanged_controls() {
+        use std::{hint::black_box, time::Instant};
+        let base = base(); let mut buf = base.clone(); let mut lcd = vec![0u16; 240 * 240];
+        let mut cache = Cached::default();
+        let st = State { lcd: &lcd, enc_clicks: &[0; 7], pot: 512,
+            down: &[false; 41], leds: &[0.0; 41], turning: &[0; 8] };
+        cache.draw(&mut buf, &base, &st, &GRAPHITE, &[0.0; 7]);
+        for cached in [false, true] {
+            let start = Instant::now();
+            for i in 0..120 {
+                lcd[i] = i as u16 + if cached { 1024 } else { 1 };
+                let st = State { lcd: &lcd, enc_clicks: &[0; 7], pot: 512,
+                    down: &[false; 41], leds: &[0.0; 41], turning: &[0; 8] };
+                if cached { cache.draw(&mut buf, &base, &st, &GRAPHITE, &[0.0; 7]); }
+                else { draw_with_encoder_angles(&mut buf, &base, &st, &GRAPHITE, &[0.0; 7]); }
+                black_box(&buf);
+            }
+            eprintln!("PANEL cached={cached} frames=120 elapsed_us={}", start.elapsed().as_micros());
+        }
     }
 }

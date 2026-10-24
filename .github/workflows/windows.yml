@@ -94,19 +94,27 @@ jobs:
         run: |
           cmake -S tools/validator -B build/windows-validator -G 'Visual Studio 17 2022' -A x64 "-DVST3_SDK_ROOT=$PWD/build/windows/cpm/vst3sdk"
           if ($LASTEXITCODE -ne 0) { throw 'Validator configuration failed' }
-          cmake --build build/windows-validator --config Release --target validator --parallel 2
+          cmake --build build/windows-validator --config Release --target validator fm1-latency-check --parallel 2 2>&1 | Tee-Object validator-build.log
           if ($LASTEXITCODE -ne 0) { throw 'Validator compilation failed' }
           & build/windows-validator/bin/Release/validator.exe 'dist/VST3/FM-1.vst3' | Tee-Object dist/VALIDATION.txt
           if ($LASTEXITCODE -ne 0) { throw 'VST3 validation failed' }
           if ((Get-Content dist/VALIDATION.txt -Raw) -notmatch 'Result: [1-9][0-9]* tests passed, 0 tests failed') { throw 'Validator did not report completed, successful plugin tests' }
+      - name: Empty VST3 latency and silence
+        shell: pwsh
+        run: |
+          & build/windows-validator/Release/fm1-latency-check.exe 'dist/VST3/FM-1.vst3' 2>&1 | Tee-Object dist/EMPTY_LATENCY.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Empty VST3 latency check failed' }
+          if ((Get-Content dist/EMPTY_LATENCY.txt -Raw) -notmatch 'Result: 9 empty VST3 latency checks passed') { throw 'Missing empty latency results' }
       - name: Report build error context
         if: failure()
         shell: pwsh
         run: |
-          if (Test-Path msvc-build.log) {
-            $Lines = (Get-Content msvc-build.log -Tail 30) -join ' | '
-            $Lines = $Lines.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
-            Write-Output "::error title=Windows build context::$Lines"
+          foreach ($Log in @('msvc-build.log', 'validator-build.log', 'dist/EMPTY_LATENCY.txt')) {
+            if (Test-Path $Log) {
+              $Lines = (Get-Content $Log -Tail 30) -join ' | '
+              $Lines = $Lines.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+              Write-Output "::error title=$Log context::$Lines"
+            }
           }
       - name: Install Inno Setup
         shell: pwsh

@@ -55,7 +55,7 @@ jobs:
       - name: Official VST3 validation
         run: |
           cmake -S tools/validator -B build/macos-validator -G Ninja -DCMAKE_BUILD_TYPE=Release -DVST3_SDK_ROOT="$PWD/build/macos/cpm/vst3sdk"
-          cmake --build build/macos-validator --target validator --parallel 3
+          cmake --build build/macos-validator --target validator fm1-latency-check --parallel 3 2>&1 | tee macos-validator-build.log
           # The pinned SDK puts Ninja executables in bin/<configuration> on macOS.
           build/macos-validator/bin/Release/validator 'dist/macos/VST3/Wave FM-1.vst3' 2>&1 | tee macos-validator.log
           python3 - <<'PY'
@@ -67,12 +67,17 @@ jobs:
           PY
           cp macos-validator.log dist/macos/VALIDATION.txt
           cp dist/macos/VALIDATION.txt dist/macos-downloads-validation.txt
+      - name: Empty VST3 latency and silence
+        run: |
+          set -euo pipefail
+          build/macos-validator/fm1-latency-check 'dist/macos/VST3/Wave FM-1.vst3' 2>&1 | tee dist/macos/EMPTY_LATENCY.txt
+          grep -q 'Result: 9 empty VST3 latency checks passed' dist/macos/EMPTY_LATENCY.txt
       - name: Package verified bundle
         run: bash tools/package-macos.sh
       - name: Report build error context
         if: failure()
         run: |
-          for log in macos-build.log macos-tests.log macos-online.log dist/macos/REALTIME_X0X.txt macos-validator.log; do
+          for log in macos-build.log macos-tests.log macos-online.log dist/macos/REALTIME_X0X.txt macos-validator-build.log macos-validator.log dist/macos/EMPTY_LATENCY.txt; do
             if [[ -f "$log" ]]; then
               context=$(tail -n 30 "$log" | tr '\n' ' ')
               context=${context//%/%25}

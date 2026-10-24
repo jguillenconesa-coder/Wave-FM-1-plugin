@@ -1,4 +1,4 @@
-# Wave FM-1 Preview 0.2.5 · macOS
+# Wave FM-1 Preview 0.2.6 · macOS
 
 VST3 Universal 2 para **Intel y Apple Silicon**, mínimo de compilación **macOS 11**.
 Requiere un host VST3 como Ableton Live. No incluye AU. Los paquetes aparecen en
@@ -39,6 +39,13 @@ Las pruebas automáticas no sustituyen una prueba en Live para tu Mac, versión
 del host y dispositivo de audio. Compilar ambas arquitecturas no implica haber
 ejecutado ambas: las pruebas nativas usan la arquitectura del runner, indicada
 en GitHub Actions. No se garantiza riesgo cero.
+
+**Audio buffer** ofrece Low latency, Balanced y Safe / legacy. Cambia con el
+transporte detenido; Safe conserva la reserva anterior y sigue siendo el valor
+predeterminado. Los modos cortos pueden aumentar los cortes si falta margen de
+CPU. Una instancia sin firmware declara cero latencia. Consulta
+[latencia, reloj y diagnóstico](DAW_SYNC.md#latencia-y-carga-de-cpu-026).
+La interfaz reutiliza controles inmóviles para consumir menos CPU.
 
 ## Compilar
 

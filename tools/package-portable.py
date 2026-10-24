@@ -7,7 +7,7 @@ import artifacts
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
-VERSION = "0.2.5"
+VERSION = "0.2.6"
 artifacts.process(DIST)
 output = DIST / "installer"
 setup = output / f"Wave-FM-1-{VERSION}-Windows-x64-Setup.exe"
@@ -21,7 +21,7 @@ with zipfile.ZipFile(portable, "w", compression=zipfile.ZIP_DEFLATED, compressle
                 if path.is_symlink():
                     raise SystemExit("Refusing linked package input")
                 archive.write(path, path.relative_to(DIST).as_posix())
-    for path in (DIST / "INSTALL.md", DIST / "build-info.json", DIST / "REALTIME_X0X.txt"):
+    for path in (DIST / "INSTALL.md", DIST / "build-info.json", DIST / "REALTIME_X0X.txt", DIST / "EMPTY_LATENCY.txt"):
         archive.write(path, path.name)
 checksums = []
 for path in (setup, portable):

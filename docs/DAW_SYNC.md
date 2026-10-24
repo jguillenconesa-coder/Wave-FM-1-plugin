@@ -79,3 +79,25 @@ por su resolución o filtrado. Comprueba también el ritmo grabado, no solo ese
 número. Las pruebas automatizadas verifican frecuencia, deriva, entrega de
 eventos, cambios de transporte y recuperación de audio; la prueba con tu Live,
 controlador y carga de proyecto sigue siendo necesaria. Empieza con un Set vacío.
+
+## Latencia y carga de CPU (0.2.6)
+
+**Audio buffer** elige la reserva del plugin. A 48 kHz / bloque máximo 512,
+**Low latency** declara 582 muestras (12,1 ms), **Balanced** 1070 (22,3 ms) y
+**Safe / legacy** 1627 (33,9 ms). Una instancia vacía declara cero. El cálculo
+usa el bloque máximo del host, que puede diferir del último bloque observado.
+Esta cifra no incluye el buffer ASIO ni la respuesta del firmware.
+
+Safe sigue siendo el valor predeterminado. Detén el transporte para cambiarlo,
+dejando que se estabilicen la cola y la compensación del host. Los modos cortos
+pueden aumentar los underruns: una reserva menor no corrige una emulación que
+solo alcanza 1.00x. Empieza por Balanced y comprueba **Audio late** antes de
+probar Low latency. El plugin no cambia el buffer de Live.
+
+El worker solicita planificación de audio en Windows y QoS en macOS, solo para
+su hilo. La interfaz también evita redibujar controles inmóviles. Estas medidas
+reducen pausas y trabajo ajeno al motor; su efecto depende del sistema. La CPU
+virtual de una instancia no se reparte automáticamente entre todos los núcleos
+del ordenador. Elevar **CPU clock** exige más trabajo al emulador; no equivale
+a concederle más recursos del ordenador. El algoritmo de sonido y el resampler
+se mantienen: no se promete una mejora de fidelidad ni se activa oversampling.

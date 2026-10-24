@@ -33,7 +33,7 @@ def main():
     reference = DEST / "reference/firmwares"
     reference.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(ROOT / "firmware/catalogue/felucca-1.6.1.fwsc", reference / "felucca.fwsc")
-    for name in ("editor.rs", "catalogue.rs", "skins.rs", "controls.rs", "online.rs", "host_sync.rs", "audio_timing.rs", "midi_timing.rs"):
+    for name in ("editor.rs", "catalogue.rs", "skins.rs", "controls.rs", "online.rs", "host_sync.rs", "audio_timing.rs", "midi_timing.rs", "worker.rs", "latency_tests.rs"):
         shutil.copyfile(ROOT / "desktop/src" / name, plugin / "src" / name)
     shutil.copyfile(ROOT / "firmware/community-index.json", plugin / "src/community-index.json")
     shutil.copyfile(ROOT / "desktop/src/panel.rs", DEST / "crates/fm1-live/src/panel.rs")
@@ -43,7 +43,7 @@ def main():
     lib = plugin / "src/lib.rs"
     text = lib.read_text()
     text = "// Desktop additions: firmware catalogue and per-instance skin. MIT; see desktop/README.md.\n" + text
-    text = text.replace("mod editor;", "mod editor;\npub mod catalogue;\nmod skins;\nmod controls;\nmod online;\npub mod host_sync;\nmod audio_timing;\nmod midi_timing;")
+    text = text.replace("mod editor;", "mod editor;\npub mod catalogue;\nmod skins;\nmod controls;\nmod online;\npub mod host_sync;\nmod audio_timing;\nmod midi_timing;\nmod worker;\n#[cfg(test)]\nmod latency_tests;")
     text = text.replace('#[persist = "flash"]', '#[persist = "skin"]\n    pub skin: Mutex<String>,\n    #[persist = "flash"]')
     text = text.replace("firmware: Mutex::new(Firmware::default()),", 'firmware: Mutex::new(Firmware::default()),\n            skin: Mutex::new("graphite".into()),')
     text = replace_once(text, '#[id = "master"]', '#[nested]\n    pub controls: controls::PanelParams,\n    #[id = "master"]')
@@ -52,13 +52,16 @@ def main():
     #[id = "transport_sync"]
     pub transport_sync: EnumParam<host_sync::Source>,
     pub transport_feedback: host_sync::Feedback,
+    #[id = "audio_reserve"]
+    pub audio_reserve: EnumParam<audio_timing::Reserve>,
     pub audio_diagnostics: audio_timing::Diagnostics,''')
     text = replace_once(text, '            clock: EnumParam::new("CPU clock", Clock::Mhz240).non_automatable(),', '''            clock: EnumParam::new("CPU clock", Clock::Mhz240).non_automatable(),
             transport_sync: EnumParam::new("Musical clock", host_sync::Source::Internal).non_automatable(),
             transport_feedback: host_sync::Feedback::default(),
+            audio_reserve: EnumParam::new("Audio buffer", audio_timing::Reserve::Safe).non_automatable(),
             audio_diagnostics: audio_timing::Diagnostics::default(),''')
-    text = replace_once(text, '    ratio: f64,', '    ratio: f64,\n    musical_clock: host_sync::Clock,')
-    text = replace_once(text, '            ratio: 1.0,', '            ratio: 1.0,\n            musical_clock: host_sync::Clock::default(),')
+    text = replace_once(text, '    ratio: f64,', '    ratio: f64,\n    max_block: u32,\n    reported_latency: u32,\n    musical_clock: host_sync::Clock,')
+    text = replace_once(text, '            ratio: 1.0,', '            ratio: 1.0,\n            max_block: 0,\n            reported_latency: 0,\n            musical_clock: host_sync::Clock::default(),')
     text = replace_once(text, '''    taken: u64,
     frac: f64,
     cur: [f32; 2],
@@ -67,9 +70,52 @@ def main():
             frac: 0.0,
             cur: [0.0; 2],
             next: [0.0; 2],''', '            playback: audio_timing::Playback::default(),')
-    text = replace_once(text, '        let link = self.start();\n        self.ratio = RATE / cfg.sample_rate as f64;',
-                        '        self.params.controls.resync();\n        self.musical_clock.reset();\n        self.params.audio_diagnostics.configure(cfg.sample_rate, cfg.max_buffer_size);\n        let link = self.start();\n        self.ratio = RATE / cfg.sample_rate as f64;')
-    text = replace_once(text, '        let start = self.taken;', '        self.params.controls.publish();\n        self.params.audio_diagnostics.observe_block(buffer.samples() as u32);\n        let start = self.playback.position;')
+    init_start = text.index('        let link = self.start();\n        self.ratio = RATE / cfg.sample_rate as f64;')
+    init_end = text.index('        true\n', init_start)
+    text = text[:init_start] + '''        self.ratio = RATE / cfg.sample_rate as f64;
+        let Some(lead) = audio_timing::lead_for(self.ratio, cfg.max_buffer_size, self.params.audio_reserve.value()) else { return false; };
+        self.max_block = cfg.max_buffer_size;
+        self.lead = lead;
+        self.params.controls.resync();
+        self.musical_clock.reset();
+        self.params.audio_diagnostics.configure(cfg.sample_rate, cfg.max_buffer_size);
+        self.params.audio_diagnostics.request_lead(lead);
+        let fw = self.params.firmware.lock().unwrap().clone();
+        let sectors = self.params.flash.lock().unwrap().clone();
+        self.params.audio_diagnostics.set_loaded(!fw.pkg.is_empty());
+        self.reported_latency = audio_timing::latency_samples(lead, self.ratio, !fw.pkg.is_empty());
+        self.params.audio_diagnostics.publish_latency(self.reported_latency);
+        ctx.set_latency_samples(self.reported_latency);
+        let link = self.start();
+        let _ = link.cmds.send(Cmd::Lead(lead));
+        link.boot(&fw, &sectors);
+''' + text[init_end:]
+    text = replace_once(text, '        let start = self.taken;', '''        self.params.controls.publish();
+        self.params.audio_diagnostics.observe_block(buffer.samples() as u32);
+        let playing = ctx.transport().playing;
+        self.params.audio_diagnostics.set_playing(playing);
+        let loaded = self.params.audio_diagnostics.loaded();
+        if let Some(latency) = self.update_audio_timing(playing, loaded, self.params.audio_reserve.value()) { ctx.set_latency_samples(latency); }
+        let start = self.playback.position;''')
+    text = replace_once(text, 'impl Fm1 {', '''impl Fm1 {
+    // Latency changes are explicit, coalesced and applied at block boundaries.
+    // The worker observes a bounded atomic target; no command allocation/wait.
+    // A smaller target lets existing queued frames drain in order. Change the
+    // reserve while stopped: the queue and host compensation may briefly settle.
+    fn update_audio_timing(&mut self, playing: bool, loaded: bool, reserve: audio_timing::Reserve) -> Option<u32> {
+        if !playing {
+            if let Some(lead) = audio_timing::lead_for(self.ratio, self.max_block, reserve) {
+                self.lead = lead;
+                self.params.audio_diagnostics.request_lead(lead);
+            }
+        }
+        let latency = audio_timing::latency_samples(self.lead, self.ratio, loaded);
+        if latency == self.reported_latency { return None; }
+        self.reported_latency = latency;
+        self.params.audio_diagnostics.publish_latency(latency);
+        Some(latency)
+    }
+''')
     midi_start = text.index('        let ch = self.params.channel.value() as u8;')
     midi_end = text.index('        let Some(rx) = self.audio.as_mut()', midi_start)
     if text[midi_start:midi_end].count('while let Some(ev) = ctx.next_event()') != 1:
@@ -85,7 +131,14 @@ def main():
     render_end = text.index('        if starved > 0 {', render_start)
     if text[render_start:render_end].count('self.frac = self.frac.min(1.0);') != 1:
         raise SystemExit('Unexpected audio rendering baseline')
-    text = text[:render_start] + '        let starved = self.playback.render(out, self.ratio, || rx.pop().ok());\n' + text[render_end:]
+    text = text[:render_start] + '''        let starved = self.playback.render(out, self.ratio, || rx.pop().ok());
+        let starved = if loaded { starved } else {
+            // Empty/restored-empty instances produce silence and need no PDC.
+            // Continue draining the timeline so a later firmware starts in sync.
+            for channel in out.iter_mut() { channel.fill(0.0); }
+            0
+        };
+''' + text[render_end:]
     text = replace_once(text, '    pub running: Mutex<Option<Arc<Vec<u8>>>>,',
                         '    pub running: Mutex<Option<Arc<Vec<u8>>>>,\n    jobs: Mutex<Vec<std::thread::JoinHandle<()>>>,')
     text = replace_once(text, 'impl Link {', '''impl Link {
@@ -102,6 +155,13 @@ def main():
     }
 ''')
     text = replace_once(text, 'running: Mutex::new(None)', 'running: Mutex::new(None), jobs: Mutex::new(Vec::new())')
+    text = replace_once(text, '        if fw.pkg.is_empty() || running.as_ref().is_some_and', '''        if fw.pkg.is_empty() {
+            *running = None;
+            self.shared.view.lock().unwrap().late = 0;
+            let _ = self.cmds.send(Cmd::Clear);
+            return;
+        }
+        if running.as_ref().is_some_and''')
     text = replace_once(text, '        if let Some(t) = self.thread.take() {\n            let _ = t.join();\n        }',
                         '''        if let Some(t) = self.thread.take() {
             let _ = t.join();
@@ -113,6 +173,10 @@ def main():
     lib.write_text(text)
     engine = plugin / "src/engine.rs"
     text = engine.read_text()
+    text = replace_once(text, '    Lead(usize),', '    Lead(usize),\n    Clear,')
+    text = replace_once(text, '    let mut m: Option<Machine> = None;', '''    let scheduling = crate::worker::Scheduling::audio();
+    params.audio_diagnostics.set_scheduling(scheduling.status);
+    let mut m: Option<Machine> = None;''')
     text = replace_once(text, '    let mut m: Option<Machine> = None;',
                         '''    let mut controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());
     // Publish audio frequently; large instruction batches can miss host deadlines
@@ -126,7 +190,19 @@ def main():
     let mut m: Option<Machine> = None;''')
     text = replace_once(text, '                    active_pkg = m.as_ref().map(|_| pkg);',
                         '                    controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n                    active_pkg = m.as_ref().map(|_| pkg);')
-    text = replace_once(text, '                    v.booted = m.is_some();', '                    v.booted = m.is_some();\n                    v.late = 0;')
+    text = replace_once(text, '                    v.booted = m.is_some();', '                    v.booted = m.is_some();\n                    params.audio_diagnostics.set_loaded(m.is_some());\n                    v.late = 0;')
+    text = replace_once(text, '                Cmd::Lead(l) => lead = l,', '''                Cmd::Lead(l) => { lead = l; params.audio_diagnostics.request_lead(l); }
+                Cmd::Clear => {
+                    cancel_snapshots(&mut pending);
+                    m = None; active_pkg = None; due.clear(); saved.clear();
+                    params.audio_diagnostics.set_loaded(false);
+                    let mut v = shared.view.lock().unwrap();
+                    v.booted = false; v.halted = false; v.speed = 0.0; v.late = 0;
+                    v.lcd.fill(0); v.leds.fill(0.0); v.pads.fill(0);
+                }''')
+    text = replace_once(text, '        let Some(mm) = m.as_mut().filter(|m| !m.halted) else {', '''        let requested = params.audio_diagnostics.requested_lead();
+        if requested > 0 && requested <= 16384 - 512 { lead = requested; }
+        let Some(mm) = m.as_mut().filter(|m| !m.halted) else {''')
     text = replace_once(text, 'Cmd::Key { id, down } => apply(&mut m, Action::Key { id, down }),',
                         '''Cmd::Key { id, down } => {
                     if m.as_ref().is_some_and(|m| m.soc.board == Board::Fm1) {
@@ -209,10 +285,10 @@ fn panel_event(m: &mut Option<Machine>, event: crate::controls::Event) {
     periph.write_text(text)
     # Only this integration's plugin version changes; dependency pins remain intact.
     manifest = plugin / "Cargo.toml"
-    manifest.write_text(replace_once(manifest.read_text(), 'version = "0.2.0"', 'version = "0.2.5"'))
+    manifest.write_text(replace_once(manifest.read_text(), 'version = "0.2.0"', 'version = "0.2.6"'))
     lock = plugin / "Cargo.lock"
     lock.write_text(replace_once(lock.read_text(), 'name = "fm1-plugin"\nversion = "0.2.0"',
-                                'name = "fm1-plugin"\nversion = "0.2.5"'))
+                                'name = "fm1-plugin"\nversion = "0.2.6"'))
     entries = json.loads((ROOT / "firmware/manifest.json").read_text())["firmwares"]
     generated = "// Generated from firmware/manifest.json. Do not edit.\npub static ENTRIES: &[Entry] = &[\n"
     for e in entries:

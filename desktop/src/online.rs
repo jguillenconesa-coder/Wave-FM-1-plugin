@@ -279,7 +279,7 @@ mod transport {
         let null = std::ptr::null();
         let start = std::time::Instant::now();
         unsafe {
-            let session = Owned::new(WinHttpOpen(wide("Wave-FM-1/0.2.5").as_ptr(), 4, null, null, 0))?;
+            let session = Owned::new(WinHttpOpen(wide("Wave-FM-1/0.2.6").as_ptr(), 4, null, null, 0))?;
             ok(WinHttpSetTimeouts(session.0, 5000, 5000, 5000, 5000))?;
             let connection = Owned::new(WinHttpConnect(session.0, wide(host).as_ptr(), 443, 0))?;
             let request = Owned::new(WinHttpOpenRequest(connection.0, wide("GET").as_ptr(), wide(&format!("/{path}")).as_ptr(), null, null, std::ptr::null(), 0x00800000))?;

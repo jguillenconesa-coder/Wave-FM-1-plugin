@@ -1,27 +1,48 @@
-# Wave FM-1 Preview 0.2.5 · Windows y macOS
+# Wave FM-1 Preview 0.2.6 · Windows y macOS
 
-Estabiliza el color de botones y teclas frente a pequeñas variaciones del
-muestreo de sus LEDs. Conserva los encendidos/apagados y flashes deliberados
-del firmware. El filtro solo afecta al dibujo, sin pulsaciones adicionales ni
-cambios de MIDI o sonido; una prueba compara los píxeles renderizados.
+Corrige la latencia declarada por una instancia sin firmware: ahora es
+**0 muestras**, con salida silenciosa. Al cargar un firmware se comunica al host
+la reserva real de audio; al restaurar un estado vacío se detiene la máquina y
+se vuelve a cero. La compensación de Live recibe las actualizaciones.
 
-Reduce el tamaño de las tandas de emulación para entregar audio con mayor
-frecuencia y limita el trabajo de recuperación en función del bloque del host.
-Evita que recuperar una cola atrasada concentre trabajo excesivo en el callback.
-No cambia el tamaño del buffer de Live ni la latencia declarada del plugin.
+Nuevo selector **Audio buffer**, independiente del buffer ASIO de Live:
 
-Nueva franja inferior permanente: **Engine**, **Audio late**, **CPU** y
-**Host**, con **Copy audio status** para copiar el diagnóstico. El aviso superior
-ya no oculta estos datos. Un valor Engine inferior a 1.00x indica que la
-emulación no alcanza tiempo real; subir CPU clock puede empeorar esa situación.
+| Modo | Latencia del plugin a 48 kHz / bloque máximo 512 |
+| --- | --- |
+| Low latency | 582 muestras · 12,1 ms |
+| Balanced | 1070 muestras · 22,3 ms |
+| Safe / legacy (predeterminado) | 1627 muestras · 33,9 ms |
 
-Añade una prueba con X0X real, reproducción, notas y percusión MIDI durante
-12 segundos a 48 kHz / 512 muestras. Se ejecuta aparte, sin otras pruebas
-simultáneas, y exige audio finito y cero muestras ausentes tras los primeros
-dos segundos. El informe `REALTIME_X0X.txt` queda en los ZIP publicados.
-Esta prueba no reproduce una sesión interactiva de Ableton ni garantiza el
-rendimiento de todos los equipos. El aviso persistente del usuario no se ha
-reproducido en el entorno local; la comprobación en su equipo sigue pendiente.
+Cambia de modo con el transporte detenido y deja que se estabilice la cola.
+Live puede reiniciar brevemente el procesamiento al cambiar la compensación.
+Los modos más cortos requieren margen de CPU y planificación; pueden producir
+más cortes. Safe conserva la reserva anterior y la compatibilidad de Sets.
+Los valores dependen de la frecuencia y del bloque máximo negociado con el host;
+no incluyen el buffer del dispositivo ni la respuesta interna del firmware.
+
+El hilo de emulación solicita el perfil MMCSS «Pro Audio» de Windows o QoS
+«user-interactive» en macOS, con fallback si no está disponible. No cambia la
+prioridad global, el plan de energía ni los ajustes de Live. Cada instancia
+mantiene su propio hilo y libera el registro al cerrarse.
+
+La interfaz FM-1 reutiliza los controles dibujados que no han cambiado y evita
+subir una textura idéntica. Pantalla, LEDs y controles cambiados conservan sus
+píxeles y su respuesta; una regresión compara el dibujo completo y el incremental
+con los seis acabados. Esta optimización ahorra CPU gráfica; no acelera por sí
+sola las instrucciones del firmware ni añade calidad de audio u oversampling.
+**CPU clock** sigue siendo la frecuencia virtual: subirla cuesta más CPU real.
+
+La franja inferior añade latencia efectiva y modo de planificación al diagnóstico
+copiable. Se conservan los controles MIDI, flashes deliberados y correcciones de
+recuperación de audio de las versiones anteriores. «Engine: 1.00x» y audio tarde
+persistente todavía indican falta de margen; no se da por resuelto ese caso en
+el equipo del usuario sin probarlo allí.
+
+Las comprobaciones incluyen X0X real a 48 kHz / 512 durante 12 segundos y un
+host construido con el SDK oficial que carga el VST3 vacío, procesa audio y
+consulta latencia antes/después en nueve combinaciones de frecuencia y bloque.
+Los ZIP incluyen `REALTIME_X0X.txt` y `EMPTY_LATENCY.txt`. Son pruebas acotadas;
+no equivalen a una sesión interactiva de Ableton ni garantizan todos los equipos.
 
 Se conserva **Musical clock → Internal / firmware o Ableton / DAW** por instancia.
 El modo DAW genera MIDI Clock de 24 PPQN y Start/Stop desde el tempo y transporte
@@ -79,10 +100,10 @@ firmware, flash y skin independientes. El instrumento sigue apareciendo como
 
 ## Descargas
 
-- **Windows x64**: `Wave-FM-1-0.2.5-Windows-x64-Setup.exe`, con desinstalador
+- **Windows x64**: `Wave-FM-1-0.2.6-Windows-x64-Setup.exe`, con desinstalador
   en Agregar o quitar programas. Ruta predeterminada:
   `C:\Program Files\Common Files\VST3\Wave FM-1.vst3`.
-- **Windows portátil**: `Wave-FM-1-0.2.5-Windows-x64-Portable.zip`. Mantén unido
+- **Windows portátil**: `Wave-FM-1-0.2.6-Windows-x64-Portable.zip`. Mantén unido
   todo el bundle `VST3/FM-1.vst3`; evita dos copias simultáneas.
 - **macOS Universal 2**: ZIP y PKG para Intel/Apple Silicon, compilados con
   mínimo macOS 11. El ZIP permite instalar por usuario; el PKG instala el bundle

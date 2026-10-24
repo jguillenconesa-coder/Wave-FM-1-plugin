@@ -1,8 +1,41 @@
 // Resampler derived from fm1-emu by Joakim Eriksson (MIT); timing recovery additions, 2026.
-use std::sync::atomic::{AtomicU32, Ordering};
+use nih_plug::prelude::*;
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+
+#[derive(Enum, Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Reserve {
+    #[name = "Low latency"]
+    Low,
+    #[name = "Balanced"]
+    Balanced,
+    #[name = "Safe / legacy"]
+    Safe,
+}
+
+/// Firmware frames, not host samples. Keep room for one maximum DMA half in
+/// the ring. Lower reserves are optional: they require more scheduling headroom.
+pub fn lead_for(ratio: f64, host_block: u32, reserve: Reserve) -> Option<usize> {
+    if !ratio.is_finite() || ratio <= 0.0 || host_block == 0 { return None; }
+    let block = (host_block as f64 * ratio).ceil();
+    let extra = match reserve { Reserve::Low => 64.0, Reserve::Balanced => 512.0, Reserve::Safe => 1024.0 };
+    if !block.is_finite() { return None; }
+    // Hosts may negotiate huge blocks or unusual sample rates (including the
+    // official VST3 format tests). Cap the reserve to the fixed ring capacity;
+    // do not reject activation after setupProcessing accepted the format.
+    Some((block + extra).clamp(512.0, (16384 - 512) as f64) as usize)
+}
+
+pub fn latency_samples(lead: usize, ratio: f64, loaded: bool) -> u32 {
+    if loaded { (lead as f64 / ratio).round() as u32 } else { 0 }
+}
 
 #[derive(Default)]
-pub struct Diagnostics { rate: AtomicU32, block: AtomicU32 }
+pub struct Diagnostics {
+    rate: AtomicU32, block: AtomicU32,
+    lead: AtomicU32, latency: AtomicU32,
+    loaded: AtomicBool, playing: AtomicBool,
+    scheduling: AtomicU32,
+}
 
 impl Diagnostics {
     pub fn configure(&self, rate: f32, block: u32) {
@@ -10,6 +43,20 @@ impl Diagnostics {
         self.block.store(block, Ordering::Relaxed);
     }
     pub fn observe_block(&self, samples: u32) { self.block.store(samples, Ordering::Relaxed); }
+    pub fn request_lead(&self, frames: usize) { self.lead.store(frames as u32, Ordering::Relaxed); }
+    pub fn requested_lead(&self) -> usize { self.lead.load(Ordering::Relaxed) as usize }
+    pub fn set_loaded(&self, loaded: bool) { self.loaded.store(loaded, Ordering::Relaxed); }
+    pub fn loaded(&self) -> bool { self.loaded.load(Ordering::Relaxed) }
+    pub fn publish_latency(&self, samples: u32) { self.latency.store(samples, Ordering::Relaxed); }
+    pub fn latency(&self) -> u32 { self.latency.load(Ordering::Relaxed) }
+    pub fn set_playing(&self, playing: bool) { self.playing.store(playing, Ordering::Relaxed); }
+    pub fn playing(&self) -> bool { self.playing.load(Ordering::Relaxed) }
+    pub fn set_scheduling(&self, status: u32) { self.scheduling.store(status, Ordering::Relaxed); }
+    pub fn scheduling(&self) -> &'static str {
+        match self.scheduling.load(Ordering::Relaxed) {
+            1 => "Windows audio task", 2 => "macOS user-interactive", _ => "Standard scheduling",
+        }
+    }
     pub fn host(&self) -> (f32, u32) {
         (f32::from_bits(self.rate.load(Ordering::Relaxed)), self.block.load(Ordering::Relaxed))
     }
@@ -71,6 +118,27 @@ impl Playback {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn empty_instances_have_no_signal_latency_and_reserves_use_host_units() {
+        let ratio = 44100.0 / 48000.0;
+        for (mode, frames, samples) in [(Reserve::Low, 535, 582), (Reserve::Balanced, 983, 1070), (Reserve::Safe, 1495, 1627)] {
+            let lead = lead_for(ratio, 512, mode).unwrap();
+            assert_eq!(lead, frames);
+            assert_eq!(latency_samples(lead, ratio, false), 0);
+            assert_eq!(latency_samples(lead, ratio, true), samples);
+        }
+        for ratio in [1.0, 44100.0 / 96000.0, 44100.0 / 192000.0] {
+            for size in [16, 64, 128, 512, 2048, 8192] {
+                let low = lead_for(ratio, size, Reserve::Low).unwrap();
+                let safe = lead_for(ratio, size, Reserve::Safe).unwrap();
+                assert!(low >= 512 && low <= safe && safe <= 16384 - 512);
+            }
+        }
+        assert!(lead_for(f64::NAN, 512, Reserve::Safe).is_none());
+        assert!(lead_for(0.0, 512, Reserve::Safe).is_none());
+        assert!(lead_for(1.0, 0, Reserve::Safe).is_none());
+        assert_eq!(lead_for(1.0, 16384, Reserve::Safe), Some(16384 - 512));
+    }
     #[test]
     fn an_underrun_does_not_slow_the_timeline_or_replay_late_audio() {
         let mut reference = Playback::default(); let mut stalled = Playback::default();

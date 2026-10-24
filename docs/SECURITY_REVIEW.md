@@ -1,10 +1,38 @@
-# Security review — 2026-10-23
+# Security review — 2026-10-24
 
 Scope: the initial Windows packaging source, CI workflow, installer and pinned
 fm1-emu dependency manifests. This was a focused source/configuration review,
 not an independent penetration test or a complete audit of upstream Rust/C++
 code. Windows x64 binaries have been built and checked under Wine 10; native
 release workflows gate publication. User-machine acceptance remains separate.
+
+## Version 0.2.6 latency and worker policy (2026-10-24)
+
+A non-automatable `audio_reserve` parameter adds bounded, validated queue targets;
+Safe / legacy remains the default. Existing parameter IDs and VST3 identity are
+preserved. Empty instances output silence and report zero latency; loaded
+instances report the actual target, with coalesced host notifications. Reserve
+changes are deferred while the transport plays. The callback adds only bounded
+arithmetic and atomic access; no allocation, wait, I/O or new lock is added.
+Clearing restored firmware cancels exports and clears the worker's active state.
+
+Windows uses the public Avrt API on the instance's emulation worker only. Its
+RAII guard reverts registration before that thread exits. macOS uses the public
+pthread QoS API for the same worker. Failure falls back to normal scheduling.
+No process-wide priority, affinity, timer resolution, power settings, services,
+drivers, installer privileges or host configuration changes are introduced.
+The editor's per-window pixel cache is invalidated on skin/canvas/window changes;
+changed controls and LCD retain the full renderer's pixels. It has no input or
+firmware side effects. No dependency or bundled firmware changes are made.
+
+The official-SDK host check processes the actual empty VST3 at 44.1/48/96 kHz
+and 64/512/2048 samples, requiring zero latency and silence in all nine cases.
+A negative control with the published 0.2.5 VST3 correctly failed on nonzero
+empty latency. Real firmware boot/clear and latency notification/defer behavior
+also have lifecycle tests. Native release gates and actual-asset verification
+must complete before download links are promoted. A smaller reserve failed
+local timing tests, so it remains an explicit tradeoff, not the default or a
+claimed fix for sustained overload. No audio quality increase is claimed.
 
 ## Version 0.2.5 audio scheduling and diagnostics (2026-10-24)
 

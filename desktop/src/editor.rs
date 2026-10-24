@@ -30,6 +30,7 @@ struct Ui {
     enc_clicks: [i32; 8],
     encoder_display: controls::EncoderDisplay,
     led_display: panel::LedDisplay,
+    panel_cache: panel::Cached,
     turning: [u32; 9],
     /// SMK-37: its analog inputs as set (fm1_soc::smk's ANALOG_* indices)
     analog: [u16; 23],
@@ -68,6 +69,7 @@ impl Default for Ui {
             enc_clicks: [0; 8],
             encoder_display: controls::EncoderDisplay::default(),
             led_display: panel::LedDisplay::default(),
+            panel_cache: panel::Cached::default(),
             turning: [0; 9],
             analog,
             grab: None,
@@ -101,6 +103,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
         ui.grab = None;
         ui.encoder_display = controls::EncoderDisplay::default();
         ui.led_display = panel::LedDisplay::default();
+        ui.panel_cache = panel::Cached::default();
     };
     create_egui_editor(params.editor_state.clone(), Ui::default(), build, move |ctx, setter, ui| {
         let (lcd, leds, pads, board, booted, halted, speed, late) = {
@@ -114,6 +117,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
             ui.board = board;
             ui.base = if board == Board::Smk37 { panel_smk::base() } else { panel::base_with_palette(&skin.palette) };
             ui.buf = vec![0; ui.base.len()];
+            ui.panel_cache = panel::Cached::default();
         }
         let smk = board == Board::Smk37;
         if !smk {
@@ -190,6 +194,10 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 bar.add(widgets::ParamSlider::for_param(&params.channel, setter).with_width(90.0));
                 bar.label("CPU clock").on_hover_text("Virtual CPU speed, not the audio buffer or musical tempo. Higher MHz can help firmware CPU deadlines but increases this computer's load and may cause audio underruns. Start at 240 MHz when diagnosing host underruns. Changing it restarts the firmware.");
                 bar.add(widgets::ParamSlider::for_param(&params.clock, setter).with_width(90.0));
+                bar.label("Audio buffer");
+                bar.add_enabled(!params.audio_diagnostics.playing(),
+                    widgets::ParamSlider::for_param(&params.audio_reserve, setter).with_width(140.0))
+                    .on_hover_text("Change while Live is stopped. Low latency reduces the internal reserve but needs more CPU/scheduling headroom; Balanced is intermediate; Safe / legacy keeps the previous reserve. Live may briefly restart audio when compensation changes. Empty instances report zero latency.");
                 bar.label("Musical clock");
                 bar.add(widgets::ParamSlider::for_param(&params.transport_sync, setter).with_width(165.0))
                     .on_hover_text("Internal / firmware: use the firmware's own tempo. Ableton / DAW: send 24-PPQN MIDI Clock and Start/Stop from the host. Set the firmware's clock input to external TRS/MIDI; USB clock is not the emulated MIDI IN. CPU clock is unrelated to musical tempo.");
@@ -223,6 +231,8 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
             let (rate, samples) = params.audio_diagnostics.host();
             let engine = if speed > 0.0 { format!("{speed:.2}x") } else { "measuring…".into() };
             let cpu = params.clock.value().mhz();
+            let latency = params.audio_diagnostics.latency();
+            let latency_ms = if rate > 0.0 { latency as f32 * 1000.0 / rate } else { 0.0 };
             health.horizontal_wrapped(|row| {
                 row.label(egui::RichText::new(format!("Engine: {engine}")).strong())
                     .on_hover_text("Above 1.00x means average emulation is faster than real time. Brief scheduling delays can still cause late audio. Below 1.00x indicates sustained overload.");
@@ -233,10 +243,13 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 row.separator();
                 row.label(format!("CPU: {cpu} MHz"));
                 row.label(if rate > 0.0 { format!("Host: {rate:.0} Hz / {samples} samples") } else { "Host: not processing".into() });
+                row.label(format!("Plugin latency: {latency} samples ({latency_ms:.1} ms)"))
+                    .on_hover_text("The delay reported for host compensation, separate from the audio interface's input/output buffers. Zero only when no firmware is loaded. Lower reserves can underrun on a busy or slower CPU.");
+                row.label(params.audio_diagnostics.scheduling());
                 if row.button("Copy audio status").clicked() {
                     let firmware = params.firmware.lock().unwrap().name.clone();
-                    ctx.copy_text(format!("FM-1 {} | Firmware: {firmware} | Engine: {engine} | Audio late: {late} frames/s | CPU: {cpu} MHz | Host: {rate:.0} Hz / {samples} samples",
-                        env!("CARGO_PKG_VERSION")));
+                    ctx.copy_text(format!("FM-1 {} | Firmware: {firmware} | Engine: {engine} | Audio late: {late} frames/s | CPU: {cpu} MHz | Host: {rate:.0} Hz / {samples} samples | Audio buffer: {:?} | Plugin latency: {latency} samples ({latency_ms:.2} ms) | Scheduling: {}",
+                        env!("CARGO_PKG_VERSION"), params.audio_reserve.value(), params.audio_diagnostics.scheduling()));
                 }
             });
         });
@@ -518,7 +531,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
             }
 
             // the panel
-            if smk {
+            let panel_changed = if smk {
                 let a = &ui.analog;
                 let st = panel_smk::State {
                     lcd: &lcd,
@@ -533,6 +546,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                     modw: a[fm1_soc::smk::ANALOG_MOD as usize],
                 };
                 panel_smk::draw(&mut ui.buf, &ui.base, &st);
+                true
             } else {
                 let stable_leds = ui.led_display.update(&leds);
                 let st = panel::State {
@@ -543,17 +557,19 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                     leds: &stable_leds,
                     turning: &std::array::from_fn(|i| ui.turning[i]),
                 };
-                panel::draw_with_encoder_angles(&mut ui.buf, &ui.base, &st, &skin.palette, &ui.encoder_display.angles);
-            }
+                ui.panel_cache.draw(&mut ui.buf, &ui.base, &st, &skin.palette, &ui.encoder_display.angles)
+            };
             for t in ui.turning.iter_mut() {
                 *t = t.saturating_sub(1);
             }
-            ui.rgba.clear();
-            ui.rgba.extend(ui.buf.iter().flat_map(|p| [(p >> 16) as u8, (p >> 8) as u8, *p as u8, 255]));
-            let img = egui::ColorImage::from_rgba_unmultiplied([w, h], &ui.rgba);
-            match ui.tex.as_mut() {
-                Some(t) if t.size() == [w, h] => t.set(img, egui::TextureOptions::LINEAR),
-                _ => ui.tex = Some(ctx.load_texture("panel", img, egui::TextureOptions::LINEAR)),
+            if panel_changed || ui.tex.is_none() {
+                ui.rgba.clear();
+                ui.rgba.extend(ui.buf.iter().flat_map(|p| [(p >> 16) as u8, (p >> 8) as u8, *p as u8, 255]));
+                let img = egui::ColorImage::from_rgba_unmultiplied([w, h], &ui.rgba);
+                match ui.tex.as_mut() {
+                    Some(t) if t.size() == [w, h] => t.set(img, egui::TextureOptions::LINEAR),
+                    _ => ui.tex = Some(ctx.load_texture("panel", img, egui::TextureOptions::LINEAR)),
+                }
             }
             if let Some(t) = &ui.tex {
                 c.painter().image(t.id(), rect, egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)), egui::Color32::WHITE);
