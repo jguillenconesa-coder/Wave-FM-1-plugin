@@ -27,7 +27,11 @@ are added. Original attribution remains unchanged.
 An isolated opt-in wall-clock regression runs the actual bundled X0X engine
 with 48 kHz / 512-frame callbacks, PLAY, held notes and repeated GM percussion.
 It requires finite non-silent output, no halt and zero missing frames after
-two seconds of startup. Native Windows/macOS gates retain its timing report in
+two seconds of startup. The test-only fake host yields until each absolute
+deadline instead of using sleep timers that macOS CI may coalesce by 85 ms.
+This pacing loop is not used in shipped audio processing. Its measured host
+lateness is retained to distinguish test scheduling from emulation speed.
+Native Windows/macOS gates retain its timing report in
 their ZIPs. Startup misses are measured separately, not hidden in the UI.
 The persistent failure reported by the user was not reproduced locally under
 the previous scheduling policy; improvement here does not prove that their

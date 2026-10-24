@@ -152,7 +152,12 @@ mod tests {
         let legacy = std::env::var_os("FM1_REALTIME_LEGACY").is_some();
         for block in 0..1125u32 {
             let deadline = started + Duration::from_secs_f64(block as f64 * 512.0 / 48000.0);
-            if let Some(wait) = deadline.checked_duration_since(Instant::now()) { std::thread::sleep(wait); }
+            // A real host calls from its audio driver, not a coalesced sleep
+            // timer. Darwin CI can oversleep nanosleep by tens of milliseconds,
+            // making this fake host burst many callbacks and starve any queue.
+            // Yield until the deadline in this isolated, opt-in diagnostic only;
+            // the shipped callback/worker do not busy-wait.
+            while Instant::now() < deadline { std::thread::yield_now(); }
             max_host_late = max_host_late.max(Instant::now().saturating_duration_since(deadline));
             if block == 188 { cmd.send(Cmd::Key { id: 12, down: true }).unwrap(); }
             if block == 198 { cmd.send(Cmd::Key { id: 12, down: false }).unwrap(); }
