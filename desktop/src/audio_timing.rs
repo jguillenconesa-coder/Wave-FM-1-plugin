@@ -227,6 +227,9 @@ mod tests {
         let mut max_steady_host_late = Duration::ZERO; let mut peak = 0.0f32;
         let legacy = std::env::var_os("FM1_REALTIME_LEGACY").is_some();
         let polling = std::env::var_os("FM1_REALTIME_POLLING").is_some();
+        let warm = std::env::var_os("FM1_REALTIME_WARM_START").is_some();
+        let (play_down, play_up, note_down) = if warm { (94, 104, 106) } else { (188, 198, 282) };
+        let mut buckets = [0u64; 12];
         for block in 0..1125u32 {
             let deadline = started + Duration::from_secs_f64(block as f64 * 512.0 / 48000.0);
             // A real host calls from its audio driver, not a coalesced sleep
@@ -238,16 +241,16 @@ mod tests {
             let host_late = Instant::now().saturating_duration_since(deadline);
             max_host_late = max_host_late.max(host_late);
             if block >= 188 { max_steady_host_late = max_steady_host_late.max(host_late); }
-            if block == 188 { cmd.send(Cmd::Key { id: 12, down: true }).unwrap(); }
-            if block == 198 { cmd.send(Cmd::Key { id: 12, down: false }).unwrap(); }
-            if block == 282 || block == 750 {
-                cmd.send(Cmd::Key { id: 26, down: block == 282 }).unwrap();
+            if block == play_down { cmd.send(Cmd::Key { id: 12, down: true }).unwrap(); }
+            if block == play_up { cmd.send(Cmd::Key { id: 12, down: false }).unwrap(); }
+            if block == note_down || block == 750 {
+                cmd.send(Cmd::Key { id: 26, down: block == note_down }).unwrap();
                 for channel in 0..16 {
                     midi.push(engine::Midi { frame: playback.position + lead as u64,
-                        bytes: [(if block == 282 { 0x90 } else { 0x80 }) | channel, 60, 100], len: 3 }).unwrap();
+                        bytes: [(if block == note_down { 0x90 } else { 0x80 }) | channel, 60, 100], len: 3 }).unwrap();
                 }
             }
-            if block >= 282 && block % 12 == 0 {
+            if block >= note_down && block % 12 == 0 {
                 // Default X0X GM inputs: 909 on channel 10, 808 on channel 11.
                 // Keep exercising voices instead of timing a silent/idle synth.
                 for (channel, note) in [(9, 36), (9, 42), (10, 42), (10, 38)] {
@@ -264,10 +267,12 @@ mod tests {
             if !polling { worker.thread().unpark(); }
             max_callback = max_callback.max(call.elapsed());
             if block < 188 { startup_missed += missed; } else { steady_missed += missed; }
+            buckets[(block as usize * 512 / 48000).min(11)] += missed;
             for &sample in left.iter().chain(&right) { assert!(sample.is_finite()); peak = peak.max(sample.abs()); }
         }
         shared.quit.store(true, Ordering::Relaxed); worker.join().unwrap();
         let view = shared.view.lock().unwrap();
+        eprintln!("MISSING_BUCKETS warm={warm} frames_per_second={buckets:?}");
         eprintln!("REALTIME X0X 48k/512 lead={lead} legacy={legacy} polling={polling}: startup_missing={startup_missed}, steady_missing={steady_missed}, debt={}, position={}, callback_max_us={}, host_late_max_us={}, steady_host_late_max_us={}, engine_speed={:.3}, peak={peak:.5}, halted={}",
             playback.debt, playback.position, max_callback.as_micros(), max_host_late.as_micros(), max_steady_host_late.as_micros(), view.speed, view.halted);
         assert!(view.booted && !view.halted && peak > 0.0001);

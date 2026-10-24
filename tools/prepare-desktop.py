@@ -197,6 +197,8 @@ def main():
     let use_sleep = std::env::var_os("FM1_TEST_WORKER_SLEEP").is_some();
     #[cfg(test)]
     let (mut measured_run, mut measured_wait, mut wait_max, mut iterations) = (Duration::ZERO, Duration::ZERO, 0u128, 0u64);
+    #[cfg(test)]
+    let (mut refill_started, mut refill_max) = (None::<Instant>, 0u128);
     let mut m: Option<Machine> = None;''')
     text = replace_once(text, '                    active_pkg = m.as_ref().map(|_| pkg);',
                         '                    controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n                    active_pkg = m.as_ref().map(|_| pkg);')
@@ -264,7 +266,7 @@ fn apply(m: &mut Option<Machine>, a: Action) {''', '''    }
     if std::env::var_os("FM1_REALTIME_DIAGNOSTIC").is_some() {
         eprintln!("RENDER slice={} max_us={} max_batch_frames={}", render_slice, render_max.0, render_max.1);
         let wall = measured_started.elapsed();
-        eprintln!("WORKER wait_mode={} wall_ms={} run_ms={} wait_ms={} other_ms={} loops={} wait_max_us={} made={}", if use_sleep { "sleep" } else { "park" }, wall.as_millis(), measured_run.as_millis(), measured_wait.as_millis(), wall.saturating_sub(measured_run + measured_wait).as_millis(), iterations, wait_max, made);
+        eprintln!("WORKER wait_mode={} wall_ms={} run_ms={} wait_ms={} other_ms={} loops={} wait_max_us={} made={} refill_max_us={}", if use_sleep { "sleep" } else { "park" }, wall.as_millis(), measured_run.as_millis(), measured_wait.as_millis(), wall.saturating_sub(measured_run + measured_wait).as_millis(), iterations, wait_max, made, refill_max);
     }
 }
 
@@ -301,6 +303,9 @@ fn panel_event(m: &mut Option<Machine>, event: crate::controls::Event) {
     for timer in ("t0", "t1"):
         text = replace_once(text, f"busy += {timer}.elapsed();", f"let elapsed = {timer}.elapsed();\n            busy += elapsed;\n            #[cfg(test)]\n            {{ measured_run += elapsed; }}")
     text = replace_once(text, "    while !shared.quit.load(Ordering::Relaxed) {", "    while !shared.quit.load(Ordering::Relaxed) {\n        #[cfg(test)]\n        { iterations += 1; }")
+    text = replace_once(text, "        let fill = rtrb_fill(&out);", "        let fill = rtrb_fill(&out);\n        #[cfg(test)]\n        if fill >= lead { refill_started = None; } else { refill_started.get_or_insert(now); }")
+    text = replace_once(text, "            let a = std::mem::take(&mut mm.soc.periph.audio);", "            let a = std::mem::take(&mut mm.soc.periph.audio);\n            #[cfg(test)]\n            if !a.is_empty() { if let Some(start) = refill_started.take() { refill_max = refill_max.max((t0 + elapsed).saturating_duration_since(start).as_micros()); } }")
+    text = replace_once(text, "                    v.speed = ms.saturating_sub(speed_ms) as f32 / busy.as_secs_f32() / 1000.0;", "                    v.speed = ms.saturating_sub(speed_ms) as f32 / busy.as_secs_f32() / 1000.0;\n                    #[cfg(test)]\n                    if std::env::var_os(\"FM1_REALTIME_DIAGNOSTIC\").is_some() { eprintln!(\"WORKER_SECOND at_ms={} engine_speed={:.3}\", now.saturating_duration_since(measured_started).as_millis(), v.speed); }")
     # A callback wakes its producer directly. Timed parks retain bounded idle
     # behaviour for GUI commands, hosts that stop processing, and shutdown.
     for duration in ("Duration::from_micros(500)", "Duration::from_millis(1)", "Duration::from_millis(2)"):

@@ -1,0 +1,57 @@
+name: Windows timing investigation (no publication)
+on:
+  push:
+    tags: ['timing-*']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  investigate:
+    runs-on: windows-2022
+    timeout-minutes: 25
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/.deps/fm1-emu/crates/fm1-plugin/target
+      RUSTFLAGS: '-C target-feature=+crt-static'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Prepare pinned source and native toolchain
+        run: |
+          rustup toolchain install 1.99.1 --profile minimal
+          python tools/prepare-desktop.py
+          Get-CimInstance Win32_Processor | Select-Object Name, NumberOfCores, NumberOfLogicalProcessors
+      - name: Compile the diagnostic once
+        shell: pwsh
+        run: |
+          cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --target x86_64-pc-windows-msvc --lib -j 2 --no-run 2>&1 | Tee-Object diagnostic-build.log
+          if ($LASTEXITCODE -ne 0) {
+            $Context = (Get-Content diagnostic-build.log -Tail 30) -join ' | '
+            $Context = $Context.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=Diagnostic compilation::$Context"
+            throw 'Diagnostic compilation failed'
+          }
+      - name: Compare cold and already active workloads
+        shell: pwsh
+        run: |
+          $Binary = Get-ChildItem '.deps/fm1-emu/crates/fm1-plugin/target/x86_64-pc-windows-msvc/release/deps/fm1_plugin-*.exe' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if (-not $Binary) { throw 'No diagnostic executable' }
+          $env:FM1_REALTIME_DIAGNOSTIC = '1'
+          foreach ($Case in @('cold-park', 'cold-sleep', 'warm-park', 'warm-sleep')) {
+            Remove-Item Env:FM1_TEST_WORKER_SLEEP -ErrorAction SilentlyContinue
+            Remove-Item Env:FM1_REALTIME_WARM_START -ErrorAction SilentlyContinue
+            if ($Case.EndsWith('sleep')) { $env:FM1_TEST_WORKER_SLEEP = '1' }
+            if ($Case.StartsWith('warm')) { $env:FM1_REALTIME_WARM_START = '1' }
+            & $Binary.FullName audio_timing::tests::realtime_x0x_48k_512 --ignored --nocapture 2>&1 | Tee-Object "$Case.txt"
+            $Code = $LASTEXITCODE
+            $Lines = (Select-String -Path "$Case.txt" -Pattern 'WORKER|RENDER |MISSING_BUCKETS |REALTIME X0X |test result:').Line -join ' | '
+            $Lines = $Lines.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::notice title=$Case (test exit $Code; diagnostic only)::$Lines"
+            Get-Content "$Case.txt" >> $env:GITHUB_STEP_SUMMARY
+          }
+          # This job only collects evidence. It cannot publish or satisfy the
+          # separate release gates, and does not convert a failed test to a pass.
+          exit 0
