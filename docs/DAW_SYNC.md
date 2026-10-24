@@ -94,7 +94,7 @@ pueden aumentar los underruns: una reserva menor no corrige una emulación que
 solo alcanza 1.00x. Empieza por Balanced y comprueba **Audio late** antes de
 probar Low latency. El plugin no cambia el buffer de Live.
 
-El worker solicita planificación de audio en Windows y QoS en macOS, solo para
+El worker solicita prioridad «Above normal» en Windows y QoS en macOS, solo para
 su hilo. La interfaz también evita redibujar controles inmóviles. Estas medidas
 reducen pausas y trabajo ajeno al motor; su efecto depende del sistema. La CPU
 virtual de una instancia no se reparte automáticamente entre todos los núcleos

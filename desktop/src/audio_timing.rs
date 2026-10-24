@@ -54,7 +54,7 @@ impl Diagnostics {
     pub fn set_scheduling(&self, status: u32) { self.scheduling.store(status, Ordering::Relaxed); }
     pub fn scheduling(&self) -> &'static str {
         match self.scheduling.load(Ordering::Relaxed) {
-            1 => "Windows audio task", 2 => "macOS user-interactive", _ => "Standard scheduling",
+            1 => "Windows above-normal", 2 => "macOS user-interactive", _ => "Standard scheduling",
         }
     }
     pub fn host(&self) -> (f32, u32) {
@@ -191,9 +191,9 @@ mod tests {
         use crate::{engine::{self, Cmd, Shared, View}, Fm1Params};
         use std::{sync::{mpsc, Arc, Mutex, atomic::Ordering}, time::{Duration, Instant}};
         // Real audio hosts use audio-priority callbacks. The synthetic host
-        // must not run below its MMCSS/QoS emulation worker: otherwise the OS
+        // must not run below its priority/QoS emulation worker: otherwise the OS
         // can delay the consumer or throttle the worker behind a busy normal-
-        // priority fake host. Give both test threads the same audio task class.
+        // priority fake host. Give both test threads the same worker scheduling policy.
         // This is test-only, lasts for this test thread and keeps the strict
         // zero-missing-frame assertion; it does not change plugin processing.
         let _host_scheduling = crate::worker::Scheduling::audio();

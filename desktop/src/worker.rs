@@ -2,10 +2,11 @@
 // No process/global priorities, power plan, system timer or driver is changed.
 
 #[cfg(windows)]
-#[link(name = "avrt")]
+#[link(name = "kernel32")]
 unsafe extern "system" {
-    fn AvSetMmThreadCharacteristicsW(task: *const u16, index: *mut u32) -> *mut std::ffi::c_void;
-    fn AvRevertMmThreadCharacteristics(handle: *mut std::ffi::c_void) -> i32;
+    fn GetCurrentThread() -> *mut std::ffi::c_void;
+    fn GetThreadPriority(thread: *mut std::ffi::c_void) -> i32;
+    fn SetThreadPriority(thread: *mut std::ffi::c_void, priority: i32) -> i32;
 }
 
 #[cfg(target_os = "macos")]
@@ -16,6 +17,8 @@ unsafe extern "C" {
 pub struct Scheduling {
     #[cfg(windows)]
     handle: *mut std::ffi::c_void,
+    #[cfg(windows)]
+    previous: Option<i32>,
     pub status: u32,
 }
 
@@ -23,14 +26,20 @@ impl Scheduling {
     pub fn audio() -> Self {
         #[cfg(windows)]
         {
-            let task = [80u16, 114, 111, 32, 65, 117, 100, 105, 111, 0]; // Pro Audio
-            let mut index = 0;
-            // SAFETY: nul-terminated UTF-16 and a writable index live across the
-            // call. The returned MMCSS registration belongs to this thread and
-            // is reverted by Drop on the same thread. Failure is non-fatal.
-            // https://learn.microsoft.com/windows/win32/api/avrt/nf-avrt-avsetmmthreadcharacteristicsw
-            let handle = unsafe { AvSetMmThreadCharacteristicsW(task.as_ptr(), &mut index) };
-            Self { handle, status: if handle.is_null() { 0 } else { 1 } }
+            // Above normal (+1), not a realtime priority or an MMCSS task.
+            // Remain below ordinary highest/time-critical host audio threads;
+            // avoid MMCSS's CPU quotas for this asynchronous background worker.
+            // Never lower an existing higher priority, including a test host.
+            // SAFETY: the pseudo-handle belongs to this thread and stays here;
+            // this non-Send guard restores a successful change on the same
+            // thread. There are no pointer dereferences or owned OS handles.
+            // https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreadpriority
+            let handle = unsafe { GetCurrentThread() };
+            let previous = unsafe { GetThreadPriority(handle) };
+            if previous == i32::MAX { return Self { handle, previous: None, status: 0 }; }
+            if previous >= 1 { return Self { handle, previous: None, status: 1 }; }
+            let changed = unsafe { SetThreadPriority(handle, 1) } != 0;
+            Self { handle, previous: changed.then_some(previous), status: u32::from(changed) }
         }
         #[cfg(target_os = "macos")]
         {
@@ -47,10 +56,10 @@ impl Scheduling {
 impl Drop for Scheduling {
     fn drop(&mut self) {
         #[cfg(windows)]
-        if !self.handle.is_null() {
-            // SAFETY: the successful registration has not been reverted and
-            // this guard never leaves the worker thread that created it.
-            unsafe { AvRevertMmThreadCharacteristics(self.handle); }
+        if let Some(previous) = self.previous {
+            // SAFETY: this guard stays on its creating thread; its pseudo-handle
+            // remains valid until thread exit. Restore only our own change.
+            unsafe { SetThreadPriority(self.handle, previous); }
         }
         #[cfg(target_os = "macos")]
         {

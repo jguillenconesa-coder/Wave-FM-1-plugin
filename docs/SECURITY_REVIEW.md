@@ -16,8 +16,11 @@ changes are deferred while the transport plays. The callback adds only bounded
 arithmetic and atomic access; no allocation, wait, I/O or new lock is added.
 Clearing restored firmware cancels exports and clears the worker's active state.
 
-Windows uses the public Avrt API on the instance's emulation worker only. Its
-RAII guard reverts registration before that thread exits. macOS uses the public
+Windows uses public Kernel32 thread-priority APIs on this instance's worker
+only: Above normal (+1), below normal highest/time-critical audio priorities.
+It does not enter a realtime class or MMCSS, which applies CPU quotas. Its
+non-Send RAII guard restores a successful change on its creating thread; it
+never lowers an existing higher priority. Failure is non-fatal. macOS uses the public
 pthread QoS API for the same worker. Failure falls back to normal scheduling.
 No process-wide priority, affinity, timer resolution, power settings, services,
 drivers, installer privileges or host configuration changes are introduced.

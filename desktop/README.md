@@ -46,7 +46,7 @@ source; see `firmware/README.md` and `firmware/manifest.json`.
 From 0.2.6, an instance without firmware reports zero latency. A bounded
 `audio_reserve` parameter chooses Low / Balanced / Safe (legacy default),
 applied while stopped. Loaded latency remains honestly reported to the host.
-The instance worker uses public Windows MMCSS/macOS QoS APIs with fallback and
+The instance worker uses public Windows thread-priority/macOS QoS APIs with fallback and
 thread-scoped cleanup. No global host or installer setting changes. The FM-1
 GUI caches unchanged controls, with a full-render pixel regression across all
 six skins and an opt-in drawing benchmark. New host-side VST3 checks verify

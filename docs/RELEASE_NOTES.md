@@ -20,10 +20,11 @@ más cortes. Safe conserva la reserva anterior y la compatibilidad de Sets.
 Los valores dependen de la frecuencia y del bloque máximo negociado con el host;
 no incluyen el buffer del dispositivo ni la respuesta interna del firmware.
 
-El hilo de emulación solicita el perfil MMCSS «Pro Audio» de Windows o QoS
-«user-interactive» en macOS, con fallback si no está disponible. No cambia la
+El hilo de emulación solicita prioridad «Above normal» en Windows o QoS
+«user-interactive» en macOS, con fallback si no está disponible. Windows no
+usa prioridad de tiempo real ni las cuotas de MMCSS para el worker. No cambia la
 prioridad global, el plan de energía ni los ajustes de Live. Cada instancia
-mantiene su propio hilo y libera el registro al cerrarse.
+mantiene su propio hilo y restaura su prioridad al cerrarse.
 
 La interfaz FM-1 reutiliza los controles dibujados que no han cambiado y evita
 subir una textura idéntica. Pantalla, LEDs y controles cambiados conservan sus
