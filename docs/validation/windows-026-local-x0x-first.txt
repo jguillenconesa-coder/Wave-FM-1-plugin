@@ -1,0 +1,17 @@
+running 1 test
+RENDER slice=8000 max_us=74235 max_batch_frames=512
+REALTIME X0X 48k/512 lead=1495 legacy=false: startup_missing=9407, steady_missing=4131, debt=0, position=529199, callback_max_us=85, host_late_max_us=3019, engine_speed=1.810, peak=0.39056, halted=false
+
+thread 'audio_timing::tests::realtime_x0x_48k_512' (292) panicked at src/audio_timing.rs:257:9:
+assertion `left == right` failed: steady playback missed frames; inspect diagnostic timing/load
+  left: 4131
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test audio_timing::tests::realtime_x0x_48k_512 ... FAILED
+
+failures:
+
+failures:
+    audio_timing::tests::realtime_x0x_48k_512
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 43 filtered out; finished in 12.00s

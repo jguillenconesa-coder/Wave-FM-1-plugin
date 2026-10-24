@@ -1,0 +1,10 @@
+=== X0X timing attempt 1/3 ===
+
+running 1 test
+RENDER slice=8000 max_us=13234 max_batch_frames=512
+WORKER wait_mode=park wall_ms=11992 run_ms=7117 wait_ms=4747 other_ms=127 loops=351133 wait_max_us=3067 made=530432
+REALTIME X0X 48k/512 lead=1495 legacy=false polling=false: startup_missing=7526, steady_missing=0, debt=0, position=529199, callback_max_us=194, host_late_max_us=2299, steady_host_late_max_us=1617, engine_speed=1.782, peak=0.39877, halted=false
+test audio_timing::tests::realtime_x0x_48k_512 ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 43 filtered out; finished in 12.00s
+FINAL_REALTIME_RESULT: pass (attempt 1/3)

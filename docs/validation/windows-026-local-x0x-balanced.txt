@@ -1,0 +1,6 @@
+running 1 test
+RENDER slice=8000 max_us=65153 max_batch_frames=512
+REALTIME X0X 48k/512 lead=983 legacy=false: startup_missing=15900, steady_missing=0, debt=0, position=529199, callback_max_us=10, host_late_max_us=2221, engine_speed=1.710, peak=0.39836, halted=false
+test audio_timing::tests::realtime_x0x_48k_512 ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 43 filtered out; finished in 12.01s
