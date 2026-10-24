@@ -190,12 +190,12 @@ mod tests {
     fn realtime_x0x_48k_512() {
         use crate::{engine::{self, Cmd, Shared, View}, Fm1Params};
         use std::{sync::{mpsc, Arc, Mutex, atomic::Ordering}, time::{Duration, Instant}};
-        // CoreAudio calls from a realtime audio thread. The synthetic host must
-        // not run at lower QoS than the new user-interactive emulation worker:
-        // otherwise Darwin may delay the consumer and then burst callbacks.
+        // Real audio hosts use audio-priority callbacks. The synthetic host
+        // must not run below its MMCSS/QoS emulation worker: otherwise the OS
+        // can delay the consumer or throttle the worker behind a busy normal-
+        // priority fake host. Give both test threads the same audio task class.
         // This is test-only, lasts for this test thread and keeps the strict
         // zero-missing-frame assertion; it does not change plugin processing.
-        #[cfg(target_os = "macos")]
         let _host_scheduling = crate::worker::Scheduling::audio();
         let directory = std::env::var_os("FM1_CATALOGUE_TEST_DIR").map(std::path::PathBuf::from)
             .unwrap_or_else(|| std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../../firmware/catalogue"));
