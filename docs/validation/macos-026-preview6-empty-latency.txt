@@ -1,0 +1,19 @@
+	AUDIO in: 0, out: 1
+	AUDIO in: 0, out: 1
+	AUDIO in: 0, out: 1
+	AUDIO in: 0, out: 1
+	AUDIO in: 0, out: 1
+	AUDIO in: 0, out: 1
+	AUDIO in: 0, out: 1
+	AUDIO in: 0, out: 1
+	AUDIO in: 0, out: 1
+EMPTY_LATENCY rate=44100 block=64 before=0 after=0 silent=true
+EMPTY_LATENCY rate=44100 block=512 before=0 after=0 silent=true
+EMPTY_LATENCY rate=44100 block=2048 before=0 after=0 silent=true
+EMPTY_LATENCY rate=48000 block=64 before=0 after=0 silent=true
+EMPTY_LATENCY rate=48000 block=512 before=0 after=0 silent=true
+EMPTY_LATENCY rate=48000 block=2048 before=0 after=0 silent=true
+EMPTY_LATENCY rate=96000 block=64 before=0 after=0 silent=true
+EMPTY_LATENCY rate=96000 block=512 before=0 after=0 silent=true
+EMPTY_LATENCY rate=96000 block=2048 before=0 after=0 silent=true
+Result: 9 empty VST3 latency checks passed

@@ -9,11 +9,11 @@ repositorio no se presenta como autora de ese trabajo; consulta
 
 ## Descargar e instalar
 
-- [Instalador Windows 0.2.5](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.5-preview.3/Wave-FM-1-0.2.5-Windows-x64-Setup.exe)
-- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.5-preview.3/Wave-FM-1-0.2.5-Windows-x64-Portable.zip)
-- [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.5-preview.3/Wave-FM-1-0.2.5-macOS-Universal.pkg)
-- [macOS Universal: ZIP por usuario](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.5-preview.3/Wave-FM-1-0.2.5-macOS-Universal.zip)
-- [Versión publicada, hashes y todos los archivos](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.5-preview.3)
+- [Instalador Windows 0.2.6](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.6-preview.4/Wave-FM-1-0.2.6-Windows-x64-Setup.exe)
+- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.6-preview.4/Wave-FM-1-0.2.6-Windows-x64-Portable.zip)
+- [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.6-preview.6/Wave-FM-1-0.2.6-macOS-Universal.pkg)
+- [macOS Universal: ZIP por usuario](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.6-preview.6/Wave-FM-1-0.2.6-macOS-Universal.zip)
+- [Windows: versión y hashes](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.6-preview.4) · [macOS: versión y hashes](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.6-preview.6)
 - [Instalar/desinstalar en Windows](docs/WINDOWS.md) · [macOS Intel y Apple Silicon](docs/MACOS.md)
 
 Si la descarga directa falla, abre la página de la versión y selecciona el
@@ -35,12 +35,22 @@ importantes cerrados y respaldados; no se garantiza riesgo cero.
 
 ## Firmwares y aspecto
 
-**0.2.5** estabiliza las pequeñas variaciones de color de los botones, conservando
-los flashes del firmware. Ajusta las tandas de emulación y limita el trabajo de
-recuperación de audio por bloque. Una franja inferior muestra siempre **Engine**,
-**Audio late**, **CPU** y **Host**; **Copy audio status** copia el diagnóstico.
-Las pruebas incluyen X0X real a 48 kHz / 512 muestras. El rendimiento en el
-equipo del usuario sigue necesitando comprobación; no se garantiza ausencia de cortes.
+**0.2.6** declara **cero latencia sin firmware** y añade **Audio buffer**:
+Low latency, Balanced y Safe / legacy. A 48 kHz / bloque máximo 512, sus latencias
+son 12,1 / 22,3 / 33,9 ms; Safe conserva la reserva anterior. Cambia con Live
+detenido. Los modos cortos requieren más margen y pueden aumentar los cortes.
+La interfaz reutiliza controles dibujados para consumir menos CPU y el worker
+Windows usa prioridad moderada, sin cambiar la prioridad del proceso ni ajustes
+de Live. El algoritmo de sonido se conserva.
+
+**El retraso persistente de X0X comunicado por el usuario sigue sin darse por
+resuelto.** Los enlaces recomiendan las últimas compilaciones que superaron las
+pruebas por plataforma: Windows preview.4 (`53c3966`) y macOS preview.6
+(`123425b`). `main` conserva la base del paquete Windows verificado; las
+optimizaciones posteriores y sus fallos medidos están en
+[performance-investigation](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/tree/performance-investigation).
+No se recomienda instalar una compilación de Windows que haya fallado la prueba.
+Consulta [pruebas, fuentes exactas y límites](downloads/windows/VALIDATION.md).
 
 **Musical clock** permite elegir el reloj propio del firmware o sincronizar tempo
 y reproducción con **Ableton / DAW**. El firmware debe admitir clock externo por

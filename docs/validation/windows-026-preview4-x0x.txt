@@ -1,0 +1,3 @@
+RENDER slice=8000 max_us=7767 max_batch_frames=512
+REALTIME X0X 48k/512 lead=1495 legacy=false: startup_missing=8467, steady_missing=0, debt=0, position=529199, callback_max_us=24, host_late_max_us=160, engine_speed=2.029, peak=0.39877, halted=false
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 43 filtered out; finished in 12.00s

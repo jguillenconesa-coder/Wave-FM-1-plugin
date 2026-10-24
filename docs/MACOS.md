@@ -50,5 +50,7 @@ La interfaz reutiliza controles inmóviles para consumir menos CPU.
 ## Compilar
 
 En un Mac con herramientas de Xcode, Rust 1.99.1, Python 3, CMake >=3.27 y Ninja:
-`bash tools/build-macos.sh`, las pruebas nativas de `.github/workflows/macos.yml`
+Para reproducir el paquete recomendado, selecciona primero la etiqueta
+`v0.2.6-preview.6` (fuente `123425b`); `main` conserva la base Windows preview.4.
+Ejecuta `bash tools/build-macos.sh`, las pruebas nativas de `.github/workflows/macos.yml`
 y `bash tools/package-macos.sh`. No se redistribuye ningún SDK de Apple.

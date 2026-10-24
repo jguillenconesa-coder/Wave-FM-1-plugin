@@ -1,5 +1,16 @@
 # Wave FM-1 Preview 0.2.6 · Windows y macOS
 
+Paquetes recomendados verificados por plataforma:
+
+- Windows: `v0.2.6-preview.4`, fuente `53c3966`.
+- macOS: `v0.2.6-preview.6`, fuente `123425b`.
+
+Los enlaces del README apuntan a esas compilaciones. `main` conserva la base
+Windows verificada; la investigación posterior queda en una rama aparte.
+Los candidatos Windows posteriores fallaron la comprobación de audio y no se
+recomiendan. **El retraso persistente de X0X en el equipo del usuario sigue sin
+darse por resuelto.** Pruebas y límites en `downloads/windows/VALIDATION.md`.
+
 Corrige la latencia declarada por una instancia sin firmware: ahora es
 **0 muestras**, con salida silenciosa. Al cargar un firmware se comunica al host
 la reserva real de audio; al restaurar un estado vacío se detiene la máquina y

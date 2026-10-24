@@ -1,0 +1,4 @@
+PANEL mixed=false cached=false frames=120 elapsed_us=2614827
+PANEL mixed=false cached=true frames=120 elapsed_us=11008
+PANEL mixed=true cached=false frames=120 elapsed_us=2681517
+PANEL mixed=true cached=true frames=120 elapsed_us=177563

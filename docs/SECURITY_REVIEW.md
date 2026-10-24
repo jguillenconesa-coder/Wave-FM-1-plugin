@@ -37,6 +37,26 @@ must complete before download links are promoted. A smaller reserve failed
 local timing tests, so it remains an explicit tradeoff, not the default or a
 claimed fix for sustained overload. No audio quality increase is claimed.
 
+The promoted packages use different verified sources: Windows preview.4 at
+`53c3966`, macOS preview.6 at `123425b`. All four downloaded assets, exact bundle
+hashes, architectures, original credits and the Windows source fingerprint were
+verified. Both recommended native X0X diagnostics passed with zero steady misses;
+official validation records 47 passed / zero failed and both empty-latency
+reports cover nine configurations. Source scans found no secrets. Later Windows
+wake/clock experiments failed qualified timing checks and were not promoted.
+`main` follows the verified Windows runtime; all experimental work/evidence is
+preserved on `performance-investigation`. See `downloads/windows/VALIDATION.md`.
+The user's persistent underruns are not claimed as resolved.
+
+macOS preview.6 additionally uses a non-waiting producer notification through its
+stored thread handle and timed parks, plus cached per-slice monotonic housekeeping
+time. No callback allocation, blocking wait, file/network I/O or new mutex is
+introduced. Its bounded timing wrapper can retry only a failed synthetic host's
+own steady-window deadline violation with headroom and an in-budget callback;
+it never retries away qualified misses, overload, halts, malformed reports or
+zero tests. A complete strict pass remains mandatory; all attempts are retained.
+These later changes are not in the promoted Windows preview.4 runtime.
+
 ## Version 0.2.5 audio scheduling and diagnostics (2026-10-24)
 
 Generated worker render slices decrease from 20,000 to 8,000 instructions,

@@ -101,3 +101,10 @@ virtual de una instancia no se reparte automáticamente entre todos los núcleos
 del ordenador. Elevar **CPU clock** exige más trabajo al emulador; no equivale
 a concederle más recursos del ordenador. El algoritmo de sonido y el resampler
 se mantienen: no se promete una mejora de fidelidad ni se activa oversampling.
+
+Los paquetes recomendados se verifican por plataforma: Windows preview.4 y
+macOS preview.6. Las optimizaciones posteriores de entrega/espera en Windows
+siguen en investigación y no forman parte de su instalador recomendado. Un
+valor Engine >1x es un promedio del cálculo y no garantiza cada plazo de audio.
+El retraso de X0X comunicado por el usuario no se da por resuelto. Consulta el
+registro de validación para fuentes exactas y contraejemplos medidos.

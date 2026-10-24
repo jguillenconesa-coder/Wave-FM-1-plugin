@@ -1,3 +1,129 @@
+# Validation record · Preview 0.2.6 · 2026-10-24
+
+Recommended downloads intentionally use **different, verified platform tags**.
+The Windows experiments that failed timing are not promoted as an installer.
+`main` retains the Windows preview.4 runtime; subsequent source work is preserved
+in [performance-investigation](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/tree/performance-investigation).
+No claim is made that the user's persistent X0X underruns are fixed.
+
+| Platform | Recommended assets | Exact source | Native build/publication |
+| --- | --- | --- | --- |
+| Windows x64 | v0.2.6-preview.4 EXE and portable ZIP | `53c396648fddff8a4ea32a23340b361021ba5645` | [40065127227: success](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/40065127227) |
+| macOS Universal 2 | v0.2.6-preview.6 ZIP and PKG | `123425b51d6a20d1e24aa93b919e286edf0b61e0` | [40068475978: success, 6m 7s](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/40068475978) |
+
+All four actual public downloads matched their published SHA-256 lists. Both
+Windows modules are x64; both macOS modules contain Intel/arm64. The exact file
+sets and **346 Windows / 992 macOS bundle hashes** matched their manifests.
+The Windows desktop fingerprint also matches source `53c3966` with its Windows
+checkout line endings. Both use emulator `72adb810`. Original attribution,
+23 firmware packages and matching notices/sources, 83 community references,
+64 original author download links and the DAW guide were verified in the ZIPs.
+The firmware binaries and legal notices are unchanged.
+
+The actual downloaded Windows VST3 additionally passed the official SDK validator
+under Wine: **47 passed, zero failed**. The downloaded macOS report records the
+same native result. Reports: [Windows](../../docs/validation/windows-026-preview4-vst3.txt),
+[macOS](../../docs/validation/macos-026-preview6-vst3.txt).
+Both actual bundles also passed **nine empty-VST3 audio configurations**:
+44.1/48/96 kHz × 64/512/2048 samples, zero reported latency before/after processing
+and silent output. Reports: [Windows](../../docs/validation/windows-026-preview4-empty-latency.txt),
+[macOS](../../docs/validation/macos-026-preview6-empty-latency.txt).
+The published 0.2.5 negative control failed as expected on nonzero empty latency.
+
+Windows native gates include integrity/dependency audits, 41 unit tests,
+16 Python packaging/integrity tests, two catalogue tests covering all 23 real
+firmwares, two portable-state tests, real author downloads, official validation,
+empty latency, install/factory/uninstall and complete packaging. macOS native
+gates include 41 unit tests, the same catalogue/state/author/validator checks,
+24 Python checks (including eight timing-gate boundary tests), Universal
+architecture/ad-hoc signature checks and packaging. Clean tracked-source
+Gitleaks 8.24.2 scans of the two recommended runtime source revisions found no
+secrets. These focused checks are not a complete audit of all upstream code.
+
+## Realtime observations, not a user-machine guarantee
+
+The diagnostic runs actual X0X 1.1.0 at 48 kHz / 512 samples for 12 seconds,
+virtual CPU 240 MHz and Safe lead 1495 firmware frames. It includes PLAY,
+a held panel key, note-on/off messages on all 16 channels (X0X routes its parts
+by channel), and repeated 909/808 percussion. The first two seconds are startup;
+the following ten require finite non-silent output, no halt and zero missing
+frames. Both recommended native packages passed. Neither run reproduces a
+full Ableton/ASIO session, all firmware functions or arbitrary CPU workloads.
+
+| Native runner | Engine speed (last measured interval) | Startup missing | Steady missing | Maximum callback | Maximum fake-host lateness |
+| --- | --- | --- | --- | --- | --- |
+| Windows preview.4 | 2.029x | 8467 | 0 | 24 µs | 160 µs |
+| macOS preview.6 | 2.424x | 4703 | 0 | 391 µs | 13741 µs |
+
+Exact reports: [Windows](../../docs/validation/windows-026-preview4-x0x.txt),
+[macOS](../../docs/validation/macos-026-preview6-x0x.txt). Both peaks were 0.39877.
+The macOS gate passed on its **first** attempt; no retry was needed. Its newer
+CI wrapper permits at most two repeated attempts only after a steady-window
+fake-host deadline violation, no halt/overload and an in-budget callback.
+A qualified audio failure, missing/malformed report, zero tests or three
+unsuccessful attempts blocks publication. The zero-steady-miss assertion stays
+strict. Every attempt remains in its portable ZIP report.
+
+## Windows experimental failures remain unresolved
+
+Later Windows candidates were blocked, even though their functional tests and
+builds passed. Preview.5 recorded **35,858** steady missing frames with only
+310 µs steady fake-host lateness. Preview.6 recorded **7,247** with 17 µs lateness;
+its separate timed-sleep control also failed (**6,733**). These are qualified
+audio failures, not grounds for automatically retrying until green. No Windows
+installer was published for those failed revisions. Their macOS counterparts
+passed independently; that does not validate Windows.
+
+A [separate native diagnostic](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/40070562776)
+(source `cf07cd7`) compared cold/warmed workloads and park/sleep waits on one
+runner. All four audio tests failed: 29,495 / 2,572 / 2,279 / 2,877 steady misses.
+Warm runs still missed frames after the startup interval. Individual render
+slices peaked around 6–8 ms while the longest interval until audio refill was
+about 79–86 ms (that maximum includes startup). Thus average compute headroom
+above 1x alone does not guarantee each delivery deadline. The collection job's
+green status means **evidence collection completed**, not that audio passed;
+it has read-only permissions and cannot publish. Full evidence and experimental
+source remain on the investigation branch. Earlier macOS scheduling failures
+and local timing variability are also retained there.
+
+The i7-10700F user's persistent failure has not been verified as resolved.
+One instance still depends mainly on a serial emulation worker, not all 16
+logical CPUs. Raising virtual MHz increases emulation work; it is not an
+allocation of extra host cores. No change to synthesis fidelity or oversampling
+is claimed. First test an empty Set; keep CPU clock at 240 MHz and Safe until
+Audio late stays clear after startup, then try Balanced with Live stopped.
+
+## Changes included in the recommended builds
+
+Both provide zero empty latency and Low / Balanced / Safe reserves. At
+48 kHz / maximum host block 512, loaded reported latency is 582 / 1070 / 1627
+host samples (12.1 / 22.3 / 33.9 ms), excluding ASIO and firmware response.
+Safe remains the legacy default; lower modes require more scheduling margin.
+Queue/host compensation may briefly settle after a stopped-transport change.
+Existing host parameter IDs and VST3 identity are preserved; the new reserve
+parameter is non-automatable.
+
+The FM-1 panel caches unchanged controls and skips identical texture uploads.
+A regression compares full/incremental pixels through control changes, releases
+and all six skins. A release-mode drawing benchmark of 120 frames measured
+2,614,827 → 11,008 µs for LCD-only changes and 2,681,517 → 177,563 µs for LCD plus
+one turning knob and one LED. [Raw measurements](../../docs/validation/windows-026-panel-benchmark.txt).
+This measures panel drawing, excluding egui, texture upload, emulation and Live;
+it is not a claimed overall CPU percentage or DSP-speed increase.
+
+Windows preview.4 uses a modest per-worker Above normal (+1) priority with
+fallback and scoped restoration, below ordinary highest/time-critical audio
+priorities. It does not use MMCSS quotas or a realtime process class. The
+recommended macOS preview.6 additionally wakes its producer after consumption
+and reuses a monotonic housekeeping timestamp per slice; those later delivery
+experiments are **not** in the recommended Windows preview.4 package.
+No global power, affinity, timer, driver or Live settings change. The installer
+scope and sound algorithm/resampler remain unchanged. Existing signing,
+trusted-firmware and dependency-maintenance limitations remain in the security
+review. Close Live during installation and use backups for important projects.
+
+---
+
 # Validation record · Preview 0.2.5 · 2026-10-24
 
 Published release: **v0.2.5-preview.3**, source `6f933c2`. Subsequent
