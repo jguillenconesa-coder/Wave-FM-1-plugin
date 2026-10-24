@@ -101,3 +101,8 @@ virtual de una instancia no se reparte automáticamente entre todos los núcleos
 del ordenador. Elevar **CPU clock** exige más trabajo al emulador; no equivale
 a concederle más recursos del ordenador. El algoritmo de sonido y el resampler
 se mantienen: no se promete una mejora de fidelidad ni se activa oversampling.
+
+El callback despierta al productor al consumir un bloque. Las esperas del worker
+mantienen timeout para responder a comandos y al cierre cuando Live deja de
+procesar. Esto reduce la dependencia del sondeo periódico sin bloquear el hilo
+de audio; no aumenta la CPU virtual ni cambia el tempo.

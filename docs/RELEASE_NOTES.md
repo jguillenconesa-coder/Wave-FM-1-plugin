@@ -26,6 +26,11 @@ usa prioridad de tiempo real ni las cuotas de MMCSS para el worker. No cambia la
 prioridad global, el plan de energía ni los ajustes de Live. Cada instancia
 mantiene su propio hilo y restaura su prioridad al cerrarse.
 
+El callback avisa al worker al consumir cada bloque, evitando depender solo
+del sondeo periódico para volver a llenar la cola. El worker conserva esperas
+con timeout para comandos, parada del host y cierre; no se introduce una espera
+en el callback ni un bucle activo en el producto.
+
 La interfaz FM-1 reutiliza los controles dibujados que no han cambiado y evita
 subir una textura idéntica. Pantalla, LEDs y controles cambiados conservan sus
 píxeles y su respuesta; una regresión compara el dibujo completo y el incremental
@@ -44,6 +49,11 @@ host construido con el SDK oficial que carga el VST3 vacío, procesa audio y
 consulta latencia antes/después en nueve combinaciones de frecuencia y bloque.
 Los ZIP incluyen `REALTIME_X0X.txt` y `EMPTY_LATENCY.txt`. Son pruebas acotadas;
 no equivalen a una sesión interactiva de Ableton ni garantizan todos los equipos.
+La prueba sigue exigiendo cero muestras tardías tras el arranque. Solo se repite,
+hasta tres intentos conservados, si el host simulado incumple su propio plazo
+de 10,667 ms durante la parte estable y no hay sobrecarga, halt ni callback
+fuera de plazo. Un fallo con el host a tiempo o sin un ensayo completo válido
+bloquea la publicación.
 
 Se conserva **Musical clock → Internal / firmware o Ableton / DAW** por instancia.
 El modo DAW genera MIDI Clock de 24 PPQN y Start/Stop desde el tempo y transporte

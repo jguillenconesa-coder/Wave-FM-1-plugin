@@ -223,8 +223,10 @@ mod tests {
         let mut left = [0.0; 512]; let mut right = [0.0; 512];
         let ratio = 44100.0 / 48000.0;
         let started = Instant::now(); let mut startup_missed = 0; let mut steady_missed = 0;
-        let mut max_callback = Duration::ZERO; let mut max_host_late = Duration::ZERO; let mut peak = 0.0f32;
+        let mut max_callback = Duration::ZERO; let mut max_host_late = Duration::ZERO;
+        let mut max_steady_host_late = Duration::ZERO; let mut peak = 0.0f32;
         let legacy = std::env::var_os("FM1_REALTIME_LEGACY").is_some();
+        let polling = std::env::var_os("FM1_REALTIME_POLLING").is_some();
         for block in 0..1125u32 {
             let deadline = started + Duration::from_secs_f64(block as f64 * 512.0 / 48000.0);
             // A real host calls from its audio driver, not a coalesced sleep
@@ -233,7 +235,9 @@ mod tests {
             // Yield until the deadline in this isolated, opt-in diagnostic only;
             // the shipped callback/worker do not busy-wait.
             while Instant::now() < deadline { std::thread::yield_now(); }
-            max_host_late = max_host_late.max(Instant::now().saturating_duration_since(deadline));
+            let host_late = Instant::now().saturating_duration_since(deadline);
+            max_host_late = max_host_late.max(host_late);
+            if block >= 188 { max_steady_host_late = max_steady_host_late.max(host_late); }
             if block == 188 { cmd.send(Cmd::Key { id: 12, down: true }).unwrap(); }
             if block == 198 { cmd.send(Cmd::Key { id: 12, down: false }).unwrap(); }
             if block == 282 || block == 750 {
@@ -255,14 +259,17 @@ mod tests {
             let missed = if legacy {
                 playback.render_with_budget(&mut [&mut left, &mut right], ratio, || audio.pop().ok(), 16384)
             } else { playback.render(&mut [&mut left, &mut right], ratio, || audio.pop().ok()) };
+            // Mirror the shipped callback's direct producer wake. POLLING is
+            // an opt-in diagnostic comparison, not a shipped plugin setting.
+            if !polling { worker.thread().unpark(); }
             max_callback = max_callback.max(call.elapsed());
             if block < 188 { startup_missed += missed; } else { steady_missed += missed; }
             for &sample in left.iter().chain(&right) { assert!(sample.is_finite()); peak = peak.max(sample.abs()); }
         }
         shared.quit.store(true, Ordering::Relaxed); worker.join().unwrap();
         let view = shared.view.lock().unwrap();
-        eprintln!("REALTIME X0X 48k/512 lead={lead} legacy={legacy}: startup_missing={startup_missed}, steady_missing={steady_missed}, debt={}, position={}, callback_max_us={}, host_late_max_us={}, engine_speed={:.3}, peak={peak:.5}, halted={}",
-            playback.debt, playback.position, max_callback.as_micros(), max_host_late.as_micros(), view.speed, view.halted);
+        eprintln!("REALTIME X0X 48k/512 lead={lead} legacy={legacy} polling={polling}: startup_missing={startup_missed}, steady_missing={steady_missed}, debt={}, position={}, callback_max_us={}, host_late_max_us={}, steady_host_late_max_us={}, engine_speed={:.3}, peak={peak:.5}, halted={}",
+            playback.debt, playback.position, max_callback.as_micros(), max_host_late.as_micros(), max_steady_host_late.as_micros(), view.speed, view.halted);
         assert!(view.booted && !view.halted && peak > 0.0001);
         assert_eq!(steady_missed, 0, "steady playback missed frames; inspect diagnostic timing/load");
     }

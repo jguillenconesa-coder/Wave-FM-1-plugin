@@ -12,8 +12,13 @@ A non-automatable `audio_reserve` parameter adds bounded, validated queue target
 Safe / legacy remains the default. Existing parameter IDs and VST3 identity are
 preserved. Empty instances output silence and report zero latency; loaded
 instances report the actual target, with coalesced host notifications. Reserve
-changes are deferred while the transport plays. The callback adds only bounded
-arithmetic and atomic access; no allocation, wait, I/O or new lock is added.
+changes are deferred while the transport plays. The callback adds bounded arithmetic/atomics and a non-waiting `Thread::unpark`
+notification after consuming a block, using its stored worker handle without
+cloning/allocating it. No blocking wait, file/network I/O or new mutex is added.
+The producer parks with existing bounded timeouts instead of blindly sleeping;
+tokens prevent a lost wake before a park. It still responds to commands and
+shutdown when a host stops processing. The handle remains owned by the instance;
+no background task outlives the existing joined worker.
 Clearing restored firmware cancels exports and clears the worker's active state.
 
 Windows uses public Kernel32 thread-priority APIs on this instance's worker
@@ -36,6 +41,16 @@ also have lifecycle tests. Native release gates and actual-asset verification
 must complete before download links are promoted. A smaller reserve failed
 local timing tests, so it remains an explicit tradeoff, not the default or a
 claimed fix for sustained overload. No audio quality increase is claimed.
+
+A bounded CI wrapper retains every timing attempt. It may repeat at most twice
+only when a failed strict diagnostic records a fake-host deadline violation
+in the measured steady window (>512/48k seconds), positive audio, no halt,
+engine speed >1x and callback time within its period. Overload, qualified misses,
+malformed/missing reports, zero tests, callback overruns and three failures block
+publication. The final complete run must still pass the unchanged zero-steady-
+missing-frame assertion. Eight deterministic gate tests check these boundaries.
+Startup-only host stalls cannot qualify a retry. This handles noisy shared CI,
+not performance defects or user-machine acceptance; all reports stay in the ZIP.
 
 ## Version 0.2.5 audio scheduling and diagnostics (2026-10-24)
 

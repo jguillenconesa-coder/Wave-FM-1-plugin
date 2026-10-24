@@ -80,7 +80,7 @@ jobs:
           RUSTFLAGS: '-C target-feature=+crt-static'
           FM1_REALTIME_DIAGNOSTIC: '1'
         run: |
-          cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --target x86_64-pc-windows-msvc --lib audio_timing::tests::realtime_x0x_48k_512 -j 2 -- --ignored --nocapture 2>&1 | Tee-Object dist/REALTIME_X0X.txt
+          python tools/check-realtime.py --report dist/REALTIME_X0X.txt -- cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --target x86_64-pc-windows-msvc --lib audio_timing::tests::realtime_x0x_48k_512 -j 2 -- --ignored --nocapture
           $TestExit = $LASTEXITCODE
           Get-Content dist/REALTIME_X0X.txt >> $env:GITHUB_STEP_SUMMARY
           if ($TestExit -ne 0) {

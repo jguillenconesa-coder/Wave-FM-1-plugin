@@ -132,6 +132,10 @@ def main():
     if text[render_start:render_end].count('self.frac = self.frac.min(1.0);') != 1:
         raise SystemExit('Unexpected audio rendering baseline')
     text = text[:render_start] + '''        let starved = self.playback.render(out, self.ratio, || rx.pop().ok());
+        // Notify our producer after consuming a block. Borrow the stored thread
+        // handle: no allocation or waiting on the audio thread. A missed wake
+        // becomes a token for the worker's next park, never a lost notification.
+        if let Some(worker) = &self.thread { worker.thread().unpark(); }
         let starved = if loaded { starved } else {
             // Empty/restored-empty instances produce silence and need no PDC.
             // Continue draining the timeline so a later firmware starts in sync.
@@ -267,6 +271,10 @@ fn panel_event(m: &mut Option<Machine>, event: crate::controls::Event) {
     });
 }
 '''
+    # A callback wakes its producer directly. Timed parks retain bounded idle
+    # behaviour for GUI commands, hosts that stop processing, and shutdown.
+    for duration in ("Duration::from_micros(500)", "Duration::from_millis(1)", "Duration::from_millis(2)"):
+        text = replace_once(text, f"std::thread::sleep({duration});", f"std::thread::park_timeout({duration});")
     engine.write_text(text)
     periph = DEST / 'crates/fm1-soc/src/periph.rs'
     text = periph.read_text()

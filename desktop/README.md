@@ -53,3 +53,10 @@ six skins and an opt-in drawing benchmark. New host-side VST3 checks verify
 actual empty audio processing and reported latency across nine configurations.
 These integration changes are MIT; original emulator/panel authorship remains
 Joakim Eriksson's. The resampler and firmware sound algorithms are unchanged.
+
+The callback now notifies its stored worker thread after consuming a block.
+The worker uses timed parks instead of sleeps, avoiding lost wake notifications
+while retaining command/shutdown responsiveness. No allocation, blocking wait
+or new mutex is introduced in the callback. The strict timing CI wrapper permits
+only bounded, fully recorded repeats after an unqualified synthetic-host deadline;
+qualified audio failures and overload still block publication.

@@ -50,7 +50,7 @@ jobs:
           FM1_REALTIME_DIAGNOSTIC: '1'
         run: |
           set -euo pipefail
-          cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --lib audio_timing::tests::realtime_x0x_48k_512 -j 3 -- --ignored --nocapture 2>&1 | tee dist/macos/REALTIME_X0X.txt
+          python3 tools/check-realtime.py --report dist/macos/REALTIME_X0X.txt -- cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --lib audio_timing::tests::realtime_x0x_48k_512 -j 3 -- --ignored --nocapture
           cat dist/macos/REALTIME_X0X.txt >> "$GITHUB_STEP_SUMMARY"
       - name: Official VST3 validation
         run: |
