@@ -31,6 +31,12 @@ del sondeo periódico para volver a llenar la cola. El worker conserva esperas
 con timeout para comandos, parada del host y cierre; no se introduce una espera
 en el callback ni un bucle activo en el producto.
 
+Los controles, la actualización de pantalla y el guardado reutilizan una
+lectura monotónica por tanda del worker. Reduce consultas repetidas al reloj
+del sistema; no cambia el reloj musical ni los ciclos del firmware. Los informes
+de prueba separan tiempo de cálculo, espera y trabajo restante para diagnosticar
+el coste que no representa el indicador Engine.
+
 La interfaz FM-1 reutiliza los controles dibujados que no han cambiado y evita
 subir una textura idéntica. Pantalla, LEDs y controles cambiados conservan sus
 píxeles y su respuesta; una regresión compara el dibujo completo y el incremental

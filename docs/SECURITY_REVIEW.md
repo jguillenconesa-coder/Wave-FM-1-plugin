@@ -52,6 +52,15 @@ missing-frame assertion. Eight deterministic gate tests check these boundaries.
 Startup-only host stalls cannot qualify a retry. This handles noisy shared CI,
 not performance defects or user-machine acceptance; all reports stay in the ZIP.
 
+The worker reuses one monotonic timestamp for slice-level controls, snapshot,
+idle, view and flash housekeeping. Firmware cycles and host musical timestamps
+are unchanged. Render timing also reuses its measured duration instead of
+querying the counter a second time just for test diagnostics. Test-only worker
+accounting separates run, wait and other wall time. A test-only timed-sleep
+control may run after a blocked Windows diagnostic; its result is labelled and
+cannot turn the failed release gate into success. No such environment switch
+or accounting is compiled into the distributed plugin.
+
 ## Version 0.2.5 audio scheduling and diagnostics (2026-10-24)
 
 Generated worker render slices decrease from 20,000 to 8,000 instructions,

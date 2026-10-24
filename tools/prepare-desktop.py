@@ -191,6 +191,12 @@ def main():
     let render_slice = std::env::var("FM1_TEST_ENGINE_SLICE").ok().and_then(|s| s.parse().ok()).unwrap_or(8_000);
     #[cfg(test)]
     let mut render_max = (0u128, 0usize);
+    #[cfg(test)]
+    let measured_started = Instant::now();
+    #[cfg(test)]
+    let use_sleep = std::env::var_os("FM1_TEST_WORKER_SLEEP").is_some();
+    #[cfg(test)]
+    let (mut measured_run, mut measured_wait, mut wait_max, mut iterations) = (Duration::ZERO, Duration::ZERO, 0u128, 0u64);
     let mut m: Option<Machine> = None;''')
     text = replace_once(text, '                    active_pkg = m.as_ref().map(|_| pkg);',
                         '                    controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n                    active_pkg = m.as_ref().map(|_| pkg);')
@@ -248,7 +254,7 @@ def main():
         raise SystemExit('Unexpected worker render-slice baseline')
     text = text.replace('mm.run(20_000);', 'mm.run(render_slice);')
     text = replace_once(text, '            let a = std::mem::take(&mut mm.soc.periph.audio);', '''            #[cfg(test)]
-            { render_max.0 = render_max.0.max(t0.elapsed().as_micros()); render_max.1 = render_max.1.max(mm.soc.periph.audio.len() / 2); }
+            { render_max.0 = render_max.0.max(elapsed.as_micros()); render_max.1 = render_max.1.max(mm.soc.periph.audio.len() / 2); }
             let a = std::mem::take(&mut mm.soc.periph.audio);''')
     text = replace_once(text, '''    }
 }
@@ -257,6 +263,8 @@ fn apply(m: &mut Option<Machine>, a: Action) {''', '''    }
     #[cfg(test)]
     if std::env::var_os("FM1_REALTIME_DIAGNOSTIC").is_some() {
         eprintln!("RENDER slice={} max_us={} max_batch_frames={}", render_slice, render_max.0, render_max.1);
+        let wall = measured_started.elapsed();
+        eprintln!("WORKER wait_mode={} wall_ms={} run_ms={} wait_ms={} other_ms={} loops={} wait_max_us={} made={}", if use_sleep { "sleep" } else { "park" }, wall.as_millis(), measured_run.as_millis(), measured_wait.as_millis(), wall.saturating_sub(measured_run + measured_wait).as_millis(), iterations, wait_max, made);
     }
 }
 
@@ -271,10 +279,32 @@ fn panel_event(m: &mut Option<Machine>, event: crate::controls::Event) {
     });
 }
 '''
+    # Reuse one monotonic timestamp for housekeeping in this slice. Querying
+    # the OS clock for every control/idle/view/save check can dominate short
+    # JIT slices on Windows hosts with a more expensive performance counter.
+    text = replace_once(text, "\n        if m.as_ref().is_some_and(|m| m.soc.board == Board::Fm1) {", "\n        let now = Instant::now();\n        if m.as_ref().is_some_and(|m| m.soc.board == Board::Fm1) {")
+    for old, new in (
+        ("controls.poll(snapshot, Instant::now(),", "controls.poll(snapshot, now,"),
+        ("snapshots(&mut pending, m.as_ref(), &params, Instant::now());", "snapshots(&mut pending, m.as_ref(), &params, now);"),
+        ("            last_take = Instant::now();", "            last_take = now;"),
+        ("last_take.elapsed()", "now.saturating_duration_since(last_take)"),
+        ("free.get_or_insert((Instant::now(),", "free.get_or_insert((now,"),
+        ("t0.elapsed().as_millis()", "now.saturating_duration_since(t0).as_millis()"),
+        ("last_view.elapsed()", "now.saturating_duration_since(last_view)"),
+        ("            last_view = Instant::now();", "            last_view = now;"),
+        ("speed_t.elapsed()", "now.saturating_duration_since(speed_t)"),
+        ("(Instant::now(), ms.max(1), Duration::ZERO)", "(now, ms.max(1), Duration::ZERO)"),
+        ("last_flash.elapsed()", "now.saturating_duration_since(last_flash)"),
+        ("            last_flash = Instant::now();", "            last_flash = now;"),
+    ):
+        text = replace_once(text, old, new)
+    for timer in ("t0", "t1"):
+        text = replace_once(text, f"busy += {timer}.elapsed();", f"let elapsed = {timer}.elapsed();\n            busy += elapsed;\n            #[cfg(test)]\n            {{ measured_run += elapsed; }}")
+    text = replace_once(text, "    while !shared.quit.load(Ordering::Relaxed) {", "    while !shared.quit.load(Ordering::Relaxed) {\n        #[cfg(test)]\n        { iterations += 1; }")
     # A callback wakes its producer directly. Timed parks retain bounded idle
     # behaviour for GUI commands, hosts that stop processing, and shutdown.
     for duration in ("Duration::from_micros(500)", "Duration::from_millis(1)", "Duration::from_millis(2)"):
-        text = replace_once(text, f"std::thread::sleep({duration});", f"std::thread::park_timeout({duration});")
+        text = replace_once(text, f"std::thread::sleep({duration});", f"#[cfg(test)]\n            let waiting = Instant::now();\n            #[cfg(test)]\n            if use_sleep {{ std::thread::sleep({duration}); }} else {{ std::thread::park_timeout({duration}); }}\n            #[cfg(not(test))]\n            std::thread::park_timeout({duration});\n            #[cfg(test)]\n            {{ let elapsed = waiting.elapsed(); measured_wait += elapsed; wait_max = wait_max.max(elapsed.as_micros()); }}")
     engine.write_text(text)
     periph = DEST / 'crates/fm1-soc/src/periph.rs'
     text = periph.read_text()

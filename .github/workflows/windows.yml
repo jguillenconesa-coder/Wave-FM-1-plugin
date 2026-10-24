@@ -116,6 +116,24 @@ jobs:
               Write-Output "::error title=$Log context::$Lines"
             }
           }
+      - name: Compare timed-sleep control after a blocked audio diagnostic
+        if: failure()
+        shell: pwsh
+        run: |
+          if (Test-Path dist/REALTIME_X0X.txt) {
+            $Report = Get-Content dist/REALTIME_X0X.txt -Raw
+            if ($Report -match 'FINAL_REALTIME_RESULT: fail') {
+              $Binary = Get-ChildItem '.deps/fm1-emu/crates/fm1-plugin/target/x86_64-pc-windows-msvc/release/deps/fm1_plugin-*.exe' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+              if ($Binary) {
+                $env:FM1_REALTIME_DIAGNOSTIC = '1'
+                $env:FM1_TEST_WORKER_SLEEP = '1'
+                & $Binary.FullName audio_timing::tests::realtime_x0x_48k_512 --ignored --nocapture 2>&1 | Tee-Object dist/REALTIME_SLEEP_CONTROL.txt
+                $Lines = (Select-String -Path dist/REALTIME_SLEEP_CONTROL.txt -Pattern 'WORKER |RENDER |REALTIME X0X |test result:').Line -join ' | '
+                $Lines = $Lines.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+                Write-Output "::notice title=Diagnostic only; publication remains blocked::$Lines"
+              }
+            }
+          }
       - name: Install Inno Setup
         shell: pwsh
         run: |
