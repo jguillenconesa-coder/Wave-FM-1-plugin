@@ -1,0 +1,69 @@
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+
+running 55 tests
+test audio_timing::tests::a_full_ring_retains_the_first_dma_then_reuses_its_allocation ... ok
+test audio_timing::tests::an_underrun_does_not_slow_the_timeline_or_replay_late_audio ... ok
+test audio_timing::tests::empty_instances_have_no_signal_latency_and_reserves_use_host_units ... ok
+test audio_timing::tests::realtime_dub_48k_both ... ignored, Opt-in real DUB-1 at 48 kHz, both block sizes
+test audio_timing::tests::a_midstream_stall_recovers_at_exactly_one_x_without_reload_or_timeline_rewind ... ok
+test audio_timing::tests::realtime_x0x_48k_512 ... ignored, Opt-in wall-clock diagnostic: real X0X, 48 kHz, 512-sample callbacks
+test audio_timing::tests::realtime_x0x_48k_64 ... ignored, Opt-in wall-clock diagnostic: real X0X, user's 48 kHz / 64-sample configuration
+test audio_timing::tests::host_rate_and_missing_audio_do_not_change_clock_speed_or_other_instances ... ok
+test audio_timing::tests::stalled_engine_recovers_dub_and_x0x_both_blocks ... ignored, Opt-in forced 100ms producer stall; must recover without reloading
+test audio_timing::tests::recovering_a_long_gap_has_a_finite_callback_work_budget ... ok
+test audio_timing::tests::boot_silence_recovers_even_when_active_production_is_only_realtime ... ok
+test audio_timing::tests::recovery_does_not_flush_a_running_producer_and_can_be_cancelled_on_firmware_change ... ok
+test audio_timing::tests::startup_padding_stops_at_capacity_and_preserves_the_producer_cursor ... ok
+test controls::tests::all_encoder_routes_are_relative_and_use_the_physical_matrix ... ok
+test controls::tests::a_short_host_press_is_retained_and_always_released ... ok
+test controls::tests::an_in_progress_publication_is_skipped_without_spinning ... ok
+test controls::tests::host_knobs_repaint_without_mouse_events_and_reopen_at_the_saved_reference ... ok
+test controls::tests::independent_instances_and_overlapping_mouse_presses ... ok
+test controls::tests::mouse_limits_do_not_wrap_or_accumulate_overshoot_and_share_saved_references ... ok
+test controls::tests::partially_restored_host_state_is_not_exposed_before_initialize ... ok
+test catalogue::tests::refuses_missing_or_modified_bundled_firmware ... ok
+test controls::tests::restoring_a_set_or_switching_firmware_does_not_replay_controls ... ok
+test controls::tests::stable_host_ids_are_unique_and_old_parameters_remain_present ... ok
+test engine::portable_tests::restored_sectors_update_the_entire_xip_sector ... ok
+test engine::portable_tests::an_unfinished_flash_command_times_out_without_exporting ... ok
+test host_sync::tests::a_long_fractional_tempo_does_not_drift_with_irregular_host_buffers ... ok
+test host_sync::tests::notes_and_clock_share_ordered_frame_stamps_and_clock_bytes_are_never_channel_remapped ... ok
+test engine::portable_tests::snapshot_captures_live_spi_writes_and_waits_for_idle ... ok
+test host_sync::tests::tempo_changes_loop_seeks_missing_position_and_instances_keep_separate_phase ... ok
+test host_sync::tests::transport_start_stop_restart_and_mode_changes_are_explicit ... ok
+test host_sync::tests::unavailable_host_data_and_queue_failure_stop_or_resynchronize_without_bursts ... ok
+test latency_tests::a_fresh_instance_reports_zero_even_with_the_legacy_safety_reserve ... ok
+test host_sync::tests::clock_has_24_pulses_per_quarter_independent_of_block_size_or_sample_rate ... ok
+test midi_timing::tests::midi_deadlines_do_not_snap_to_audio_dma_blocks ... ok
+test midi_timing::tests::recovery_rebases_midi_stably_without_retiming_hardware_or_keys ... ok
+test online::tests::author_release_download_uses_real_https ... ignored, Explicit opt-in network test; native release CI runs it separately
+test online::tests::fallback_preserves_version_and_hash_and_does_not_bypass_integrity ... ok
+test online::tests::an_existing_different_file_is_preserved_and_refresh_keeps_author_links ... ok
+test online::tests::malformed_large_and_duplicate_catalogues_are_rejected ... ok
+test online::tests::hub_json_is_parsed_as_data_with_credited_authors ... ok
+test latency_tests::real_firmware_load_and_empty_state_change_the_active_latency_lifecycle ... ok
+test online::tests::pinned_author_alternatives_have_valid_addresses_and_hashes ... ok
+test online::tests::redirects_and_addresses_cannot_escape_the_public_allowlist ... ok
+test panel::cache_tests::benchmark_lcd_updates_with_unchanged_controls ... ignored, Opt-in GUI renderer benchmark; no wall-clock assertion
+test online::tests::melodee_main_download_uses_the_author_when_hub_is_blocked ... ok
+test online::tests::only_valid_fwsc_data_is_saved_without_overwriting_files ... ok
+test savefile::browser_fixture::accepts_a_browser_generated_v1_save ... ok
+test savefile::tests::malformed_files_and_sectors_are_rejected ... ok
+test savefile::tests::package_less_browser_save_requires_matching_loaded_firmware ... ok
+test savefile::tests::portable_round_trip_and_atomic_file_write ... ok
+test controls::tests::rendered_knob_indicators_follow_host_values_without_replaying_engine_controls ... ok
+test panel::led_display_tests::duty_cycle_jitter_keeps_button_pixels_stable_but_real_flashes_remain ... ok
+test skins::tests::skins_change_the_case_and_keys_without_recolouring_the_lcd ... ok
+BYTE_IDENTICAL X0X frames=88576 peak=9653; cpu0/cpu1, cycles, RAM, flash and LCD match
+test engine::early_delivery_tests::x0x_samples_and_guest_state_match_the_original_runner_exactly ... ok
+test panel::cache_tests::cached_pixels_match_full_render_through_control_and_skin_changes ... ok
+
+test result: ok. 49 passed; 0 failed; 6 ignored; 0 measured; 0 filtered out; finished in 11.09s
+

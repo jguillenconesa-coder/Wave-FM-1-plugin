@@ -1,0 +1,31 @@
+error: XDG_RUNTIME_DIR is invalid or not set in the environment.
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+
+running 1 test
+test audio_timing::tests::stalled_engine_recovers_dub_and_x0x_both_blocks ... RENDER slice=8000 max_us=33740 max_batch_frames=1280 early_delivery_max_gain_us=321
+HOST_CLOCK busy_control=false host_thread_cpu_us=40000
+REALTIME dub13 48k/512 lead=1495 legacy=false: startup_missing=386, steady_missing=0, debt=0, position=529199, callback_max_us=1003, host_late_max_us=7150, engine_speed=2.244, peak=0.58570, halted=false
+RECOVERY dub13 48k/512: injected=true, fault_missing=3487, recoveries=1, post_fault_peak=0.46521
+RENDER slice=8000 max_us=10312 max_batch_frames=1280 early_delivery_max_gain_us=64
+HOST_CLOCK busy_control=false host_thread_cpu_us=140000
+REALTIME dub13 48k/64 lead=1083 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=98, host_late_max_us=4317, engine_speed=2.293, peak=0.54992, halted=false
+RECOVERY dub13 48k/64: injected=true, fault_missing=3560, recoveries=1, post_fault_peak=0.45135
+RENDER slice=8000 max_us=11773 max_batch_frames=512 early_delivery_max_gain_us=1936
+HOST_CLOCK busy_control=false host_thread_cpu_us=20000
+REALTIME x0x 48k/512 lead=1495 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=153, host_late_max_us=18196, engine_speed=1.703, peak=0.39800, halted=false
+RECOVERY x0x 48k/512: injected=true, fault_missing=3529, recoveries=1, post_fault_peak=0.39607
+RENDER slice=8000 max_us=11356 max_batch_frames=512 early_delivery_max_gain_us=2124
+HOST_CLOCK busy_control=false host_thread_cpu_us=120000
+REALTIME x0x 48k/64 lead=1083 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=108, host_late_max_us=5323, engine_speed=1.737, peak=0.39999, halted=false
+RECOVERY x0x 48k/64: injected=true, fault_missing=3605, recoveries=1, post_fault_peak=0.39735
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 54 filtered out; finished in 48.02s
+

@@ -1,0 +1,45 @@
+error: XDG_RUNTIME_DIR is invalid or not set in the environment.
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+
+running 2 tests
+test skins_and_firmware_are_owned_by_each_instance ... ok
+Chipbox 1.3.1-stable: 352800 frames, peak 0.13885, 57600 lit pixels, halted false
+TRIBE 0.3-beta: 352800 frames, peak 0.40121, 17059 lit pixels, halted false
+DUB-1 1.3.0: 352800 frames, peak 0.34921, 57600 lit pixels, halted false
+Skiff 2.0.1: 352800 frames, peak 0.27417, 57600 lit pixels, halted false
+SIDOU 0.4.0: 352800 frames, peak 0.08093, 10277 lit pixels, halted false
+Felucca 1.6.1: 352800 frames, peak 0.27573, 57600 lit pixels, halted false
+X0X 1.1.0: 352800 frames, peak 0.36060, 24910 lit pixels, halted false
+Pocket GammaWave 1.1.1-GW: 352800 frames, peak 0.27118, 57600 lit pixels, halted false
+Polly 0.5: 352800 frames, peak 0.90405, 57600 lit pixels, halted false
+AMB-1 1.3: 352800 frames, peak 0.15396, 57600 lit pixels, halted false
+FoMni-1 0.4: 352800 frames, peak 0.64716, 57600 lit pixels, halted false
+Skiff 1.4: 352800 frames, peak 0.32767, 57600 lit pixels, halted false
+DUB-1 1.2.0: 352800 frames, peak 0.42209, 57600 lit pixels, halted false
+CTL-1 (USB) 1.0: 352800 frames, peak 0.93488, 57600 lit pixels, halted false
+fm1-chord 0.3: 352800 frames, peak 0.26373, 57600 lit pixels, halted false
+FiMba-1 0.6.1: 352800 frames, peak 0.47095, 57600 lit pixels, halted false
+Chipbox 0.4.2-alpha: 352800 frames, peak 0.13892, 57600 lit pixels, halted false
+TRIBE 0.2-beta: 352800 frames, peak 0.40118, 17057 lit pixels, halted false
+Niagara Drift 0.2: 352800 frames, peak 0.50171, 57600 lit pixels, halted false
+MIN-1 0.2.1: 352800 frames, peak 0.66534, 57600 lit pixels, halted false
+FMini-1 1.8.0: 352800 frames, peak 0.23160, 57600 lit pixels, halted false
+Felucca 8 Patterns 1.6.1_and_sequences: 352800 frames, peak 0.32571, 57600 lit pixels, halted false
+Frodhes 0.9.4: 352800 frames, peak 0.11792, 13346 lit pixels, halted false
+Pocket GammaWave 1.0-GW: 352800 frames, peak 0.27118, 57600 lit pixels, halted false
+Ketch 0.1-beta: 352800 frames, peak 0.12906, 6556 lit pixels, halted false
+NOIZ DEMONS 666: 352800 frames, peak 0.27533, 57600 lit pixels, halted false
+WaveLoop FM-1 1.0.5.2-midi23: 352800 frames, peak 0.27518, 57600 lit pixels, halted false
+Unholy Union 0.2.3: 352800 frames, peak 0.21371, 9816 lit pixels, halted false
+GR!MM 1.0: 352800 frames, peak 0.09000, 57600 lit pixels, halted false
+test every_bundled_firmware_boots_draws_and_produces_finite_audio ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 40.48s
+

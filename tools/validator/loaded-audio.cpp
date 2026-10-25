@@ -1,5 +1,9 @@
 // MIT integration diagnostic using the official Steinberg SDK (MIT).
 // Loads real saved firmware into the actual VST3 and calls its audio processor.
+// Define before SDK headers, which can transitively include Windows headers.
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include "public.sdk/source/vst/hosting/module.h"
 #include "public.sdk/source/vst/hosting/hostclasses.h"
 #include "public.sdk/source/vst/hosting/plugprovider.h"
@@ -13,6 +17,7 @@
 #include <chrono>
 #include <cmath>
 #include <exception>
+#include <stdexcept>
 #include <fstream>
 #include <iostream>
 #include <iterator>

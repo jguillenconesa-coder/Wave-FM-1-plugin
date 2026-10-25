@@ -1,0 +1,48 @@
+/tmp/fm1-028-release-run.html 
+Triggered via push
+October 25, 2026 14:36
+jguillenconesa-coder
+pushed
+6661ee5
+v0.2.8-preview.1
+Status
+Failure
+Total duration
+14m 36s
+Artifacts
+–
+publish-preview.yml
+on: push
+windows
+/
+checks
+2m 25s
+windows / checks
+windows
+/
+build
+12m 6s
+windows / build
+publish
+publish
+Oh hello! Nice to see you.
+Made with ❤️ by
+humans.txt
+Fit to window
+Zoom out
+Zoom in
+Annotations
+3 errors
+validator-build.log context
+D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(125,64): |       Expressions of type void cannot be converted to other types |    | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(127,46): error C2296: '||': not valid as left operand has type 'void' [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(127,46): error C2297: '||': not valid as right operand has type 'void' [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(130,45): error C2451: a conditional expression of type 'void' is not valid [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] |       D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(130,45): |       Expressions of type void cannot be converted to other types |    | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(142,33): error C2065: 'processor': undeclared identifier [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(143,42): error C2589: '(': illegal token on right side of '::' [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(143,42): error C2059: syntax error: ')' [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(146,76): error C2065: 'block': undeclared identifier [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(148,43): error C2589: '(': illegal token on right side of '::' [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(148,43): error C2059: syntax error: ')' [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(152,65): error C2589: '(': illegal token on right side of '::' [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(152,65): error C2059: syntax error: ')' [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(155,54): error C2065: 'argv': undeclared identifier [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(155,74): error C2065: 'block': undeclared identifier [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(155,94): error C2065: 'seconds': undeclared identifier [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(156,40): error C2065: 'playing': undeclared identifier [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(156,62): error C2065: 'latency': undeclared identifier [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\tools\validator\loaded-audio.cpp(157,91): error C2065: 'block': undeclared identifier [D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows-validator\fm1-loaded-check.vcxproj] | D:\a\Wave-FM-1-plugin\Wave
+Show more
+Show less
+msvc-build.log context
+vstaudioeffect.cpp |   vstcomponent.cpp |   vstcomponentbase.cpp |   vstbus.cpp |   vstparameters.cpp |   stringconvert.cpp |   Generating Code... |   base-sdk-vst3.vcxproj -> D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows\Release\base-sdk-vst3.lib |   Building Custom Rule D:/a/Wave-FM-1-plugin/Wave-FM-1-plugin/CMakeLists.txt |   windows.cpp |   wrapasvst3.cpp |   wrapasvst3_entry.cpp |   parameter.cpp |   plugview.cpp |   process.cpp |   categories.cpp |   Generating Code... |   wave_fm1-clap-wrapper-vst3-lib.vcxproj -> D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows\Release\wave_fm1-clap-wrapper-vst3-lib.lib |   Building Custom Rule D:/a/Wave-FM-1-plugin/Wave-FM-1-plugin/CMakeLists.txt |   wrapasvst3_export_entry.cpp |      Creating library D:/a/Wave-FM-1-plugin/Wave-FM-1-plugin/build/windows/Release/FM-1.lib and object D:/a/Wave-FM-1-plugin/Wave-FM-1-plugin/build/windows/Release/FM-1.exp |   wave_fm1.vcxproj -> D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\build\windows\bundle\FM-1.vst3\Contents\x86_64-win\FM-1.vst3 | -- Installing: D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin/dist/VST3/FM-1.vst3 | -- Installing: D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin/dist/VST3/FM-1.vst3/Contents | -- Installing: D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin/dist/VST3/FM-1.vst3/Contents/x86_64-win | -- Installing: D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin/dist/VST3/FM-1.vst3/Contents/x86_64-win/FM-1.vst3 | Collected licence notices for 121 x86_64-pc-windows-msvc Rust packages | Verified catalogue packages, matching sources and licence notices | Windows x64 binary pair and SHA-256 manifest verified | Built the private VST3/CLAP pair in dist/VST3. See dist/INSTALL.md.
+Show more
+Show less
+windows / build
+Process completed with exit code 1.
+Show more
+Show less
+You can’t perform that action at this time.

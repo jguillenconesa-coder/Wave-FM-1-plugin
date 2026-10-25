@@ -1,0 +1,27 @@
+test_32_bit_binary_is_rejected (test_artifacts.BuildIntegrityTests.test_32_bit_binary_is_rejected) ... ok
+test_changed_firmware_is_rejected (test_artifacts.BuildIntegrityTests.test_changed_firmware_is_rejected) ... ok
+test_manifest_cannot_substitute_another_emulator_revision (test_artifacts.BuildIntegrityTests.test_manifest_cannot_substitute_another_emulator_revision) ... ok
+test_missing_companion_is_rejected (test_artifacts.BuildIntegrityTests.test_missing_companion_is_rejected) ... ok
+test_recorded_pair_verifies_but_changed_binary_is_rejected (test_artifacts.BuildIntegrityTests.test_recorded_pair_verifies_but_changed_binary_is_rejected) ... ok
+test_truncated_binary_is_rejected (test_artifacts.BuildIntegrityTests.test_truncated_binary_is_rejected) ... ok
+test_unexpected_executable_in_bundle_is_rejected (test_artifacts.BuildIntegrityTests.test_unexpected_executable_in_bundle_is_rejected) ... ok
+test_changed_revision_is_rejected (test_bootstrap.DependencyIntegrityTests.test_changed_revision_is_rejected) ... ok
+test_extra_source_is_rejected (test_bootstrap.DependencyIntegrityTests.test_extra_source_is_rejected) ... ok
+test_modified_source_is_preserved_and_rejected (test_bootstrap.DependencyIntegrityTests.test_modified_source_is_preserved_and_rejected) ... ok
+test_unchanged_source_is_accepted (test_bootstrap.DependencyIntegrityTests.test_unchanged_source_is_accepted) ... ok
+test_missing_nested_licence_and_changed_credit_are_rejected (test_firmware_notices.FirmwareNoticeTests.test_missing_nested_licence_and_changed_credit_are_rejected) ... ok
+test_modified_patch_is_rejected_instead_of_trusted (test_private_companion.PrivateCompanionTests.test_modified_patch_is_rejected_instead_of_trusted) ... ok
+test_reviewed_source_gets_private_windows_branch_and_is_repeatable (test_private_companion.PrivateCompanionTests.test_reviewed_source_gets_private_windows_branch_and_is_repeatable) ... ok
+test_unknown_wrapper_source_is_rejected (test_private_companion.PrivateCompanionTests.test_unknown_wrapper_source_is_rejected) ... ok
+test_windows_checkout_line_endings_are_normalized_before_verification (test_private_companion.PrivateCompanionTests.test_windows_checkout_line_endings_are_normalized_before_verification) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 35.548s
+
+OK
+Windows x64 binary pair and SHA-256 manifest verified
+Windows x64 binary pair and SHA-256 manifest verified
+Windows x64 binary pair and SHA-256 manifest verified
+Windows x64 binary pair and SHA-256 manifest verified
+Windows x64 binary pair and SHA-256 manifest verified
+Verified fm1-emu f365308a0bfc9e9c3a1900d144a8e1db90ab7ea3
