@@ -1,12 +1,14 @@
 # Validation · 0.2.7 startup recovery · 2026-10-25
 
-**User regression report, 2026-10-25:** X0X still loses audio; DUB-1 1.2.0,
-reported working in 0.2.5, now reports Engine 0.99x / Audio late 44,863 frames/s
-at 48 kHz / 64 samples / Safe / 240 MHz in 0.2.7. The 0.2.7 working-version
-recommendation is withdrawn. The results below describe the test environment,
-not successful Ableton acceptance. The timed firmware tests called the engine
-directly, while actual-VST3 processing checks used an empty instance. Loaded
-VST3 processing and a direct DUB comparison with 0.2.5 are required.
+**User report under comparison, 2026-10-25:** X0X still loses audio. DUB-1
+1.2.0 reports Engine 0.99x / Audio late 44,863 frames/s at 48 kHz / 64 samples /
+Safe / 240 MHz in 0.2.7; the user identifies 0.2.5 as previously working. The
+user subsequently noticed the 64-sample setting and is retesting. A DUB version
+regression is not established until both versions use the same settings.
+The results below describe the test environment, not Ableton acceptance. The
+timed firmware tests called the engine directly, while actual-VST3 processing
+checks used an empty instance. Loaded VST3 processing and a controlled DUB
+comparison with 0.2.5 are required. X0X remains unresolved on the user's system.
 
 | Platform | Promoted assets | Runtime source | Native workflow |
 | --- | --- | --- | --- |

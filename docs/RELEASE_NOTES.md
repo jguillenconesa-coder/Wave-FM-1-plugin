@@ -1,9 +1,9 @@
 # Wave FM-1 Preview 0.2.7 · recuperación del audio al arrancar
 
-**Regresión comunicada, 2026-10-25:** X0X sigue perdiendo audio y DUB-1 ha
-empeorado respecto a 0.2.5. Se retira la recomendación de 0.2.7 para trabajar.
-El README enlaza la versión 0.2.5 que el usuario identifica como funcional
-para DUB. Las comprobaciones publicadas no validan este caso real de Ableton.
+**Comparación en revisión, 2026-10-25:** tras comunicar un posible empeoramiento
+de DUB-1, el usuario ha observado que Live estaba a 64 muestras y está repitiendo
+la prueba. Se comparará con 0.2.5 bajo los mismos ajustes antes de atribuir una
+regresión de versión. X0X sigue pendiente de corregir en el equipo del usuario.
 
 Corrige un atasco reproducible del plugin: el tiempo durante el que un firmware
 arranca sin producir audio se acumulaba como muestras pendientes de descartar.

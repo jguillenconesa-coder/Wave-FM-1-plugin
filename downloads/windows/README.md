@@ -1,10 +1,11 @@
 # Windows Preview 0.2.7
 
-**Regresión comunicada:** X0X sigue fallando y DUB-1 ha empeorado respecto a
-0.2.5. **0.2.7 no se recomienda para trabajar.** El
+**Comparación pendiente:** el usuario está comprobando DUB-1 de nuevo tras
+observar que el buffer de Live estaba a 64 muestras. No se atribuye todavía su
+empeoramiento a 0.2.7 sin comparar ambas versiones con los mismos ajustes.
+X0X sigue pendiente de confirmar en Ableton. El
 [instalador 0.2.5](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.5-preview.3/Wave-FM-1-0.2.5-Windows-x64-Setup.exe)
-es la referencia que el usuario identifica como funcional para DUB. Cierra
-Live antes de cambiar de versión. X0X sigue pendiente de corregir.
+permite volver a la referencia anterior con Live cerrado.
 
 Los instaladores se publican en **GitHub Releases**, donde pueden alojarse los
 paquetes completos con fuentes y licencias. No se usan enlaces `raw` a ejecutables.
