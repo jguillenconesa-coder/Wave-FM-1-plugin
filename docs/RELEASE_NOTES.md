@@ -1,3 +1,28 @@
+# Wave FM-1 Preview 0.2.7 · recuperación del audio al arrancar
+
+Corrige un atasco reproducible del plugin: el tiempo durante el que un firmware
+arranca sin producir audio se acumulaba como muestras pendientes de descartar.
+Con producción posterior a velocidad normal, el descarte podía continuar
+indefinidamente. Ahora el productor suministra silencio durante ese arranque y
+conserva el primer bloque real del firmware. Después del primer bloque no se
+rellena artificialmente la producción del firmware.
+
+Se conservan el tamaño de la reserva elegida, la latencia real declarada, los
+algoritmos de sonido, el reloj del firmware, la identidad VST3 y los parámetros
+guardados. El callback añade la publicación atómica de su posición; no espera
+al productor. La prioridad de Ableton y su configuración no cambian.
+
+La regresión determinista reproduce el fallo a velocidad de producción exacta
+1.00x, tanto a 64 como a 512 muestras. Las puertas de publicación ejecutan X0X
+real a 48 kHz en ambas configuraciones, con el mismo contenido musical y cero
+muestras ausentes durante la reproducción estable. Los resultados nativos de
+cada plataforma deben pasar antes de publicar sus instaladores.
+
+Esta corrección de arranque no prueba que todos los cortes comunicados por el
+usuario estén resueltos dentro de Ableton. Los enlaces del README solo se
+actualizan tras comprobar los archivos publicados. Los autores y licencias de
+los 23 firmwares y de fm1-emu se conservan; no se añaden firmwares nuevos.
+
 # Wave FM-1 Preview 0.2.6 · Windows y macOS
 
 Paquetes recomendados verificados por plataforma:

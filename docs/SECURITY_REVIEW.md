@@ -6,6 +6,20 @@ not an independent penetration test or a complete audit of upstream Rust/C++
 code. Windows x64 binaries have been built and checked under Wine 10; native
 release workflows gate publication. User-machine acceptance remains separate.
 
+## Version 0.2.7 startup recovery (2026-10-25)
+
+Instance-owned atomic source-frame position connects the existing callback to
+boot-only silence priming on the producer. Priming is bounded to 16,384 pushes
+per call, stops immediately at capacity, retains the pending first DMA half,
+and ends for that boot after first output. Later missing synthesis is still
+reported. There is no reset of the host timeline or consumer recovery debt,
+additional host latency, dependency, thread, priority change, global setting,
+or callback I/O, allocation, wait or new mutex. Firmware binaries, licences,
+parameter IDs and VST3 identity are unchanged. Startup is rearmed only for a
+new machine or explicit virtual-clock reboot. Tests include exact-1x recovery,
+full-ring bounds, and both real-X0X 64/512-sample configurations. This candidate
+must pass native per-platform gates before its download links are promoted.
+
 ## Version 0.2.6 latency and worker policy (2026-10-24)
 
 A non-automatable `audio_reserve` parameter adds bounded, validated queue targets;

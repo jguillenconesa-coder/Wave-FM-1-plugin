@@ -310,10 +310,10 @@ fn panel_event(m: &mut Option<Machine>, event: crate::controls::Event) {
     periph.write_text(text)
     # Only this integration's plugin version changes; dependency pins remain intact.
     manifest = plugin / "Cargo.toml"
-    manifest.write_text(replace_once(manifest.read_text(), 'version = "0.2.0"', 'version = "0.2.6"'))
+    manifest.write_text(replace_once(manifest.read_text(), 'version = "0.2.0"', 'version = "0.2.7"'))
     lock = plugin / "Cargo.lock"
     lock.write_text(replace_once(lock.read_text(), 'name = "fm1-plugin"\nversion = "0.2.0"',
-                                'name = "fm1-plugin"\nversion = "0.2.6"'))
+                                'name = "fm1-plugin"\nversion = "0.2.7"'))
     entries = json.loads((ROOT / "firmware/manifest.json").read_text())["firmwares"]
     generated = "// Generated from firmware/manifest.json. Do not edit.\npub static ENTRIES: &[Entry] = &[\n"
     for e in entries:

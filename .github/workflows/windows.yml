@@ -73,14 +73,14 @@ jobs:
           CARGO_TARGET_DIR: ${{ github.workspace }}/.deps/fm1-emu/crates/fm1-plugin/target
           RUSTFLAGS: '-C target-feature=+crt-static'
         run: cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --target x86_64-pc-windows-msvc --lib online::tests::author_release_download_uses_real_https -j 2 -- --ignored --nocapture
-      - name: Real-time X0X at 48 kHz and 512 samples
+      - name: Real-time X0X at 48 kHz, 64 and 512 samples
         shell: pwsh
         env:
           CARGO_TARGET_DIR: ${{ github.workspace }}/.deps/fm1-emu/crates/fm1-plugin/target
           RUSTFLAGS: '-C target-feature=+crt-static'
           FM1_REALTIME_DIAGNOSTIC: '1'
         run: |
-          cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --target x86_64-pc-windows-msvc --lib audio_timing::tests::realtime_x0x_48k_512 -j 2 -- --ignored --nocapture 2>&1 | Tee-Object dist/REALTIME_X0X.txt
+          cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --target x86_64-pc-windows-msvc --lib audio_timing::tests::realtime_x0x_48k_ -j 2 -- --ignored --nocapture --test-threads=1 2>&1 | Tee-Object dist/REALTIME_X0X.txt
           $TestExit = $LASTEXITCODE
           Get-Content dist/REALTIME_X0X.txt >> $env:GITHUB_STEP_SUMMARY
           if ($TestExit -ne 0) {
