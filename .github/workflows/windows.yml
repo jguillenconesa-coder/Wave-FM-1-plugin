@@ -123,8 +123,9 @@ jobs:
           foreach ($Firmware in @('dub13', 'x0x')) {
             python tools/validator/make-loaded-state.py $Firmware "build/$Firmware.state"
             if ($LASTEXITCODE -ne 0) { throw 'State integrity check failed' }
+            $Mode = if ($Firmware -eq 'dub13') { 'autoplay' } else { 'playing' }
             foreach ($Block in @(512, 64)) {
-              & build/windows-validator/Release/fm1-loaded-check.exe 'dist/VST3/FM-1.vst3' "build/$Firmware.state" $Block 12 2>&1 | Tee-Object -Append dist/LOADED_VST3.txt
+              & build/windows-validator/Release/fm1-loaded-check.exe 'dist/VST3/FM-1.vst3' "build/$Firmware.state" $Block 12 $Mode 2>&1 | Tee-Object -Append dist/LOADED_VST3.txt
               if ($LASTEXITCODE -ne 0) { throw 'Loaded VST3 finite/nonzero audio failed' }
             }
           }

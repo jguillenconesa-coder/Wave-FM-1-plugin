@@ -29,6 +29,10 @@ jobs:
           brew install cmake ninja
       - name: Verify source and catalogue integrity
         run: python3 -m unittest discover -s tests -v
+      - name: Pinned CPU and peripheral tests
+        run: |
+          python3 tools/bootstrap.py
+          cargo test --manifest-path .deps/fm1-emu/Cargo.toml --locked --release -p fm1-core -p fm1-soc -j 3
       - name: Build Universal 2 VST3
         run: bash tools/build-macos.sh 2>&1 | tee macos-build.log
       - name: Native firmware, UI and state tests

@@ -638,8 +638,9 @@ mod tests {
             // the shipped callback/worker do not busy-wait.
             host_deadline.wait(deadline);
             max_host_late = max_host_late.max(Instant::now().saturating_duration_since(deadline));
-            if contains(188 * 512) { cmd.send(Cmd::Key { id: 12, down: true }).unwrap(); }
-            if contains(198 * 512) { cmd.send(Cmd::Key { id: 12, down: false }).unwrap(); }
+            // DUB starts its arrangement automatically; PLAY would stop it.
+            if firmware_id == "x0x" && contains(188 * 512) { cmd.send(Cmd::Key { id: 12, down: true }).unwrap(); }
+            if firmware_id == "x0x" && contains(198 * 512) { cmd.send(Cmd::Key { id: 12, down: false }).unwrap(); }
             if contains(282 * 512) || contains(750 * 512) {
                 let down = contains(282 * 512);
                 cmd.send(Cmd::Key { id: 26, down }).unwrap();

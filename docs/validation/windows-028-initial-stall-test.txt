@@ -1,0 +1,42 @@
+error: XDG_RUNTIME_DIR is invalid or not set in the environment.
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+
+running 1 test
+test audio_timing::tests::stalled_engine_recovers_dub_and_x0x_both_blocks ... RENDER slice=8000 max_us=11316 max_batch_frames=1280 early_delivery_max_gain_us=96
+HOST_CLOCK busy_control=false host_thread_cpu_us=40000
+REALTIME dub13 48k/512 lead=1495 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=92, host_late_max_us=4900, engine_speed=2.255, peak=0.34921, halted=false
+RECOVERY dub13 48k/512: injected=true, fault_missing=3660, recoveries=1, post_fault_peak=0.00009
+
+thread 'audio_timing::tests::stalled_engine_recovers_dub_and_x0x_both_blocks' (296) panicked at src/audio_timing.rs:688:13:
+audio never returned after stall
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    audio_timing::tests::stalled_engine_recovers_dub_and_x0x_both_blocks
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 54 filtered out; finished in 12.00s
+
+
+Test interpretation: the queue recovered once and debt returned to zero, but
+DUB had been stopped by the generic PLAY press. DUB 1.3 starts automatically
+(see its included docs/MANUAL.md). The post-stall audio check measured its
+decaying tail. A second attempt to retrigger a note also failed because DUB
+keys edit the scale, rather than auditioning a normal held-note synth. The
+corrected stimulus leaves the auto-starting arrangement running; the output
+threshold and zero missing-frame assertions remain unchanged.
+
+Native Windows reproduction of the same invalid PLAY stimulus:
+https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/40202657659
+Source 4adfd7d: normal X0X 64/512 passed; DUB forced-stall test failed
+post_fault_peak=0.00009 after exactly one completed recovery and zero debt.
+This failed run is retained; it cannot satisfy a release gate.

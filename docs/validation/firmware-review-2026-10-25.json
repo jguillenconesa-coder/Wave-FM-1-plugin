@@ -77,5 +77,14 @@
       "version": "v0.4.0"
     }
   ],
-  "release_gate": "All 29 bundled versions are checked again by native release CI; see downloads/windows/VALIDATION.md for the immutable source and workflow."
+  "release_gate": "All 29 bundled versions are checked again by native release CI; see downloads/windows/VALIDATION.md for the immutable source and workflow.",
+  "current_core_local_smoke": {
+    "platform": "Windows x64 MinGW under Wine 10",
+    "bundled_versions": 29,
+    "passed_versions": 29,
+    "frames_per_version": 352800,
+    "report": "windows-028-catalogue.log",
+    "emulator": "ba11e2e68f3934a2c5c98a0eb55607387e262a49",
+    "limitations": "Boot/LCD/finite-audio only; not all functions or real-time certification"
+  }
 }

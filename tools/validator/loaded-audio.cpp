@@ -28,11 +28,12 @@ static void require(bool ok, const char* text) { if (!ok) throw std::runtime_err
 
 int main(int argc, char** argv) {
     try {
-        require(argc >= 5, "Usage: fm1-loaded-check bundle state.json block seconds [stopped]");
+        require(argc >= 5, "Usage: fm1-loaded-check bundle state.json block seconds [stopped|autoplay]");
         const int block = std::stoi(argv[3]), seconds = std::stoi(argv[4]);
         require((block == 64 || block == 512) && seconds >= 12 && seconds <= 120,
                 "Use block 64/512 and duration 12..120 seconds");
         const bool playing = argc < 6 || std::string(argv[5]) != "stopped";
+        const bool autoStarts = argc >= 6 && std::string(argv[5]) == "autoplay";
         std::ifstream input(argv[2], std::ios::binary);
         require(bool(input), "State fixture missing");
         std::vector<char> state((std::istreambuf_iterator<char>(input)), {});
@@ -118,7 +119,7 @@ int main(int argc, char** argv) {
                         context.projectTimeMusic=playing ? frame/24000.0 : 0.0;
                         events.clear(); changes.clearQueue();
                         const auto contains=[&](int64 sample){ return frame<=sample && sample<frame+block; };
-                        if (contains(96000) || contains(100800)) {
+                        if (!autoStarts && (contains(96000) || contains(100800))) {
                             int32 index=0, point=0;
                             auto* q=changes.addParameterData(playId,index);
                             require(q && q->addPoint(0,contains(96000)?1.0:0.0,point)==kResultOk,"PLAY automation failed");
