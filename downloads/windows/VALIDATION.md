@@ -1,3 +1,90 @@
+# Validation · Windows 0.2.8 · 2026-10-25
+
+Windows EXE/ZIP: **v0.2.8-preview.3**, source **`29835a041d102eca7bf0da6dc57eca07629c7fc5`**.
+Native release workflow [40214758099](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/40214758099)
+passed. Emulator: `ba11e2e68f3934a2c5c98a0eb55607387e262a49` by Joakim
+Eriksson and contributors (MIT). Original firmware bytes/authors remain unchanged.
+
+The user confirmed DUB mostly worked after returning from 64 to 512 samples,
+then reported silence latched after an error and older DAW-clock startup/sync
+problems. Those reports did not establish a DUB version regression at matched
+buffer settings. This version fixes concrete recovery and transport defects;
+acceptance on the user's Ableton/i7-10700F is still required.
+
+- Recovery uses a paused-producer handshake, flushes stale host audio and primes
+  the reserve again without rebooting the guest or clearing patches. A genuine
+  guest halt is reported separately. Internal transport is preserved.
+- Mouse/controller knobs share existing saved 0–127 parameters with hard bounds.
+  Alt remains relative navigation; Shift is fine adjustment. These are encoder
+  references, not automatic readback of every firmware's musical parameter.
+- DAW Start is deferred until first audio and reissued after a guest boot.
+  Entering DAW with a stopped host emits Stop. Seeks/recovery use Start alone:
+  X0X clears a queued Start when it consumes adjacent Stop+Start in one DSP poll.
+  The shipped X0X binary is unchanged.
+- Library: 29 versions / 24 instruments, all boot/LCD/352,800-frame finite-audio
+  checks passed. Five updates plus SIDOU were added, with original legal notices
+  and corresponding sources; SIDOU's libresidfp submodule is included. All older
+  packages remain. The index has 96 references / 78 pinned author asset links.
+
+Native gates include 16 Python integrity tests, upstream CPU/SoC tests, **53 Rust
+unit tests**, 29-package catalogue checks, two portable-state tests, real HTTPS
+author downloads, **47 official SDK tests**, nine empty-instance zero-latency /
+silence cases, installer/factory/uninstall smoke, and package/hash verification.
+Source gitleaks 8.24.2 scan found no secrets. All public Windows assets were
+downloaded, SHA-256 checked, and checked against all **430 bundle
+file hashes**, exact filesets, x64 architectures and source fingerprint.
+
+The actual downloaded native modules also passed all 47 SDK tests and the nine
+empty-instance cases under Wine after publication. Their reports are
+`windows-028-downloaded-sdk.txt` and `windows-028-downloaded-empty.txt`.
+Windows source fingerprint: `d25ac5cb495a4ba4e140a02557d319ee48ec84c222a591cdeac2aa12683a5f57`.
+The same source with LF text has fingerprint
+`793256d9cdb1d40d919eaa81b85984d1998ced1f74d9f46779539bf4e5b4792a`.
+The published text was compared against the immutable tag with Windows CRLF
+checkout; firmware bytes, source archives and legal notices remain byte-exact
+under `.gitattributes -text`. Packaged AUTHORS/third-party notices were separately
+compared against that exact commit.
+
+Real-time engine gates use X0X and DUB at 48 kHz / Safe / 240 MHz with both
+64- and 512-sample callbacks. Normal runs require zero steady misses and no
+recovery. Each forced 100ms-stall case requires exactly one completed recovery,
+zero final debt, audible audio afterward, and zero misses outside the fault
+window. These are headless engine tests; they are not an automated Ableton Set.
+Exact reports: [timing](../../docs/validation/windows-028-published-realtime_x0x.txt)
+and [recovery](../../docs/validation/windows-028-published-recovery.txt).
+
+The actual native VST3 is additionally loaded with real DUB/X0X state at both
+block sizes, requiring finite nonzero audio. DUB host-clock cases cover stopped
+and already-playing startup, 120→90 BPM, Stop, restart and a host loop. Stopped
+tails must decay and arrangement energy must return after restart. These do not
+measure every missed sample in the wrapper. [Loaded audio](../../docs/validation/windows-028-published-loaded_vst3.txt)
+and [DAW transport](../../docs/validation/windows-028-published-daw_vst3.txt).
+
+A separate regression programs the X0X manual's kick pattern through actual
+matrix keys and measures its real UART/CPU/SoC audio. It verifies 120/90 BPM
+intervals, Stop, restart and the loop. The original adjacent Stop+Start failed
+the loop assertion; Start alone passed without weakening it. [Before](../../docs/validation/windows-028-x0x-clock-before.txt)
+and [after](../../docs/validation/windows-028-clock-fixed-units.txt).
+
+Negative evidence retained: source 4adfd7d's first stall test stopped auto-playing
+DUB with a generic PLAY stimulus, so its tail failed the audibility assertion.
+Correcting the stimulus preserved the threshold and zero-miss assertions. Preview.1
+failed native test-host compilation due Windows min/max macro pollution; preview.2
+fixed that and passed its Windows gates, but predates the DAW-clock fix. Preview.1
+macOS failed steady X0X timing (5,989 / 2,077 missing frames at 512/64). Reports
+are retained in `docs/validation/*028*`. No failed workflow is promoted as passing.
+
+Safe latency remains 1,627 samples at max block 512 and 1,179 at 64 (48 kHz).
+Empty instances report zero. No blanket reduction in latency, perfect synchronization,
+all-firmware support, or zero risk to a DAW session is claimed. Install/uninstall
+rules, VST3 identity and existing host parameter IDs are retained.
+
+macOS 0.2.8 preview.3 was **not published**: its native X0X test missed
+4,812 / 1,402 steady frames at 512 / 64. The failed report is retained and
+macOS links remain v0.2.6-preview.6.
+
+## Archived 0.2.7 results (historical)
+
 # Validation · 0.2.7 startup recovery · 2026-10-25
 
 **User report under comparison, 2026-10-25:** X0X still loses audio. DUB-1

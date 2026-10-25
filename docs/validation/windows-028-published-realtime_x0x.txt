@@ -1,0 +1,128 @@
+warning: value assigned to `synced` is never read
+   --> D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\.deps\fm1-desktop\crates\fm1-core\src\lib.rs:577:17
+    |
+577 |                 synced = n;
+    |                 ^^^^^^^^^^ this value is reassigned later and never used
+...
+784 |                     sync!();
+    |                     ------- in this macro invocation
+...
+788 |                     synced = n;
+    |                     ---------- `synced` is overwritten here before the previous value is read
+    |
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+    = note: this warning originates in the macro `sync` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: value assigned to `synced` is never read
+   --> D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\.deps\fm1-desktop\crates\fm1-core\src\lib.rs:577:17
+    |
+577 |                 synced = n;
+    |                 ^^^^^^^^^^
+...
+775 |                     sync!();
+    |                     ------- in this macro invocation
+    |
+    = help: maybe it is overwritten before being read?
+    = note: this warning originates in the macro `sync` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: value assigned to `synced` is never read
+   --> D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\.deps\fm1-desktop\crates\fm1-core\src\lib.rs:577:17
+    |
+577 |                 synced = n;
+    |                 ^^^^^^^^^^
+...
+765 |                     sync!();
+    |                     ------- in this macro invocation
+    |
+    = help: maybe it is overwritten before being read?
+    = note: this warning originates in the macro `sync` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: value assigned to `synced` is never read
+   --> D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\.deps\fm1-desktop\crates\fm1-core\src\lib.rs:577:17
+    |
+577 |                 synced = n;
+    |                 ^^^^^^^^^^
+...
+603 |                 sync!();
+    |                 ------- in this macro invocation
+    |
+    = help: maybe it is overwritten before being read?
+    = note: this warning originates in the macro `sync` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: value assigned to `synced` is never read
+   --> D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\.deps\fm1-desktop\crates\fm1-core\src\lib.rs:577:17
+    |
+577 |                 synced = n;
+    |                 ^^^^^^^^^^
+...
+598 |                     sync!();
+    |                     ------- in this macro invocation
+    |
+    = help: maybe it is overwritten before being read?
+    = note: this warning originates in the macro `sync` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: value assigned to `synced` is never read
+   --> D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\.deps\fm1-desktop\crates\fm1-core\src\lib.rs:577:17
+    |
+577 |                 synced = n;
+    |                 ^^^^^^^^^^
+...
+592 |                 sync!();
+    |                 ------- in this macro invocation
+    |
+    = help: maybe it is overwritten before being read?
+    = note: this warning originates in the macro `sync` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: value assigned to `synced` is never read
+   --> D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\.deps\fm1-desktop\crates\fm1-core\src\lib.rs:577:17
+    |
+577 |                 synced = n;
+    |                 ^^^^^^^^^^
+...
+588 |                 sync!();
+    |                 ------- in this macro invocation
+    |
+    = help: maybe it is overwritten before being read?
+    = note: this warning originates in the macro `sync` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: methods `blk`, `load`, and `store_r` are never used
+    --> D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\.deps\fm1-desktop\crates\fm1-core\src\lib.rs:2491:8
+     |
+ 336 | impl Cpu {
+     | -------- methods in this implementation
+...
+2491 |     fn blk(&self, insn: &Instruction, i: usize) -> Result<Vec<u8>, CoreError> {
+     |        ^^^
+...
+2507 |     fn load(&self, insn: &Instruction, i: usize) -> Result<u32, CoreError> {
+     |        ^^^^
+...
+2512 |     fn store_r(&mut self, insn: &Instruction, i: usize, v: u32) -> Result<(), CoreError> {
+     |        ^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `sext` is never used
+    --> D:\a\Wave-FM-1-plugin\Wave-FM-1-plugin\.deps\fm1-desktop\crates\fm1-core\src\lib.rs:4179:4
+     |
+4179 | fn sext(v: u32, bits: u8) -> i64 {
+     |    ^^^^
+
+warning: `fm1-core` (lib) generated 9 warnings
+    Finished `release` profile [optimized] target(s) in 0.24s
+     Running unittests src\lib.rs (.deps/fm1-emu/crates/fm1-plugin/target\x86_64-pc-windows-msvc\release\deps\fm1_plugin-23fe375a73a9853d.exe)
+
+running 2 tests
+RENDER slice=8000 max_us=8889 max_batch_frames=512 early_delivery_max_gain_us=1609
+HOST_CLOCK busy_control=false host_thread_cpu_us=15625
+REALTIME x0x 48k/512 lead=1495 legacy=false: startup_missing=55, steady_missing=0, debt=0, position=529199, callback_max_us=45, host_late_max_us=8634, engine_speed=1.615, peak=0.39800, halted=false
+RECOVERY x0x 48k/512: injected=false, fault_missing=0, recoveries=0, post_fault_peak=0.00000
+test audio_timing::tests::realtime_x0x_48k_512 ... ok
+RENDER slice=8000 max_us=7099 max_batch_frames=512 early_delivery_max_gain_us=3080
+HOST_CLOCK busy_control=false host_thread_cpu_us=171875
+REALTIME x0x 48k/64 lead=1083 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=24, host_late_max_us=821, engine_speed=1.575, peak=0.39769, halted=false
+RECOVERY x0x 48k/64: injected=false, fault_missing=0, recoveries=0, post_fault_peak=0.00000
+test audio_timing::tests::realtime_x0x_48k_64 ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 57 filtered out; finished in 24.00s
+

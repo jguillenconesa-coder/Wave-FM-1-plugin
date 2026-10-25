@@ -1,0 +1,23 @@
+error: XDG_RUNTIME_DIR is invalid or not set in the environment.
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+	AUDIO in: 0, out: 1
+LOADED_VST3 state=build/loaded-fixtures/dub13-daw.state block=64 seconds=12 playing=1 daw=1 hot=1 latency=1179 active_blocks=5992 silent_blocks=8 longest_silent_ms=10.6667 peak=0.51823 energy=10700 callback_max_us=1351 host_late_max_us=17915
+DAW_SECTION second=0 energy=0 peak=0
+DAW_SECTION second=1 energy=740.856 peak=0.406018
+DAW_SECTION second=2 energy=1993.3 peak=0.499329
+DAW_SECTION second=3 energy=1750.03 peak=0.443175
+DAW_SECTION second=4 energy=1869.99 peak=0.51823
+DAW_SECTION second=5 energy=1412.75 peak=0.442883
+DAW_SECTION second=6 energy=2075.58 peak=0.44513
+DAW_SECTION second=7 energy=6.99039 peak=0.0567322
+DAW_SECTION second=8 energy=0.0384771 peak=0.00380268
+DAW_SECTION second=9 energy=1807.62 peak=0.438474
+DAW_SECTION second=10 energy=1910.07 peak=0.413807
+DAW_SECTION second=11 energy=1617 peak=0.429535

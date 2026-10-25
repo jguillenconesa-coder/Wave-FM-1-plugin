@@ -51,8 +51,13 @@ La interfaz reutiliza controles inmóviles para consumir menos CPU.
 
 En un Mac con herramientas de Xcode, Rust 1.99.1, Python 3, CMake >=3.27 y Ninja:
 Para reproducir el paquete recomendado, selecciona primero la etiqueta
-`v0.2.6-preview.6` (fuente `123425b`). `main` contiene la corrección Windows 0.2.7;
+`v0.2.6-preview.6` (fuente `123425b`). `main` contiene las correcciones Windows 0.2.8;
 no reproduce el paquete macOS recomendado. El candidato macOS 0.2.7 no se publicó
 porque perdió 1.123 / 68 muestras en X0X a 512 / 64 muestras.
 Ejecuta `bash tools/build-macos.sh`, las pruebas nativas de `.github/workflows/macos.yml`
 y `bash tools/package-macos.sh`. No se redistribuye ningún SDK de Apple.
+
+El candidato 0.2.8 preview.3 tampoco se publicó: perdió 4.812 / 1.402 frames
+en la prueba nativa de X0X a 512 / 64 muestras. La versión macOS recomendada
+sigue siendo v0.2.6-preview.6. Las correcciones Windows no se presentan como
+una solución ya validada de ese fallo macOS.

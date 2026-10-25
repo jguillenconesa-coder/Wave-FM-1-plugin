@@ -20,7 +20,7 @@ los resultados vinculados al hash comprobado: [informe, versiones y hashes](COMM
   GitHub, con versión y SHA-256 de referencia. Así no depende de un enlace del
   Hub que pueda devolver HTTP 403. La fuente y versión elegidas aparecen junto
   al botón. Se localizaron y
-  descargaron 64 publicaciones con un archivo FM-1 identificable en esta revisión.
+  descargaron 78 publicaciones con un archivo FM-1 identificable en la revisión del 25-10-2026.
   Las versiones del autor pueden diferir del índice del Hub: se muestra
   expresamente la etiqueta de GitHub y se comprueba su SHA-256 de referencia.
 - Si la conexión con el autor falla, solo se intenta el Hub cuando ofrece la

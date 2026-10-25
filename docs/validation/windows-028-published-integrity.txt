@@ -1,0 +1,34 @@
+Published EXE/ZIP download hashes match SHA256SUMS
+Windows x64 binary pair and SHA-256 manifest verified
+Compared against immutable source with Windows CRLF checkout for text; firmware/source archives/legal notices retained byte-for-byte
+Exact source 29835a041d102eca7bf0da6dc57eca07629c7fc5 desktop fingerprint d25ac5cb495a4ba4e140a02557d319ee48ec84c222a591cdeac2aa12683a5f57
+430 bundle files; 29 versions/24 instruments; 96 references/78 author links; x64 modules and credits verified
+RENDER slice=8000 max_us=8889 max_batch_frames=512 early_delivery_max_gain_us=1609
+HOST_CLOCK busy_control=false host_thread_cpu_us=15625
+REALTIME x0x 48k/512 lead=1495 legacy=false: startup_missing=55, steady_missing=0, debt=0, position=529199, callback_max_us=45, host_late_max_us=8634, engine_speed=1.615, peak=0.39800, halted=false
+RECOVERY x0x 48k/512: injected=false, fault_missing=0, recoveries=0, post_fault_peak=0.00000
+RENDER slice=8000 max_us=7099 max_batch_frames=512 early_delivery_max_gain_us=3080
+HOST_CLOCK busy_control=false host_thread_cpu_us=171875
+REALTIME x0x 48k/64 lead=1083 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=24, host_late_max_us=821, engine_speed=1.575, peak=0.39769, halted=false
+RECOVERY x0x 48k/64: injected=false, fault_missing=0, recoveries=0, post_fault_peak=0.00000
+REALTIME dub13 48k/512 lead=1495 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=28, host_late_max_us=718, engine_speed=2.138, peak=0.54992, halted=false
+RECOVERY dub13 48k/512: injected=false, fault_missing=0, recoveries=0, post_fault_peak=0.00000
+REALTIME dub13 48k/64 lead=1083 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=26, host_late_max_us=699, engine_speed=2.091, peak=0.54572, halted=false
+RECOVERY dub13 48k/64: injected=false, fault_missing=0, recoveries=0, post_fault_peak=0.00000
+REALTIME dub13 48k/512 lead=1495 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=29, host_late_max_us=582, engine_speed=2.141, peak=0.58570, halted=false
+RECOVERY dub13 48k/512: injected=true, fault_missing=3487, recoveries=1, post_fault_peak=0.46521
+REALTIME dub13 48k/64 lead=1083 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=25, host_late_max_us=846, engine_speed=2.092, peak=0.54992, halted=false
+RECOVERY dub13 48k/64: injected=true, fault_missing=3522, recoveries=1, post_fault_peak=0.45137
+REALTIME x0x 48k/512 lead=1495 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=23, host_late_max_us=627, engine_speed=1.612, peak=0.39779, halted=false
+RECOVERY x0x 48k/512: injected=true, fault_missing=3487, recoveries=1, post_fault_peak=0.39239
+REALTIME x0x 48k/64 lead=1083 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=29, host_late_max_us=2201, engine_speed=1.579, peak=0.39854, halted=false
+RECOVERY x0x 48k/64: injected=true, fault_missing=3488, recoveries=1, post_fault_peak=0.39441
+	AUDIO in: 0, out: 1
+LOADED_VST3 state=build/dub13.state block=512 seconds=12 playing=1 daw=0 hot=0 latency=1627 active_blocks=750 silent_blocks=0 longest_silent_ms=0 peak=0.595309 energy=12102.9 callback_max_us=58 host_late_max_us=727
+	AUDIO in: 0, out: 1
+LOADED_VST3 state=build/dub13.state block=64 seconds=12 playing=1 daw=0 hot=0 latency=1179 active_blocks=6000 silent_blocks=0 longest_silent_ms=0 peak=0.544426 energy=13960 callback_max_us=34 host_late_max_us=984
+	AUDIO in: 0, out: 1
+LOADED_VST3 state=build/x0x.state block=512 seconds=12 playing=1 daw=0 hot=0 latency=1627 active_blocks=657 silent_blocks=93 longest_silent_ms=992 peak=0.257751 energy=7345.37 callback_max_us=49 host_late_max_us=712
+	AUDIO in: 0, out: 1
+LOADED_VST3 state=build/x0x.state block=64 seconds=12 playing=1 daw=0 hot=0 latency=1179 active_blocks=5237 silent_blocks=763 longest_silent_ms=1005.33 peak=0.253859 energy=7267.17 callback_max_us=27 host_late_max_us=752
+

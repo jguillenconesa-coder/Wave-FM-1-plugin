@@ -1,0 +1,56 @@
+	AUDIO in: 0, out: 1
+LOADED_VST3 state=build/dub-daw.state block=512 seconds=12 playing=1 daw=1 hot=0 latency=1627 active_blocks=750 silent_blocks=0 longest_silent_ms=0 peak=0.452158 energy=10001.1 callback_max_us=47 host_late_max_us=853
+DAW_SECTION second=0 energy=0 peak=0
+DAW_SECTION second=1 energy=462.328 peak=0.349213
+DAW_SECTION second=2 energy=1848.97 peak=0.426049
+DAW_SECTION second=3 energy=1452.77 peak=0.448996
+DAW_SECTION second=4 energy=1493.73 peak=0.447784
+DAW_SECTION second=5 energy=1449.93 peak=0.432171
+DAW_SECTION second=6 energy=1877.94 peak=0.452158
+DAW_SECTION second=7 energy=3.92631 peak=0.0733795
+DAW_SECTION second=8 energy=0.0688273 peak=0.00289917
+DAW_SECTION second=9 energy=1699.8 peak=0.422777
+DAW_SECTION second=10 energy=1739.98 peak=0.417845
+DAW_SECTION second=11 energy=1735.69 peak=0.423767
+	AUDIO in: 0, out: 1
+LOADED_VST3 state=build/dub-daw.state block=512 seconds=12 playing=1 daw=1 hot=1 latency=1627 active_blocks=750 silent_blocks=0 longest_silent_ms=0 peak=0.563961 energy=10028.3 callback_max_us=40 host_late_max_us=716
+DAW_SECTION second=0 energy=0 peak=0
+DAW_SECTION second=1 energy=339.482 peak=0.340387
+DAW_SECTION second=2 energy=1615.36 peak=0.464722
+DAW_SECTION second=3 energy=1990.01 peak=0.442192
+DAW_SECTION second=4 energy=1712.44 peak=0.563961
+DAW_SECTION second=5 energy=1328.68 peak=0.420496
+DAW_SECTION second=6 energy=1678.71 peak=0.435488
+DAW_SECTION second=7 energy=7.36902 peak=0.0589653
+DAW_SECTION second=8 energy=0.0361347 peak=0.00402832
+DAW_SECTION second=9 energy=1574.33 peak=0.43014
+DAW_SECTION second=10 energy=1868.9 peak=0.441986
+DAW_SECTION second=11 energy=1857.81 peak=0.419159
+	AUDIO in: 0, out: 1
+LOADED_VST3 state=build/dub-daw.state block=64 seconds=12 playing=1 daw=1 hot=0 latency=1179 active_blocks=5992 silent_blocks=8 longest_silent_ms=10.6667 peak=0.453992 energy=9724.62 callback_max_us=26 host_late_max_us=845
+DAW_SECTION second=0 energy=0 peak=0
+DAW_SECTION second=1 energy=482.357 peak=0.349213
+DAW_SECTION second=2 energy=1831.17 peak=0.423782
+DAW_SECTION second=3 energy=1442.61 peak=0.459654
+DAW_SECTION second=4 energy=1445.43 peak=0.451255
+DAW_SECTION second=5 energy=1326.11 peak=0.435365
+DAW_SECTION second=6 energy=1866.4 peak=0.453992
+DAW_SECTION second=7 energy=2.33165 peak=0.0343918
+DAW_SECTION second=8 energy=0.066732 peak=0.00299072
+DAW_SECTION second=9 energy=1705.26 peak=0.423707
+DAW_SECTION second=10 energy=1765.73 peak=0.409986
+DAW_SECTION second=11 energy=1613.3 peak=0.430271
+	AUDIO in: 0, out: 1
+LOADED_VST3 state=build/dub-daw.state block=64 seconds=12 playing=1 daw=1 hot=1 latency=1179 active_blocks=5992 silent_blocks=8 longest_silent_ms=10.6667 peak=0.508714 energy=9917.85 callback_max_us=28 host_late_max_us=703
+DAW_SECTION second=0 energy=0 peak=0
+DAW_SECTION second=1 energy=688.721 peak=0.422967
+DAW_SECTION second=2 energy=2027.92 peak=0.506714
+DAW_SECTION second=3 energy=1662.34 peak=0.457107
+DAW_SECTION second=4 energy=1476.63 peak=0.508714
+DAW_SECTION second=5 energy=1244.09 peak=0.421732
+DAW_SECTION second=6 energy=2002.73 peak=0.446573
+DAW_SECTION second=7 energy=7.26189 peak=0.0606533
+DAW_SECTION second=8 energy=0.0387792 peak=0.00366211
+DAW_SECTION second=9 energy=1691.53 peak=0.439595
+DAW_SECTION second=10 energy=1893.26 peak=0.440887
+DAW_SECTION second=11 energy=1602.32 peak=0.433581

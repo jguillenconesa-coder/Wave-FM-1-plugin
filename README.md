@@ -9,19 +9,17 @@ repositorio no se presenta como autora de ese trabajo; consulta
 
 ## Descargar e instalar
 
-**Estado de la investigación (2026-10-25):** el usuario ha confirmado que DUB
-funciona mayormente al volver de 64 a 512 muestras, pero comunica bloqueos después
-de un error. No se estableció una regresión al comparar buffers distintos.
-Se está validando 0.2.8 con recuperación de audio, knobs limitados y biblioteca
-actualizada. Los enlaces siguientes conservan la última preview publicada hasta
-que termine esa validación; [0.2.5](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.5-preview.3)
-permanece disponible como referencia anterior.
+**Windows 0.2.8:** recuperación de audio sin recargar el firmware, knobs con
+posición 0–127 guardada, biblioteca actualizada y correcciones del arranque y los
+loops con reloj DAW. Compilación/instalador y pruebas nativas superados; archivos
+publicados descargados y verificados. Sigue siendo una preview: confirma el
+comportamiento en un Set vacío antes de usarla en tus proyectos importantes.
 
-- [Instalador Windows 0.2.7](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.7-preview.2/Wave-FM-1-0.2.7-Windows-x64-Setup.exe)
-- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.7-preview.2/Wave-FM-1-0.2.7-Windows-x64-Portable.zip)
+- [Instalador Windows 0.2.8](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.8-preview.3/Wave-FM-1-0.2.8-Windows-x64-Setup.exe)
+- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.8-preview.3/Wave-FM-1-0.2.8-Windows-x64-Portable.zip)
 - [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.6-preview.6/Wave-FM-1-0.2.6-macOS-Universal.pkg)
 - [macOS Universal: ZIP por usuario](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.6-preview.6/Wave-FM-1-0.2.6-macOS-Universal.zip)
-- [Windows: versión y hashes](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.7-preview.2) · [macOS: versión y hashes](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.6-preview.6)
+- [Windows: versión y hashes](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.8-preview.3) · [macOS: versión y hashes](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.6-preview.6)
 - [Instalar/desinstalar en Windows](docs/WINDOWS.md) · [macOS Intel y Apple Silicon](docs/MACOS.md)
 
 Si la descarga directa falla, abre la página de la versión y selecciona el
@@ -37,21 +35,20 @@ Si tienes instalada la preview 0.1.0, desinstálala antes para evitar duplicados
 conserva tus proyectos y archivos exportados.
 
 **Preview experimental.** El usuario ha confirmado la carga en Live Windows y
-ha comunicado cortes persistentes de audio; su resolución en ese equipo sigue
-pendiente de probar. Esto no valida todas las configuraciones ni todos los
-firmwares. Prueba la actualización en un Set vacío con tus proyectos
+ha confirmado la mejora al volver a 512 muestras y comunicó bloqueos tras errores.
+Las correcciones actuales deben confirmarse todavía en ese equipo. Esto no
+valida todas las configuraciones ni todos los firmwares. Prueba la actualización en un Set vacío con tus proyectos
 importantes cerrados y respaldados; no se garantiza riesgo cero.
 
 ## Firmwares y aspecto
 
-La fuente de **0.2.8**, pendiente de publicación validada, añade cinco versiones
+**0.2.8** añade cinco versiones
 (Skiff 2.0.1, DUB-1 1.3.0, Chipbox 1.3.1-stable, TRIBE 0.3-beta y GammaWave
 1.1.1-GW) y SIDOU 0.4.0. Conserva todos los paquetes anteriores. El ratón y MIDI
 comparten una referencia 0–127 guardada; Shift afina y Alt permite giros sin fin.
 La recuperación tras una interrupción larga conserva el firmware y sus patches.
 También corrige el arranque del reloj DAW y la resincronización de loops en X0X,
 sin modificar sus bytes. [Detalles y configuración](docs/DAW_SYNC.md).
-
 
 **0.2.6** declara **cero latencia sin firmware** y añade **Audio buffer**:
 Low latency, Balanced y Safe / legacy. A 48 kHz / bloque máximo 512, sus latencias

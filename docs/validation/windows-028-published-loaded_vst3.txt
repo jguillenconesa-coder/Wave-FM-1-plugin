@@ -1,0 +1,8 @@
+	AUDIO in: 0, out: 1
+LOADED_VST3 state=build/dub13.state block=512 seconds=12 playing=1 daw=0 hot=0 latency=1627 active_blocks=750 silent_blocks=0 longest_silent_ms=0 peak=0.595309 energy=12102.9 callback_max_us=58 host_late_max_us=727
+	AUDIO in: 0, out: 1
+LOADED_VST3 state=build/dub13.state block=64 seconds=12 playing=1 daw=0 hot=0 latency=1179 active_blocks=6000 silent_blocks=0 longest_silent_ms=0 peak=0.544426 energy=13960 callback_max_us=34 host_late_max_us=984
+	AUDIO in: 0, out: 1
+LOADED_VST3 state=build/x0x.state block=512 seconds=12 playing=1 daw=0 hot=0 latency=1627 active_blocks=657 silent_blocks=93 longest_silent_ms=992 peak=0.257751 energy=7345.37 callback_max_us=49 host_late_max_us=712
+	AUDIO in: 0, out: 1
+LOADED_VST3 state=build/x0x.state block=64 seconds=12 playing=1 daw=0 hot=0 latency=1179 active_blocks=5237 silent_blocks=763 longest_silent_ms=1005.33 peak=0.253859 energy=7267.17 callback_max_us=27 host_late_max_us=752

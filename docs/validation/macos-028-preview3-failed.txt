@@ -1,0 +1,55 @@
+/tmp/fm1-028-preview3-macos.html 
+Triggered via push
+October 25, 2026 17:05
+jguillenconesa-coder
+pushed
+29835a0
+v0.2.8-preview.3
+Status
+Failure
+Total duration
+8m 49s
+Artifacts
+–
+macos.yml
+on: push
+build
+8m 45s
+build
+publish
+publish
+Oh hello! Nice to see you.
+Made with ❤️ by
+humans.txt
+Fit to window
+Zoom out
+Zoom in
+Annotations
+5 errors and 1 notice
+dist/macos/REALTIME_X0X.txt context
+HOST_CLOCK busy_control=false non_windows_yield_host=true REALTIME x0x 48k/512 lead=1495 legacy=false: startup_missing=374, steady_missing=4812, debt=0, position=529199, callback_max_us=161, host_late_max_us=24348, engine_speed=1.623, peak=0.39515, halted=false RECOVERY x0x 48k/512: injected=false, fault_missing=0, recoveries=0, post_fault_peak=0.00000  thread 'audio_timing::tests::realtime_x0x_48k_512' (37475) panicked at src/audio_timing.rs:697:9: assertion `left == right` failed: steady playback missed frames; inspect diagnostic timing/load   left: 4812  right: 0 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace FAILED test audio_timing::tests::realtime_x0x_48k_64 ... RENDER slice=8000 max_us=17625 max_batch_frames=512 early_delivery_max_gain_us=1827 HOST_CLOCK busy_control=false non_windows_yield_host=true REALTIME x0x 48k/64 lead=1083 legacy=false: startup_missing=14, steady_missing=1402, debt=0, position=529199, callback_max_us=267, host_late_max_us=12729, engine_speed=1.488, peak=0.39990, halted=false RECOVERY x0x 48k/64: injected=false, fault_missing=0, recoveries=0, post_fault_peak=0.00000  thread 'audio_timing::tests::realtime_x0x_48k_64' (37949) panicked at src/audio_timing.rs:697:9: assertion `left == right` failed: steady playback missed frames; inspect diagnostic timing/load   left: 1402  right: 0 FAILED  failures:  failures:     audio_timing::tests::realtime_x0x_48k_512     audio_timing::tests::realtime_x0x_48k_64  test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 57 filtered out; finished in 24.01s  error: test failed, to rerun pass `--lib`
+Show more
+Show less
+macos-online.log context
+4179 | fn sext(v: u32, bits: u8) -> i64 {      |    ^^^^     Compiling digest v0.10.7    Compiling getrandom v0.4.3    Compiling dispatch2 v0.3.1    Compiling cpufeatures v0.2.17    Compiling raw-window-handle v0.6.2    Compiling fastrand v2.5.0 warning: `fm1-core` (lib) generated 9 warnings    Compiling rfd v0.15.4    Compiling tempfile v3.27.0    Compiling sha2 v0.10.9    Compiling fm1-soc v0.2.0 (/Users/runner/work/Wave-FM-1-plugin/Wave-FM-1-plugin/.deps/fm1-desktop/crates/fm1-soc)    Compiling nih_plug_egui v0.0.0 (
+https://github.com/robbert-vdh/nih-plug.git?rev=de421011f41a6d10fc8c7a6084e4f4dee0143683#de421011
+)    Compiling rtrb v0.3.5    Compiling base64 v0.22.1    Compiling fm1-plugin v0.2.8 (/Users/runner/work/Wave-FM-1-plugin/Wave-FM-1-plugin/.deps/fm1-desktop/crates/fm1-plugin)     Finished `release` profile [optimized] target(s) in 56.55s warning: the following packages contain code that will be rejected by a future version of Rust: block v0.1.6 note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`      Running unittests src/lib.rs (build/macos-rust/release/deps/fm1_plugin-5e2693817eaa1079)  running 1 test felucca: primary download saved 610090 bytes from the author; SHA-256 verified melodee: primary download saved 610545 bytes from the author; SHA-256 verified test online::tests::author_release_download_uses_real_https ... ok  test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 58 filtered out; finished in 0.55s
+Show more
+Show less
+macos-tests.log context
+Skiff 1.4: 352800 frames, peak 0.27417, 57600 lit pixels, halted false fm1-chord 0.3: 352800 frames, peak 0.26401, 57600 lit pixels, halted false CTL-1 (USB) 1.0: 352800 frames, peak 0.93454, 57600 lit pixels, halted false DUB-1 1.2.0: 352800 frames, peak 0.42209, 57600 lit pixels, halted false FiMba-1 0.6.1: 352800 frames, peak 0.43896, 57600 lit pixels, halted false Chipbox 0.4.2-alpha: 352800 frames, peak 0.13892, 57600 lit pixels, halted false Niagara Drift 0.2: 352800 frames, peak 0.50171, 57600 lit pixels, halted false TRIBE 0.2-beta: 352800 frames, peak 0.40085, 17057 lit pixels, halted false MIN-1 0.2.1: 352800 frames, peak 0.66534, 57600 lit pixels, halted false FMini-1 1.8.0: 352800 frames, peak 0.23160, 57600 lit pixels, halted false Felucca 8 Patterns 1.6.1_and_sequences: 352800 frames, peak 0.29401, 57600 lit pixels, halted false Frodhes 0.9.4: 352800 frames, peak 0.11792, 13346 lit pixels, halted false Pocket GammaWave 1.0-GW: 352800 frames, peak 0.26910, 57600 lit pixels, halted false Ketch 0.1-beta: 352800 frames, peak 0.12906, 6556 lit pixels, halted false WaveLoop FM-1 1.0.5.2-midi23: 352800 frames, peak 0.27573, 57600 lit pixels, halted false NOIZ DEMONS 666: 352800 frames, peak 0.27533, 57600 lit pixels, halted false Unholy Union 0.2.3: 352800 frames, peak 0.21445, 9816 lit pixels, halted false GR!MM 1.0: 352800 frames, peak 0.09000, 57600 lit pixels, halted false test every_bundled_firmware_boots_draws_and_produces_finite_audio ... ok  test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 41.22s       Running tests/portable.rs (build/macos-rust/release/deps/portable-5ee5e0079bdf1797)  running 2 tests test a_firmware_change_cancels_a_pending_export ... ok test portable_save_round_trip_and_same_package_replacement ... ok  test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.84s
+Show more
+Show less
+macos-build.log context
+[36/54] Building CXX object CMakeFiles/base-sdk-vst3.dir/cpm/vst3sdk/public.sdk/source/vst/vstparameters.cpp.o [37/54] Building CXX object CMakeFiles/base-sdk-vst3.dir/cpm/vst3sdk/public.sdk/source/vst/utility/stringconvert.cpp.o [38/54] Building CXX object _deps/clap-wrapper-build/CMakeFiles/clap-wrapper-shared-detail.dir/src/detail/shared/sha1.cpp.o [39/54] Building CXX object _deps/clap-wrapper-build/CMakeFiles/clap-wrapper-shared-detail.dir/src/clap_proxy.cpp.o [40/54] Building CXX object _deps/clap-wrapper-build/CMakeFiles/clap-wrapper-shared-detail.dir/src/detail/shared/util.cpp.o [41/54] Building CXX object _deps/clap-wrapper-build/CMakeFiles/clap-wrapper-shared-detail.dir/src/detail/clap/fsutil.cpp.o [42/54] Building OBJCXX object _deps/clap-wrapper-build/CMakeFiles/clap-wrapper-shared-detail.dir/src/detail/clap/mac_helpers.mm.o [43/54] Linking CXX static library libbase-sdk-vst3.a /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: x86_64 file: libbase-sdk-vst3.a(systemclipboard_linux.cpp.o) has no symbols /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: x86_64 file: libbase-sdk-vst3.a(systemclipboard_win32.cpp.o) has no symbols /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: x86_64 file: libbase-sdk-vst3.a(threadchecker_linux.cpp.o) has no symbols /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: x86_64 file: libbase-sdk-vst3.a(threadchecker_win32.cpp.o) has no symbols [44/54] Building OBJCXX object CMakeFiles/wave_fm1-clap-wrapper-vst3-lib.dir/_deps/clap-wrapper-src/src/detail/os/macos.mm.o [45/54] Building CXX object CMakeFiles/wave_fm1-clap-wrapper-vst3-lib.dir/_deps/clap-wrapper-src/src/wrapasvst3_entry.cpp.o [46/54] Building CXX object CMakeFiles/wave_fm1-clap-wrapper-vst3-lib.dir/_deps/clap-wrapper-src/src/detail/vst3/parameter.cpp.o [47/54] Building CXX object CMakeFiles/wave_fm1-clap-wrapper-vst3-lib.dir/_deps/clap-wrapper-src/src/detail/vst3/plugview.cpp.o [48/54] Building CXX object CMakeFiles/wave_fm1-clap-wrapper-vst3-lib.dir/_deps/clap-wrapper-src/src/detail/vst3/process.cpp.o [49/54] Linking CXX static library _deps/clap-wrapper-build/libclap-wrapper-shared-detail.a [50/54] Building CXX object CMakeFiles/wave_fm1-clap-wrapper-vst3-lib.dir/_deps/clap-wrapper-src/src/detail/vst3/categories.cpp.o [51/54] Building CXX object CMakeFiles/wave_fm1.dir/_deps/clap-wrapper-src/src/wrapasvst3_export_entry.cpp.o [52/54] Building CXX object CMakeFiles/wave_fm1-clap-wrapper-vst3-lib.dir/_deps/clap-wrapper-src/src/wrapasvst3.cpp.o [53/54] Linking CXX static library libwave_fm1-clap-wrapper-vst3-lib.a [54/54] Linking CXX CFBundle shared module bundle/FM-1.vst3/Contents/MacOS/FM-1 Verified catalogue packages, matching sources and licence notices Collected licence notices for 148 aarch64-apple-darwin Rust packages Collected licence notices for 148 x86_64-apple-darwin Rust packages /Users/runner/work/Wave-FM-1-plugin/Wave-FM-1-plugin/dist/macos/VST3/Wave FM-1.vst3/Contents/PlugIns/FM-1.clap: replacing existing signature /Users/runner/work/Wave-FM-1-plugin/Wave-FM-1-plugin/dist/macos/VST3/Wave FM-1.vst3: replacing existing signature macOS bundle, firmware sources, notices and architectures verified Built Universal 2 VST3. Native validation must pass before packaging.
+Show more
+Show less
+build
+Process completed with exit code 101.
+Show more
+Show less
+build
+Due to capacity constraints, jobs targeting macOS arm64 runners may experience longer queue times.
+Show more
+Show less
+You can’t perform that action at this time.
