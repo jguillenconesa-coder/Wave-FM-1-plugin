@@ -1,5 +1,13 @@
 # Validation · 0.2.7 startup recovery · 2026-10-25
 
+**User regression report, 2026-10-25:** X0X still loses audio; DUB-1 1.2.0,
+reported working in 0.2.5, now reports Engine 0.99x / Audio late 44,863 frames/s
+at 48 kHz / 64 samples / Safe / 240 MHz in 0.2.7. The 0.2.7 working-version
+recommendation is withdrawn. The results below describe the test environment,
+not successful Ableton acceptance. The timed firmware tests called the engine
+directly, while actual-VST3 processing checks used an empty instance. Loaded
+VST3 processing and a direct DUB comparison with 0.2.5 are required.
+
 | Platform | Promoted assets | Runtime source | Native workflow |
 | --- | --- | --- | --- |
 | Windows x64 | v0.2.7-preview.2 EXE and portable ZIP | `af369eb` | [40191194461: success](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/40191194461) |

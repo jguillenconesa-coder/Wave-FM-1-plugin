@@ -9,6 +9,15 @@ repositorio no se presenta como autora de ese trabajo; consulta
 
 ## Descargar e instalar
 
+**Aviso de regresión (2026-10-25):** el usuario comunica que X0X sigue perdiendo
+audio con 0.2.7 y que DUB-1, que funcionaba en 0.2.5, ahora también falla.
+**0.2.7 deja de recomendarse para trabajar.** Las pruebas sintéticas publicadas
+no reprodujeron ese caso de Ableton. Para volver a la versión que el usuario
+identifica como funcional para DUB, utiliza el
+[instalador Windows 0.2.5](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.5-preview.3/Wave-FM-1-0.2.5-Windows-x64-Setup.exe),
+con Live cerrado. Esto no afirma que 0.2.5 resuelva X0X. Los archivos 0.2.7 se
+conservan como evidencia y para investigar; no se sustituyen sus binarios.
+
 - [Instalador Windows 0.2.7](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.7-preview.2/Wave-FM-1-0.2.7-Windows-x64-Setup.exe)
 - [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.7-preview.2/Wave-FM-1-0.2.7-Windows-x64-Portable.zip)
 - [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.6-preview.6/Wave-FM-1-0.2.6-macOS-Universal.pkg)

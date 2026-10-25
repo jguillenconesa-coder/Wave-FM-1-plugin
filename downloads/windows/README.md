@@ -1,5 +1,11 @@
 # Windows Preview 0.2.7
 
+**Regresión comunicada:** X0X sigue fallando y DUB-1 ha empeorado respecto a
+0.2.5. **0.2.7 no se recomienda para trabajar.** El
+[instalador 0.2.5](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.5-preview.3/Wave-FM-1-0.2.5-Windows-x64-Setup.exe)
+es la referencia que el usuario identifica como funcional para DUB. Cierra
+Live antes de cambiar de versión. X0X sigue pendiente de corregir.
+
 Los instaladores se publican en **GitHub Releases**, donde pueden alojarse los
 paquetes completos con fuentes y licencias. No se usan enlaces `raw` a ejecutables.
 
