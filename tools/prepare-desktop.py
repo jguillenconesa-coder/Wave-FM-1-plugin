@@ -174,6 +174,20 @@ def main():
     lib.write_text(text)
     engine = plugin / "src/engine.rs"
     text = engine.read_text()
+    text = replace_once(text, '    fn changed_sectors(&self) -> Sectors {', '''    // The SoC has already copied a completed DMA half before cpu1 renders
+    // its next work. Publish that host-owned copy before running cpu1; taking
+    // it does not alter guest RAM, cycles, interrupts or instruction order.
+    fn run_audio(&mut self, n: u32, mut emit: impl FnMut(&mut Vec<i16>)) {
+        let jit = self.cpu.jit_on;
+        let Machine { cpu, cpu1, soc, pending_tick, .. } = self;
+        if machine::run_dual(cpu1, soc, n, RAM_SIZE, jit, |soc, k| {
+            let result = machine::run_blocks(cpu, soc, k, pending_tick);
+            if !soc.periph.audio.is_empty() { emit(&mut soc.periph.audio); }
+            result
+        }).is_err() { self.halted = true; }
+    }
+
+    fn changed_sectors(&self) -> Sectors {''')
     text = replace_once(text, '    Lead(usize),', '    Lead(usize),\n    Clear,')
     text = replace_once(text, '    let mut m: Option<Machine> = None;', '''    let scheduling = crate::worker::Scheduling::audio();
     params.audio_diagnostics.set_scheduling(scheduling.status);
@@ -187,7 +201,7 @@ def main():
     #[cfg(test)]
     let render_slice = std::env::var("FM1_TEST_ENGINE_SLICE").ok().and_then(|s| s.parse().ok()).unwrap_or(8_000);
     #[cfg(test)]
-    let mut render_max = (0u128, 0usize);
+    let mut render_max = (0u128, 0usize, 0u128);
     let mut warming = true;
     let mut m: Option<Machine> = None;''')
     text = replace_once(text, '                    active_pkg = m.as_ref().map(|_| pkg);',
@@ -255,29 +269,47 @@ def main():
                 continue;
             }
             let t0 = Instant::now();
+            #[cfg(test)]
+            let mut published_at = None;
             // Keep the first half pending if padding could not fit last time.
             // Do not advance or discard that first audible buffer while waiting.
-            if mm.soc.periph.audio.is_empty() { mm.run(render_slice); }
+            if mm.soc.periph.audio.is_empty() {
+                mm.run_audio(render_slice, |audio| {
+                    #[cfg(test)]
+                    { render_max.1 = render_max.1.max(audio.len() / 2); }
+                    if crate::audio_timing::publish_dma(audio, &mut made, &mut out,
+                        params.audio_diagnostics.position(), lead, &mut warming) {
+                        #[cfg(test)]
+                        { published_at.get_or_insert_with(Instant::now); }
+                    }
+                });
+            }
             busy += t0.elapsed();
-            if warming {
-                if !crate::audio_timing::prime_startup(&mut made,
-                    params.audio_diagnostics.position(), lead, |f| out.push(f).is_ok())
-                    || out.slots() < mm.soc.periph.audio.len() / 2 {
-                    std::thread::sleep(Duration::from_micros(500));
-                    continue;
-                }
-                if mm.soc.periph.audio_halves > 0 { warming = false; }
+            #[cfg(test)]
+            {
+                render_max.0 = render_max.0.max(t0.elapsed().as_micros());
+                if let Some(at) = published_at { render_max.2 = render_max.2.max(at.elapsed().as_micros()); }
             }''')
-    text = replace_once(text, '            let a = std::mem::take(&mut mm.soc.periph.audio);', '''            #[cfg(test)]
-            { render_max.0 = render_max.0.max(t0.elapsed().as_micros()); render_max.1 = render_max.1.max(mm.soc.periph.audio.len() / 2); }
-            let a = std::mem::take(&mut mm.soc.periph.audio);''')
+    text = replace_once(text, '''            let a = std::mem::take(&mut mm.soc.periph.audio);
+            for f in a.chunks_exact(2) {
+                // (a full ring drops the frame: the host has stopped taking them)
+                if out.push([f[0] as f32 / 32768.0, f[1] as f32 / 32768.0]).is_ok() {
+                    made += 1;
+                }
+            }''', '''            #[cfg(test)]
+            { render_max.1 = render_max.1.max(mm.soc.periph.audio.len() / 2); }
+            // Fallback for pending first halves and cpu0-held peripheral ticks.
+            if !crate::audio_timing::publish_dma(&mut mm.soc.periph.audio,
+                &mut made, &mut out, params.audio_diagnostics.position(), lead, &mut warming) {
+                std::thread::sleep(Duration::from_micros(500));
+            }''')
     text = replace_once(text, '''    }
 }
 
 fn apply(m: &mut Option<Machine>, a: Action) {''', '''    }
     #[cfg(test)]
     if std::env::var_os("FM1_REALTIME_DIAGNOSTIC").is_some() {
-        eprintln!("RENDER slice={} max_us={} max_batch_frames={}", render_slice, render_max.0, render_max.1);
+        eprintln!("RENDER slice={} max_us={} max_batch_frames={} early_delivery_max_gain_us={}", render_slice, render_max.0, render_max.1, render_max.2);
     }
 }
 
@@ -290,6 +322,62 @@ fn panel_event(m: &mut Option<Machine>, event: crate::controls::Event) {
         Event::Encoder { enc, clicks } => Action::Enc { enc, clicks },
         Event::Key { id, down } => Action::Key { id, down },
     });
+}
+
+#[cfg(test)]
+mod early_delivery_tests {
+    use super::*;
+    #[test]
+    fn x0x_samples_and_guest_state_match_the_original_runner_exactly() {
+        let directory = std::env::var_os("FM1_CATALOGUE_TEST_DIR").map(std::path::PathBuf::from)
+            .unwrap_or_else(|| std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../../firmware/catalogue"));
+        let entry = crate::catalogue::ENTRIES.iter().find(|e| e.id == "x0x").unwrap();
+        let fw = crate::catalogue::read_at(&directory, entry).unwrap();
+        let mut reference = Machine::boot(&fw.pkg, &[], 240).unwrap();
+        let mut early = Machine::boot(&fw.pkg, &[], 240).unwrap();
+        // Match the engine's Master ADC input; raw Machine boots at zero.
+        reference.soc.periph.apply(&Action::Adc { ch: 4, value: 900 });
+        early.soc.periph.apply(&Action::Adc { ch: 4, value: 900 });
+        let mut received = Vec::new(); let mut total = 0; let mut peak = 0i32; let mut notes = false;
+        for _ in 0..200_000 {
+            reference.run(8000);
+            early.run_audio(8000, |audio| { received.extend_from_slice(audio); audio.clear(); });
+            received.extend_from_slice(&early.soc.periph.audio); early.soc.periph.audio.clear();
+            let expected = std::mem::take(&mut reference.soc.periph.audio);
+            assert_eq!(received, expected, "early delivery changed samples");
+            total += expected.len() / 2;
+            for sample in &expected { peak = peak.max((*sample as i32).abs()); }
+            received.clear();
+            assert_eq!(reference.cpu.pc, early.cpu.pc);
+            assert_eq!(reference.cpu.regs, early.cpu.regs);
+            assert_eq!(reference.soc.periph.cycles, early.soc.periph.cycles);
+            assert_eq!(reference.soc.periph.audio_halves, early.soc.periph.audio_halves);
+            assert_eq!(reference.halted, early.halted);
+            match (&reference.cpu1, &early.cpu1) {
+                (Some(a), Some(b)) => { assert_eq!(a.pc, b.pc); assert_eq!(a.regs, b.regs); }
+                (None, None) => (), _ => panic!("different cpu1 release"),
+            }
+            if total >= 22050 && !notes {
+                for channel in 0..16 {
+                    for b in [0x90 | channel, 60, 100] {
+                        reference.soc.periph.apply(&Action::Midi { b });
+                        early.soc.periph.apply(&Action::Midi { b });
+                    }
+                }
+                notes = true;
+            }
+            if total >= 88200 { break; }
+        }
+        assert!(total >= 88200 && peak > 100 && !early.halted,
+            "frames={total} peak={peak} halted={}", early.halted);
+        assert_eq!(reference.soc.flash.mem, early.soc.flash.mem);
+        assert_eq!(reference.soc.lcd.fb, early.soc.lcd.fb);
+        assert_eq!(reference.soc.ram.len(), early.soc.ram.len());
+        for at in (0..reference.soc.ram.len() as u32).step_by(4) {
+            assert_eq!(reference.soc.ram.read32(at), early.soc.ram.read32(at), "guest RAM differs");
+        }
+        eprintln!("BYTE_IDENTICAL X0X frames={total} peak={peak}; cpu0/cpu1, cycles, RAM, flash and LCD match");
+    }
 }
 '''
     engine.write_text(text)

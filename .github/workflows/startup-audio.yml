@@ -1,7 +1,7 @@
 name: Windows startup audio at 64 and 512 samples
 on:
   push:
-    branches: ['fix/startup-audio-64', 'fix/host-deadline-027']
+    branches: ['fix/startup-audio-64', 'fix/host-deadline-027', 'fix/early-dma027']
   workflow_dispatch:
 permissions:
   contents: read

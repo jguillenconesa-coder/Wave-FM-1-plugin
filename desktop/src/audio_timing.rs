@@ -82,6 +82,26 @@ pub fn prime_startup(made: &mut u64, position: u64, lead: usize,
     *made >= target
 }
 
+/// Transfer a completed, host-owned DMA copy without changing guest memory or
+/// interrupt state. Retain an unpublishable first half; reuse its allocation.
+pub fn publish_dma(audio: &mut Vec<i16>, made: &mut u64,
+                   out: &mut rtrb::Producer<[f32; 2]>, position: u64,
+                   lead: usize, warming: &mut bool) -> bool {
+    if audio.is_empty() { return true; }
+    if *warming {
+        if !prime_startup(made, position, lead, |f| out.push(f).is_ok())
+            || out.slots() < audio.len() / 2 { return false; }
+        *warming = false;
+    }
+    for f in audio.chunks_exact(2) {
+        if out.push([f[0] as f32 / 32768.0, f[1] as f32 / 32768.0]).is_ok() {
+            *made = made.saturating_add(1);
+        }
+    }
+    audio.clear();
+    true
+}
+
 #[derive(Default)]
 pub struct Playback {
     pub position: u64,
@@ -331,6 +351,31 @@ mod tests {
         assert_eq!(calls, 16384);
         assert_eq!(made, 74 + 16384);
         assert!(prime_startup(&mut made, 0, 1083, |_| panic!("already ahead")));
+    }
+
+    #[test]
+    fn a_full_ring_retains_the_first_dma_then_reuses_its_allocation() {
+        let (mut tx, mut rx) = rtrb::RingBuffer::new(64);
+        let mut made = 0; let mut warming = true;
+        assert!(prime_startup(&mut made, 0, 64, |f| tx.push(f).is_ok()));
+        let mut audio = vec![16384, -16384, 8192, -8192];
+        let allocation = audio.as_ptr(); let capacity = audio.capacity();
+        assert!(!publish_dma(&mut audio, &mut made, &mut tx, 0, 64, &mut warming));
+        assert_eq!(audio, [16384, -16384, 8192, -8192]);
+        assert!(warming); assert_eq!(made, 64);
+        assert_eq!(rx.pop().unwrap(), [0.0; 2]);
+        assert_eq!(rx.pop().unwrap(), [0.0; 2]);
+        assert!(publish_dma(&mut audio, &mut made, &mut tx, 0, 64, &mut warming));
+        assert!(!warming); assert_eq!(made, 66);
+        assert_eq!(audio.capacity(), capacity); assert_eq!(audio.as_ptr(), allocation);
+        assert!(audio.is_empty());
+        for _ in 0..62 { assert_eq!(rx.pop().unwrap(), [0.0; 2]); }
+        assert_eq!(rx.pop().unwrap(), [0.5, -0.5]);
+        assert_eq!(rx.pop().unwrap(), [0.25, -0.25]);
+        // Once running, an empty DMA copy cannot synthesize padding to disguise
+        // later missing audio, even if the host cursor has moved far ahead.
+        assert!(publish_dma(&mut audio, &mut made, &mut tx, 1_000_000, 64, &mut warming));
+        assert!(rx.pop().is_err()); assert_eq!(made, 66);
     }
 
     #[test]
