@@ -34,7 +34,20 @@ zero steady-missing-frame assertion. A standalone read-only Windows workflow
 runs both serially and cannot publish an installer. A deterministic regression
 passing does not establish that all of the user's persistent dropouts are fixed.
 
-Local validation so far: 43 Windows-target Rust unit tests passed under Wine,
-including startup recovery at exactly 1x and bounded/full-ring handling;
-16 Python packaging/integrity tests passed. Native Windows results and the
-actual 64-sample X0X outcome must be assessed before promotion.
+The second candidate also delivers completed host-owned DMA copies immediately
+after CPU0's slice, before CPU1 computes its following work, and reuses their Vec
+capacity. A fallback handles retained first halves and cpu0-held ticks. Guest
+instructions, RAM, cycles and interrupts are unchanged. The test host now uses
+a private Windows high-resolution waitable timer instead of occupying a CPU
+between callbacks; the old busy host is retained as a control. This timer is
+test-only and is not a plugin runtime optimization.
+
+Validation: 45 Windows-target Rust unit tests passed under Wine, including
+88,576 byte-identical X0X frames and guest CPU/cycles/RAM/flash/LCD equivalence
+for early publication. The local early-delivery 64-sample test passed, but 512
+missed 8,430 steady frames with a 31,616 us maximum run; this negative evidence
+is retained. Sixteen Python integrity tests passed. Standalone native Windows
+run 40188372683 also passed both configurations with zero startup/steady misses
+and zero final debt (source e3a39e9). The packaged source is af369eb, tag
+v0.2.7-preview.2, with mandatory 64/512 release gates. See the current validation
+record and actual-asset reports for provenance, installation checks and limits.

@@ -1,0 +1,33 @@
+error: XDG_RUNTIME_DIR is invalid or not set in the environment.
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+
+running 2 tests
+test audio_timing::tests::realtime_x0x_48k_512 ... RENDER slice=8000 max_us=31616 max_batch_frames=512 early_delivery_max_gain_us=2106
+HOST_CLOCK busy_control=false host_thread_cpu_us=30000
+REALTIME X0X 48k/512 lead=1495 legacy=false: startup_missing=0, steady_missing=8430, debt=0, position=529199, callback_max_us=275, host_late_max_us=3949, engine_speed=1.408, peak=0.39800, halted=false
+
+thread 'audio_timing::tests::realtime_x0x_48k_512' (296) panicked at src/audio_timing.rs:478:9:
+assertion `left == right` failed: steady playback missed frames; inspect diagnostic timing/load
+  left: 8430
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test audio_timing::tests::realtime_x0x_48k_64 ... RENDER slice=8000 max_us=12762 max_batch_frames=512 early_delivery_max_gain_us=2894
+HOST_CLOCK busy_control=false host_thread_cpu_us=190000
+REALTIME X0X 48k/64 lead=1083 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=241, host_late_max_us=5403, engine_speed=1.520, peak=0.39769, halted=false
+ok
+
+failures:
+
+failures:
+    audio_timing::tests::realtime_x0x_48k_512
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 47 filtered out; finished in 24.01s
+

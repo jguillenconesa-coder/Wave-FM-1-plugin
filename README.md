@@ -9,11 +9,11 @@ repositorio no se presenta como autora de ese trabajo; consulta
 
 ## Descargar e instalar
 
-- [Instalador Windows 0.2.6](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.6-preview.4/Wave-FM-1-0.2.6-Windows-x64-Setup.exe)
-- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.6-preview.4/Wave-FM-1-0.2.6-Windows-x64-Portable.zip)
+- [Instalador Windows 0.2.7](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.7-preview.2/Wave-FM-1-0.2.7-Windows-x64-Setup.exe)
+- [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.7-preview.2/Wave-FM-1-0.2.7-Windows-x64-Portable.zip)
 - [macOS Universal: instalador PKG](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.6-preview.6/Wave-FM-1-0.2.6-macOS-Universal.pkg)
 - [macOS Universal: ZIP por usuario](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.6-preview.6/Wave-FM-1-0.2.6-macOS-Universal.zip)
-- [Windows: versión y hashes](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.6-preview.4) · [macOS: versión y hashes](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.6-preview.6)
+- [Windows: versión y hashes](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.7-preview.2) · [macOS: versión y hashes](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.6-preview.6)
 - [Instalar/desinstalar en Windows](docs/WINDOWS.md) · [macOS Intel y Apple Silicon](docs/MACOS.md)
 
 Si la descarga directa falla, abre la página de la versión y selecciona el
@@ -28,9 +28,10 @@ VST3 estándar, Live puede descubrirlo automáticamente en su siguiente escaneo.
 Si tienes instalada la preview 0.1.0, desinstálala antes para evitar duplicados;
 conserva tus proyectos y archivos exportados.
 
-**Preview experimental.** El usuario ha confirmado que la versión anterior
-funciona en su Live Windows. Esto no valida todas las configuraciones ni todos
-los firmwares. Prueba la actualización en un Set vacío con tus proyectos
+**Preview experimental.** El usuario ha confirmado la carga en Live Windows y
+ha comunicado cortes persistentes de audio; su resolución en ese equipo sigue
+pendiente de probar. Esto no valida todas las configuraciones ni todos los
+firmwares. Prueba la actualización en un Set vacío con tus proyectos
 importantes cerrados y respaldados; no se garantiza riesgo cero.
 
 ## Firmwares y aspecto
@@ -43,21 +44,28 @@ La interfaz reutiliza controles dibujados para consumir menos CPU y el worker
 Windows usa prioridad moderada, sin cambiar la prioridad del proceso ni ajustes
 de Live. El algoritmo de sonido se conserva.
 
-**El retraso persistente de X0X comunicado por el usuario sigue sin darse por
-resuelto.** Los enlaces recomiendan las últimas compilaciones que superaron las
-pruebas por plataforma: Windows preview.4 (`53c3966`) y macOS preview.6
-(`123425b`). `main` conserva la base del paquete Windows verificado; las
-optimizaciones posteriores y sus fallos medidos están en
-[performance-investigation](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/tree/performance-investigation).
-No se recomienda instalar una compilación de Windows que haya fallado la prueba.
-Consulta [pruebas, fuentes exactas y límites](downloads/windows/VALIDATION.md).
+**0.2.7 corrige un atasco de recuperación durante el arranque del firmware.**
+El silencio inicial podía dejar al plugin descartando audio indefinidamente
+cuando la producción posterior alcanzaba exactamente 1.00x. La corrección
+prepara ese silencio en el productor y conserva el primer bloque real, sin
+aumentar la reserva ni modificar los algoritmos de sonido. Además, entrega
+los bloques ya terminados antes del siguiente trabajo del segundo núcleo
+virtual y reutiliza su memoria. Una comparación de 88.576 muestras por canal de X0X
+confirma muestras, registros, reloj, RAM, flash y pantalla idénticos.
+
+X0X real pasa las pruebas nativas a **48 kHz / 64 y 512 muestras** en Windows,
+con cero muestras ausentes durante la reproducción estable. La
+regresión determinista comprueba también la producción a velocidad exacta 1x.
+Esto no sustituye la prueba dentro de Ableton en el equipo del usuario ni
+establece que todos sus cortes estén resueltos. Consulta las
+[fuentes, resultados y límites](downloads/windows/VALIDATION.md).
 
 **Musical clock** permite elegir el reloj propio del firmware o sincronizar tempo
 y reproducción con **Ableton / DAW**. El firmware debe admitir clock externo por
 TRS/MIDI y tenerlo seleccionado. La versión 0.2.4 también corrige la recuperación
 de faltas de audio para conservar el tiempo y programa el MIDI por ciclos del
-emulador. Si falta capacidad de CPU todavía puede haber cortes, indicados en
-**Audio late**. Consulta [configuración y límites de la sincronización](docs/DAW_SYNC.md).
+emulador. Los cortes se indican en **Audio late**; ese contador por sí solo no identifica
+la causa. Consulta [configuración y límites de la sincronización](docs/DAW_SYNC.md).
 
 **MIDI / Live** muestra etiquetas de alto contraste y una columna con Master,
 los siete encoders y 14 botones asignables. Incluye instrucciones de Configure

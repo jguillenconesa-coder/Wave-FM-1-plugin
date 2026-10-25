@@ -1,0 +1,5 @@
+RENDER slice=8000 max_us=8609 max_batch_frames=512 early_delivery_max_gain_us=1825
+REALTIME X0X 48k/512 lead=1495 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=60, host_late_max_us=1728, engine_speed=2.058, peak=0.39951, halted=false
+RENDER slice=8000 max_us=6216 max_batch_frames=512 early_delivery_max_gain_us=1489
+REALTIME X0X 48k/64 lead=1083 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=9, host_late_max_us=888, engine_speed=2.044, peak=0.39747, halted=false
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 47 filtered out; finished in 24.00s

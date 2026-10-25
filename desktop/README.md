@@ -53,3 +53,19 @@ six skins and an opt-in drawing benchmark. New host-side VST3 checks verify
 actual empty audio processing and reported latency across nine configurations.
 These integration changes are MIT; original emulator/panel authorship remains
 Joakim Eriksson's. The resampler and firmware sound algorithms are unchanged.
+
+From 0.2.7, boot-only producer silence priming prevents initial missing DMA
+frames from poisoning bounded recovery at exactly real-time production. The
+callback publishes its source position atomically; the worker retains its first
+DMA buffer when space is unavailable. Priming ends for that boot after first
+output. Recovery after later underruns remains observable. Native release gates
+exercise actual X0X at both 48 kHz / 64 and 512 host samples. The emulator and
+firmware authors retain the credits above; the integration change is MIT.
+
+Completed host-owned DMA copies are published before CPU1's following work,
+with a post-run fallback. Their Vec capacity is reused. The real-X0X regression
+compares samples and complete guest RAM/flash/LCD, registers and cycles against
+the original runner. Windows tests use a private high-resolution host timer;
+the timer FFI is cfg(test) and is absent from the plugin DLL. These delivery
+changes are MIT integration additions; original CPU/SoC/DSP authorship remains
+unchanged.

@@ -1,3 +1,82 @@
+# Validation · 0.2.7 startup recovery · 2026-10-25
+
+| Platform | Promoted assets | Runtime source | Native workflow |
+| --- | --- | --- | --- |
+| Windows x64 | v0.2.7-preview.2 EXE and portable ZIP | `af369eb` | [40191194461: success](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/40191194461) |
+
+A deterministic regression reproduces the startup-silence recovery failure at
+exactly 1x production, with both 64- and 512-sample host blocks. Priming startup
+silence on the producer avoids indefinitely discarding subsequent real audio;
+it does not fill in missing synthesis after first DMA output. Source, behavior
+and limits are described in `docs/STARTUP_AUDIO_INVESTIGATION.md`.
+
+Both actual X0X configurations run for 12 seconds with the original PLAY,
+sustained notes, repeated percussion and physical-key workload. Each must
+produce finite nonzero audio, remain unhalted and miss zero steady frames.
+The source preserves the assertions, the 16,384-frame ring, chosen reserve,
+reported latency, firmware DSP and process/host priority. The 64-sample Safe
+configuration reports 1,179 host samples / 24.56 ms at 48 kHz, unchanged.
+
+Actual published Windows ZIP report, source `af369eb`:
+
+| Host block | Startup misses | Steady misses | Final debt | Engine | Callback max | Early delivery max gain |
+| --- | --- | --- | --- | --- | --- | --- |
+| 512 | 0 | 0 | 0 | 2.058x | 60 µs | 1,825 µs |
+| 64 | 0 | 0 | 0 | 2.044x | 9 µs | 1,489 µs |
+
+All promoted public files were downloaded and SHA-256 checked. Bundle hashes
+and exact filesets, executable architectures, all 23 bundled firmware records,
+83 community references / 64 author alternatives, and original notices were
+verified against the source manifest. The actual Windows download passed all
+47 official SDK tests and nine empty-VST3 silence/zero-latency configurations
+under Wine, in addition to its native release gates. Windows CI installed the
+EXE, loaded the installed factory and completely removed the private bundle
+and uninstall registration. The installer changes no Ableton files/settings.
+Source gitleaks 8.24.2 scan: no secrets found. Reports are in
+`docs/validation/*-027-*`; source is immutable tag `v0.2.7-preview.2`.
+
+Completed DMA halves are now published before cpu1's following work, with a
+fallback after the outer slice for pending startup buffers or cpu0-held ticks.
+The host-owned Vec is cleared/reused instead of reallocated each half. A real
+X0X equivalence regression compared 88,576 nonzero-capable raw audio frames,
+both CPUs, exact cycles, all RAM, flash and LCD against the original runner.
+All matched; this is delivery work, not a changed synthesis algorithm.
+
+Windows tests now use a private high-resolution waitable timer to wake the
+synthetic host instead of occupying a logical CPU between callbacks. This is
+compiled only into tests, not into the DLL; it changes no global timer or
+priority. The zero-missing-frame assertions remain. The old busy host is kept
+as an explicit control. Native standalone run 40191143694 (source af369eb)
+passed both 64/512 configurations in both host modes, with zero startup/steady
+misses and 1,031/1,041 us maximum early-delivery gains in the timer cases.
+Reported thread CPU time is coarse Windows accounting, not zero CPU overhead.
+Its exact public annotation excerpts are `windows-027-early-native.txt`.
+
+Negative evidence is retained: preview.1 source 6e2a8f0 passed the standalone
+startup check but failed the full native Windows gate (55,428 / 7,938 steady
+misses at 512/64) and native macOS 64 (152); neither was published. The current
+local Wine early-delivery case passed at 64 but missed 8,430 at 512 with a
+31,616 us maximum run. See `*-027-preview1-failed.txt` and
+`windows-027-early-local.txt`. No failed check was retried into a release.
+
+The standalone native startup diagnostic (source e3a39e9, run 40188372683) also
+passed 64/512 with zero startup/steady misses and zero final debt. Its exact
+public annotation excerpt is `windows-027-startup-native.txt`.
+
+These results identify and fix software recovery/delivery failures. They do **not** establish
+that all of the user's persistent X0X dropouts are resolved inside Ableton on
+their i7-10700F. No global CPU-use or fidelity improvement is claimed. The
+previous Windows timing/wake experiments remain on performance-investigation;
+this patch does not promote those failed experiments. Original authorship is
+unchanged; source/licences remain bundled.
+
+macOS 0.2.7 preview.2 was **not published**: native X0X missed
+1,123 / 68 steady frames at 512 / 64. The assertions were retained; the
+failure report is `macos-027-preview2-failed.txt`. macOS downloads remain the
+independently verified v0.2.6-preview.6 / source 123425b assets.
+
+## Archived 0.2.6 results (historical, superseded for updated platforms)
+
 # Validation record · Preview 0.2.6 · 2026-10-24
 
 Recommended downloads intentionally use **different, verified platform tags**.

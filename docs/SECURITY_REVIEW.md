@@ -1,4 +1,4 @@
-# Security review — 2026-10-24
+# Security review — 2026-10-25
 
 Scope: the initial Windows packaging source, CI workflow, installer and pinned
 fm1-emu dependency manifests. This was a focused source/configuration review,
@@ -17,8 +17,28 @@ additional host latency, dependency, thread, priority change, global setting,
 or callback I/O, allocation, wait or new mutex. Firmware binaries, licences,
 parameter IDs and VST3 identity are unchanged. Startup is rearmed only for a
 new machine or explicit virtual-clock reboot. Tests include exact-1x recovery,
-full-ring bounds, and both real-X0X 64/512-sample configurations. This candidate
-must pass native per-platform gates before its download links are promoted.
+full-ring bounds, and both real-X0X 64/512-sample configurations. The Windows package passed native gates; both downloaded modules and all bundle
+hashes, credits and architectures were verified. The actual downloaded VST3
+passed 47 SDK tests and nine empty-latency checks under Wine. Exact source
+af369eb was scanned with gitleaks 8.24.2: no secrets found. Acceptance within
+the user's Ableton session remains separate.
+
+Completed DMA output is published from the generated CPU0 run wrapper before
+CPU1's following work. Only the host-owned PCM Vec is drained; guest RAM,
+cycles, interrupts and instruction order are unchanged. A fallback handles
+pending first halves and cpu0-held ticks. Vec capacity is reused. Real X0X
+regression verifies identical samples, CPU state, cycles, RAM, flash and LCD;
+full-ring tests retain the first half and ensure later underruns remain visible.
+
+The Windows test host uses an unnamed, RAII-owned high-resolution waitable
+timer with minimal access rights and a finite timeout. All timer/thread-time
+FFI is inside cfg(test); none is compiled into the plugin DLL. No system timer
+resolution is changed. The old busy host remains an explicit diagnostic
+control; both modes retain the same zero-steady-missing assertion. Native
+standalone run 40191143694 passed all four configurations. The failed preview.1
+Windows/macOS gates and current negative Wine timing evidence are retained.
+macOS preview.2 also failed and was not published; its prior verified package
+remains recommended. See the updated per-platform validation record.
 
 ## Version 0.2.6 latency and worker policy (2026-10-24)
 
@@ -51,7 +71,7 @@ must complete before download links are promoted. A smaller reserve failed
 local timing tests, so it remains an explicit tradeoff, not the default or a
 claimed fix for sustained overload. No audio quality increase is claimed.
 
-The promoted packages use different verified sources: Windows preview.4 at
+Historical 0.2.6 verification (superseded for updated platforms): the packages used different verified sources: Windows preview.4 at
 `53c3966`, macOS preview.6 at `123425b`. All four downloaded assets, exact bundle
 hashes, architectures, original credits and the Windows source fingerprint were
 verified. Both recommended native X0X diagnostics passed with zero steady misses;

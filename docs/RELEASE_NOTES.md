@@ -7,6 +7,13 @@ indefinidamente. Ahora el productor suministra silencio durante ese arranque y
 conserva el primer bloque real del firmware. Después del primer bloque no se
 rellena artificialmente la producción del firmware.
 
+Además, entrega el audio DMA ya terminado antes del siguiente trabajo del
+segundo núcleo virtual, con fallback para bloques pendientes, y reutiliza la
+memoria del bloque. Una regresión con X0X compara 88.576 muestras por canal,
+registros de ambos núcleos, ciclos, RAM, flash y pantalla con el recorrido
+original: todos coinciden. La prueba de Windows usa un temporizador privado
+solo en el ejecutable de pruebas; se conserva el host anterior como control.
+
 Se conservan el tamaño de la reserva elegida, la latencia real declarada, los
 algoritmos de sonido, el reloj del firmware, la identidad VST3 y los parámetros
 guardados. El callback añade la publicación atómica de su posición; no espera
@@ -22,8 +29,11 @@ Esta corrección de arranque no prueba que todos los cortes comunicados por el
 usuario estén resueltos dentro de Ableton. Los enlaces del README solo se
 actualizan tras comprobar los archivos publicados. Los autores y licencias de
 los 23 firmwares y de fm1-emu se conservan; no se añaden firmwares nuevos.
+Windows `v0.2.7-preview.2` superó sus puertas nativas y la comprobación de los
+archivos descargados. macOS 0.2.7 no superó audio a 64/512 y no se publicó;
+su descarga recomendada sigue siendo `v0.2.6-preview.6`.
 
-# Wave FM-1 Preview 0.2.6 · Windows y macOS
+## Historial: Wave FM-1 Preview 0.2.6 · Windows y macOS
 
 Paquetes recomendados verificados por plataforma:
 

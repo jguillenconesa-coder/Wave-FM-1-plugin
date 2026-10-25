@@ -1,0 +1,13 @@
+Native Windows MSVC startup diagnostic. Source: e3a39e9
+Run: https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/actions/runs/40188372683
+Exact test excerpt from the public job annotation (pipe-separated lines expanded):
+
+running 2 tests
+RENDER slice=8000 max_us=12355 max_batch_frames=512
+REALTIME X0X 48k/512 lead=1495 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=31, host_late_max_us=9441, engine_speed=1.627, peak=0.40002, halted=false
+test audio_timing::tests::realtime_x0x_48k_512 ... ok
+RENDER slice=8000 max_us=10713 max_batch_frames=512
+REALTIME X0X 48k/64 lead=1083 legacy=false: startup_missing=0, steady_missing=0, debt=0, position=529199, callback_max_us=25, host_late_max_us=157, engine_speed=1.568, peak=0.39411, halted=false
+test audio_timing::tests::realtime_x0x_48k_64 ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 24.01s |
