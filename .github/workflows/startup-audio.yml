@@ -1,7 +1,7 @@
 name: Windows startup audio at 64 and 512 samples
 on:
   push:
-    branches: ['fix/startup-audio-64']
+    branches: ['fix/startup-audio-64', 'fix/host-deadline-027']
   workflow_dispatch:
 permissions:
   contents: read
@@ -43,6 +43,21 @@ jobs:
           }
           Write-Output "::notice title=Startup audio test::$Lines"
           if ((Select-String -Path startup-realtime.txt -Pattern 'steady_missing=0,').Count -ne 2) { throw 'Missing complete real-time results' }
+      - name: Old busy-host control (evidence only, no publication)
+        if: always()
+        shell: pwsh
+        env:
+          FM1_REALTIME_BUSY_HOST: '1'
+        run: |
+          cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --target x86_64-pc-windows-msvc --lib audio_timing::tests::realtime_x0x_48k_ -j 2 -- --ignored --nocapture --test-threads=1 2>&1 | Tee-Object startup-busy-control.txt
+          $Code = $LASTEXITCODE
+          $Lines = (Get-Content startup-busy-control.txt -Tail 35) -join ' | '
+          $Lines = $Lines.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+          Write-Output "::notice title=Busy-host control exit ${Code}::$Lines"
+          Get-Content startup-busy-control.txt >> $env:GITHUB_STEP_SUMMARY
+          # The preceding high-resolution driver-like tests remain mandatory.
+          # This extra stress control cannot publish or satisfy a release gate.
+          exit 0
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:

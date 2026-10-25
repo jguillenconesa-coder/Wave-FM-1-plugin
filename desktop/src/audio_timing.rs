@@ -138,6 +138,82 @@ impl Playback {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // A driver wakes its callback; it does not spend the whole block occupying
+    // a logical CPU. Keep the old busy host as an explicit diagnostic control.
+    // This timer exists only in the test executable, never in the plugin DLL.
+    struct HostDeadline {
+        #[cfg(windows)]
+        timer: *mut std::ffi::c_void,
+        busy: bool,
+        #[cfg(windows)]
+        cpu_started: u64,
+    }
+
+    #[cfg(windows)]
+    #[link(name = "kernel32")]
+    unsafe extern "system" {
+        fn CreateWaitableTimerExW(attrs: *const std::ffi::c_void, name: *const u16, flags: u32, access: u32) -> *mut std::ffi::c_void;
+        fn SetWaitableTimer(timer: *mut std::ffi::c_void, due: *const i64, period: i32,
+            callback: *const std::ffi::c_void, arg: *const std::ffi::c_void, resume: i32) -> i32;
+        fn WaitForSingleObject(handle: *mut std::ffi::c_void, millis: u32) -> u32;
+        fn CloseHandle(handle: *mut std::ffi::c_void) -> i32;
+        fn GetCurrentThread() -> *mut std::ffi::c_void;
+        fn GetThreadTimes(handle: *mut std::ffi::c_void, creation: *mut u64,
+            exit: *mut u64, kernel: *mut u64, user: *mut u64) -> i32;
+    }
+
+    #[cfg(windows)]
+    fn host_cpu_ticks() -> u64 {
+        let (mut creation, mut exit, mut kernel, mut user) = (0, 0, 0, 0);
+        // FILETIME is two adjacent u32 words, represented here by aligned u64
+        // storage on the supported little-endian x64 Windows target.
+        assert_ne!(unsafe { GetThreadTimes(GetCurrentThread(), &mut creation, &mut exit, &mut kernel, &mut user) }, 0);
+        kernel.saturating_add(user)
+    }
+
+    impl HostDeadline {
+        fn new() -> Self {
+            let busy = std::env::var_os("FM1_REALTIME_BUSY_HOST").is_some();
+            #[cfg(windows)]
+            {
+                // High-resolution auto-reset timer since Windows 10 1803.
+                // Thread-local test handle; no global timer-resolution change.
+                let timer = if busy { std::ptr::null_mut() } else {
+                    unsafe { CreateWaitableTimerExW(std::ptr::null(), std::ptr::null(), 2, 0x0010_0002) }
+                };
+                assert!(busy || !timer.is_null(), "high-resolution host timer unavailable: {}", std::io::Error::last_os_error());
+                Self { timer, busy, cpu_started: host_cpu_ticks() }
+            }
+            #[cfg(not(windows))]
+            Self { busy }
+        }
+        fn wait(&self, deadline: std::time::Instant) {
+            #[cfg(windows)]
+            if !self.busy {
+                if let Some(remaining) = deadline.checked_duration_since(std::time::Instant::now()) {
+                    let ticks = (remaining.as_nanos() / 100).clamp(1, i64::MAX as u128) as i64;
+                    let due = -ticks;
+                    assert_ne!(unsafe { SetWaitableTimer(self.timer, &due, 0, std::ptr::null(), std::ptr::null(), 0) }, 0);
+                    assert_eq!(unsafe { WaitForSingleObject(self.timer, 1000) }, 0, "host timer wait failed");
+                }
+            }
+            while std::time::Instant::now() < deadline { std::thread::yield_now(); }
+        }
+        fn report(&self) {
+            #[cfg(windows)]
+            eprintln!("HOST_CLOCK busy_control={} host_thread_cpu_us={}", self.busy, host_cpu_ticks().saturating_sub(self.cpu_started) / 10);
+            #[cfg(not(windows))]
+            eprintln!("HOST_CLOCK busy_control={} non_windows_yield_host=true", self.busy);
+        }
+    }
+
+    impl Drop for HostDeadline {
+        fn drop(&mut self) {
+            #[cfg(windows)]
+            if !self.timer.is_null() { assert_ne!(unsafe { CloseHandle(self.timer) }, 0); }
+        }
+    }
     #[test]
     fn empty_instances_have_no_signal_latency_and_reserves_use_host_units() {
         let ratio = 44100.0 / 48000.0;
@@ -309,6 +385,7 @@ mod tests {
         let started = Instant::now(); let mut startup_missed = 0; let mut steady_missed = 0;
         let mut max_callback = Duration::ZERO; let mut max_host_late = Duration::ZERO; let mut peak = 0.0f32;
         let legacy = std::env::var_os("FM1_REALTIME_LEGACY").is_some();
+        let host_deadline = HostDeadline::new();
         for block in 0..576000 / block_size {
             let host_frame = block * block_size;
             let contains = |frame| host_frame <= frame && frame < host_frame + block_size;
@@ -318,7 +395,7 @@ mod tests {
             // making this fake host burst many callbacks and starve any queue.
             // Yield until the deadline in this isolated, opt-in diagnostic only;
             // the shipped callback/worker do not busy-wait.
-            while Instant::now() < deadline { std::thread::yield_now(); }
+            host_deadline.wait(deadline);
             max_host_late = max_host_late.max(Instant::now().saturating_duration_since(deadline));
             if contains(188 * 512) { cmd.send(Cmd::Key { id: 12, down: true }).unwrap(); }
             if contains(198 * 512) { cmd.send(Cmd::Key { id: 12, down: false }).unwrap(); }
@@ -348,6 +425,7 @@ mod tests {
             for &sample in left.iter().chain(&right) { assert!(sample.is_finite()); peak = peak.max(sample.abs()); }
         }
         shared.quit.store(true, Ordering::Relaxed); worker.join().unwrap();
+        host_deadline.report();
         let view = shared.view.lock().unwrap();
         eprintln!("REALTIME X0X 48k/{block_size} lead={lead} legacy={legacy}: startup_missing={startup_missed}, steady_missing={steady_missed}, debt={}, position={}, callback_max_us={}, host_late_max_us={}, engine_speed={:.3}, peak={peak:.5}, halted={}",
             playback.debt, playback.position, max_callback.as_micros(), max_host_late.as_micros(), view.speed, view.halted);
