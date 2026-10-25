@@ -1,0 +1,51 @@
+name: Windows startup audio at 64 and 512 samples
+on:
+  push:
+    branches: ['fix/startup-audio-64']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-audio:
+    runs-on: windows-2022
+    timeout-minutes: 25
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/.deps/fm1-emu/crates/fm1-plugin/target
+      RUSTFLAGS: '-C target-feature=+crt-static'
+      FM1_REALTIME_DIAGNOSTIC: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Prepare verified source
+        run: |
+          rustup toolchain install 1.99.1 --profile minimal
+          python tools/prepare-desktop.py
+      - name: Deterministic regression and existing unit tests
+        shell: pwsh
+        run: |
+          cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --target x86_64-pc-windows-msvc --lib -j 2 -- --nocapture 2>&1 | Tee-Object startup-unit.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Unit tests failed' }
+      - name: Real X0X at 48 kHz, Safe, 64 and 512 samples
+        shell: pwsh
+        run: |
+          cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --target x86_64-pc-windows-msvc --lib audio_timing::tests::realtime_x0x_48k_ -j 2 -- --ignored --nocapture --test-threads=1 2>&1 | Tee-Object startup-realtime.txt
+          $TestExit = $LASTEXITCODE
+          Get-Content startup-realtime.txt >> $env:GITHUB_STEP_SUMMARY
+          $Lines = (Get-Content startup-realtime.txt -Tail 40) -join ' | '
+          $Lines = $Lines.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+          if ($TestExit -ne 0) {
+            Write-Output "::error title=Startup audio test::$Lines"
+            throw 'Real-time audio failed; do not publish this candidate'
+          }
+          Write-Output "::notice title=Startup audio test::$Lines"
+          if ((Select-String -Path startup-realtime.txt -Pattern 'steady_missing=0,').Count -ne 2) { throw 'Missing complete real-time results' }
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: Windows-startup-audio-evidence
+          path: startup-*.txt
+          if-no-files-found: warn

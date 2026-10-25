@@ -132,6 +132,7 @@ def main():
     if text[render_start:render_end].count('self.frac = self.frac.min(1.0);') != 1:
         raise SystemExit('Unexpected audio rendering baseline')
     text = text[:render_start] + '''        let starved = self.playback.render(out, self.ratio, || rx.pop().ok());
+        self.params.audio_diagnostics.publish_position(self.playback.position);
         let starved = if loaded { starved } else {
             // Empty/restored-empty instances produce silence and need no PDC.
             // Continue draining the timeline so a later firmware starts in sync.
@@ -187,9 +188,10 @@ def main():
     let render_slice = std::env::var("FM1_TEST_ENGINE_SLICE").ok().and_then(|s| s.parse().ok()).unwrap_or(8_000);
     #[cfg(test)]
     let mut render_max = (0u128, 0usize);
+    let mut warming = true;
     let mut m: Option<Machine> = None;''')
     text = replace_once(text, '                    active_pkg = m.as_ref().map(|_| pkg);',
-                        '                    controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n                    active_pkg = m.as_ref().map(|_| pkg);')
+                        '                    controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n                    warming = true;\n                    active_pkg = m.as_ref().map(|_| pkg);')
     text = replace_once(text, '                    v.booted = m.is_some();', '                    v.booted = m.is_some();\n                    params.audio_diagnostics.set_loaded(m.is_some());\n                    v.late = 0;')
     text = replace_once(text, '                Cmd::Lead(l) => lead = l,', '''                Cmd::Lead(l) => { lead = l; params.audio_diagnostics.request_lead(l); }
                 Cmd::Clear => {
@@ -210,7 +212,7 @@ def main():
                     } else { apply(&mut m, Action::Key { id, down }); }
                 }''')
     text = replace_once(text, '                    m = Some(next);',
-                        '                    controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n                    m = Some(next);')
+                        '                    controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n                    warming = true;\n                    m = Some(next);')
     text = replace_once(text, '        snapshots(&mut pending, m.as_ref(), &params, Instant::now());', '''        if m.as_ref().is_some_and(|m| m.soc.board == Board::Fm1) {
             if let Some(snapshot) = params.controls.snapshot() {
                 controls.poll(snapshot, Instant::now(), |e| panel_event(&mut m, e));
@@ -243,6 +245,29 @@ def main():
     if text.count('mm.run(20_000);') != 2:
         raise SystemExit('Unexpected worker render-slice baseline')
     text = text.replace('mm.run(20_000);', 'mm.run(render_slice);')
+    text = replace_once(text, '''        if fill >= lead && last_take.elapsed()''', '''        if !warming && fill >= lead && last_take.elapsed()''')
+    text = replace_once(text, '''        } else if fill >= lead {''', '''        } else if !warming && fill >= lead {''')
+    text = replace_once(text, '''            let t0 = Instant::now();
+            mm.run(render_slice);
+            busy += t0.elapsed();''', '''            if warming && !crate::audio_timing::prime_startup(&mut made,
+                params.audio_diagnostics.position(), lead, |f| out.push(f).is_ok()) {
+                std::thread::sleep(Duration::from_micros(500));
+                continue;
+            }
+            let t0 = Instant::now();
+            // Keep the first half pending if padding could not fit last time.
+            // Do not advance or discard that first audible buffer while waiting.
+            if mm.soc.periph.audio.is_empty() { mm.run(render_slice); }
+            busy += t0.elapsed();
+            if warming {
+                if !crate::audio_timing::prime_startup(&mut made,
+                    params.audio_diagnostics.position(), lead, |f| out.push(f).is_ok())
+                    || out.slots() < mm.soc.periph.audio.len() / 2 {
+                    std::thread::sleep(Duration::from_micros(500));
+                    continue;
+                }
+                if mm.soc.periph.audio_halves > 0 { warming = false; }
+            }''')
     text = replace_once(text, '            let a = std::mem::take(&mut mm.soc.periph.audio);', '''            #[cfg(test)]
             { render_max.0 = render_max.0.max(t0.elapsed().as_micros()); render_max.1 = render_max.1.max(mm.soc.periph.audio.len() / 2); }
             let a = std::mem::take(&mut mm.soc.periph.audio);''')

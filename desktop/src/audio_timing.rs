@@ -1,6 +1,6 @@
 // Resampler derived from fm1-emu by Joakim Eriksson (MIT); timing recovery additions, 2026.
 use nih_plug::prelude::*;
-use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
 
 #[derive(Enum, Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Reserve {
@@ -35,9 +35,12 @@ pub struct Diagnostics {
     lead: AtomicU32, latency: AtomicU32,
     loaded: AtomicBool, playing: AtomicBool,
     scheduling: AtomicU32,
+    position: AtomicU64,
 }
 
 impl Diagnostics {
+    pub fn publish_position(&self, position: u64) { self.position.store(position, Ordering::Release); }
+    pub fn position(&self) -> u64 { self.position.load(Ordering::Acquire) }
     pub fn configure(&self, rate: f32, block: u32) {
         self.rate.store(rate.to_bits(), Ordering::Relaxed);
         self.block.store(block, Ordering::Relaxed);
@@ -60,6 +63,23 @@ impl Diagnostics {
     pub fn host(&self) -> (f32, u32) {
         (f32::from_bits(self.rate.load(Ordering::Relaxed)), self.block.load(Ordering::Relaxed))
     }
+}
+
+/// Before a new firmware has produced its first DMA half, elapsed host time is
+/// boot silence, not missing synthesis. Supply that silence on the producer so
+/// the bounded consumer can retire startup debt without needing to emulate the
+/// entire boot delay faster than real time. Never use this after audio starts.
+/// A full ring returns immediately; the worker retries without advancing the
+/// guest or losing its first DMA buffer. Callback work remains unchanged.
+pub fn prime_startup(made: &mut u64, position: u64, lead: usize,
+                     mut push: impl FnMut([f32; 2]) -> bool) -> bool {
+    let target = position.saturating_add(lead as u64);
+    for _ in 0..16384 {
+        if *made >= target { return true; }
+        if !push([0.0; 2]) { return false; }
+        *made = made.saturating_add(1);
+    }
+    *made >= target
 }
 
 #[derive(Default)]
@@ -186,8 +206,70 @@ mod tests {
     }
 
     #[test]
+    fn boot_silence_recovers_even_when_active_production_is_only_realtime() {
+        // 150 ms without a DMA frame, then exactly 1x audio production. No OS
+        // clock or fast test machine can conceal the startup-debt failure here.
+        for host_size in [64, 512] {
+            let ratio = 44100.0 / 48000.0;
+            let lead = lead_for(ratio, host_size as u32, Reserve::Safe).unwrap();
+            let simulate = |pad: bool| {
+                let (mut tx, mut rx) = rtrb::RingBuffer::new(16384);
+                let mut playback = Playback::default();
+                let mut made = 0u64; let mut generated = 0u64;
+                let mut left = vec![0.0; host_size]; let mut right = left.clone();
+                let mut steady_missing = 0; let mut audible = 0;
+                let blocks = 96000 / host_size;
+                let boot_blocks = 7200 / host_size;
+                for block in 0..blocks {
+                    if pad && block <= boot_blocks {
+                        assert!(prime_startup(&mut made, playback.position, lead, |f| tx.push(f).is_ok()));
+                    }
+                    if block >= boot_blocks {
+                        let next = (((block - boot_blocks + 1) * host_size) as f64 * ratio).floor() as u64;
+                        for _ in generated..next { tx.push([0.25, -0.25]).unwrap(); made += 1; }
+                        generated = next;
+                    }
+                    let missing = playback.render(&mut [&mut left, &mut right], ratio, || rx.pop().ok());
+                    if block * host_size >= 48000 {
+                        steady_missing += missing;
+                        audible += left.iter().filter(|&&s| s > 0.2).count();
+                    }
+                }
+                (steady_missing, audible, playback.debt)
+            };
+            let unprimed = simulate(false);
+            assert!(unprimed.0 > 43000 && unprimed.1 == 0 && unprimed.2 > 6000, "{unprimed:?}");
+            assert_eq!(simulate(true), (0, 48000 / host_size * host_size, 0));
+        }
+    }
+
+    #[test]
+    fn startup_padding_stops_at_capacity_and_preserves_the_producer_cursor() {
+        let (mut tx, mut rx) = rtrb::RingBuffer::new(64);
+        let mut made = 10;
+        assert!(!prime_startup(&mut made, 1_000_000, 1083, |f| tx.push(f).is_ok()));
+        assert_eq!(made, 74);
+        for _ in 0..64 { assert_eq!(rx.pop().unwrap(), [0.0; 2]); }
+        let mut calls = 0;
+        assert!(!prime_startup(&mut made, 1_000_000, 1083, |_| { calls += 1; true }));
+        assert_eq!(calls, 16384);
+        assert_eq!(made, 74 + 16384);
+        assert!(prime_startup(&mut made, 0, 1083, |_| panic!("already ahead")));
+    }
+
+    #[test]
     #[ignore = "Opt-in wall-clock diagnostic: real X0X, 48 kHz, 512-sample callbacks"]
     fn realtime_x0x_48k_512() {
+        realtime_x0x(512);
+    }
+
+    #[test]
+    #[ignore = "Opt-in wall-clock diagnostic: real X0X, user's 48 kHz / 64-sample configuration"]
+    fn realtime_x0x_48k_64() {
+        realtime_x0x(64);
+    }
+
+    fn realtime_x0x(block_size: usize) {
         use crate::{engine::{self, Cmd, Shared, View}, Fm1Params};
         use std::{sync::{mpsc, Arc, Mutex, atomic::Ordering}, time::{Duration, Instant}};
         // Real audio hosts use audio-priority callbacks. The synthetic host
@@ -205,12 +287,14 @@ mod tests {
             lcd: vec![0; 240 * 240], leds: [0.0; 41], pads: [0; 16], board: fm1_soc::Board::Fm1,
             booted: false, halted: false, speed: 0.0, starved: 0, late: 0 }), quit: Default::default() });
         let params = Arc::new(Fm1Params::default());
+        params.audio_diagnostics.configure(48000.0, block_size as u32);
         let (cmd, commands) = mpsc::channel();
         let (mut midi, midi_rx) = rtrb::RingBuffer::new(4096);
         let (audio_tx, mut audio) = rtrb::RingBuffer::new(16384);
         let worker_shared = shared.clone(); let worker_params = params.clone();
         let worker = std::thread::spawn(move || engine::run(worker_shared, worker_params, commands, midi_rx, audio_tx));
-        let lead = std::env::var("FM1_REALTIME_LEAD").ok().and_then(|s| s.parse().ok()).unwrap_or(1495);
+        let lead = std::env::var("FM1_REALTIME_LEAD").ok().and_then(|s| s.parse().ok())
+            .unwrap_or_else(|| lead_for(44100.0 / 48000.0, block_size as u32, Reserve::Safe).unwrap());
         cmd.send(Cmd::Lead(lead)).unwrap();
         let (reply, answer) = mpsc::channel();
         cmd.send(Cmd::Load { firmware, sectors: Vec::new(), reply }).unwrap();
@@ -220,13 +304,15 @@ mod tests {
             panic!("X0X boot failed: {boot:?}");
         }
         let mut playback = Playback::default();
-        let mut left = [0.0; 512]; let mut right = [0.0; 512];
+        let mut left = vec![0.0; block_size]; let mut right = left.clone();
         let ratio = 44100.0 / 48000.0;
         let started = Instant::now(); let mut startup_missed = 0; let mut steady_missed = 0;
         let mut max_callback = Duration::ZERO; let mut max_host_late = Duration::ZERO; let mut peak = 0.0f32;
         let legacy = std::env::var_os("FM1_REALTIME_LEGACY").is_some();
-        for block in 0..1125u32 {
-            let deadline = started + Duration::from_secs_f64(block as f64 * 512.0 / 48000.0);
+        for block in 0..576000 / block_size {
+            let host_frame = block * block_size;
+            let contains = |frame| host_frame <= frame && frame < host_frame + block_size;
+            let deadline = started + Duration::from_secs_f64(host_frame as f64 / 48000.0);
             // A real host calls from its audio driver, not a coalesced sleep
             // timer. Darwin CI can oversleep nanosleep by tens of milliseconds,
             // making this fake host burst many callbacks and starve any queue.
@@ -234,16 +320,17 @@ mod tests {
             // the shipped callback/worker do not busy-wait.
             while Instant::now() < deadline { std::thread::yield_now(); }
             max_host_late = max_host_late.max(Instant::now().saturating_duration_since(deadline));
-            if block == 188 { cmd.send(Cmd::Key { id: 12, down: true }).unwrap(); }
-            if block == 198 { cmd.send(Cmd::Key { id: 12, down: false }).unwrap(); }
-            if block == 282 || block == 750 {
-                cmd.send(Cmd::Key { id: 26, down: block == 282 }).unwrap();
+            if contains(188 * 512) { cmd.send(Cmd::Key { id: 12, down: true }).unwrap(); }
+            if contains(198 * 512) { cmd.send(Cmd::Key { id: 12, down: false }).unwrap(); }
+            if contains(282 * 512) || contains(750 * 512) {
+                let down = contains(282 * 512);
+                cmd.send(Cmd::Key { id: 26, down }).unwrap();
                 for channel in 0..16 {
                     midi.push(engine::Midi { frame: playback.position + lead as u64,
-                        bytes: [(if block == 282 { 0x90 } else { 0x80 }) | channel, 60, 100], len: 3 }).unwrap();
+                        bytes: [(if down { 0x90 } else { 0x80 }) | channel, 60, 100], len: 3 }).unwrap();
                 }
             }
-            if block >= 282 && block % 12 == 0 {
+            if host_frame >= 282 * 512 && host_frame % (12 * 512) == 0 {
                 // Default X0X GM inputs: 909 on channel 10, 808 on channel 11.
                 // Keep exercising voices instead of timing a silent/idle synth.
                 for (channel, note) in [(9, 36), (9, 42), (10, 42), (10, 38)] {
@@ -255,13 +342,14 @@ mod tests {
             let missed = if legacy {
                 playback.render_with_budget(&mut [&mut left, &mut right], ratio, || audio.pop().ok(), 16384)
             } else { playback.render(&mut [&mut left, &mut right], ratio, || audio.pop().ok()) };
+            params.audio_diagnostics.publish_position(playback.position);
             max_callback = max_callback.max(call.elapsed());
-            if block < 188 { startup_missed += missed; } else { steady_missed += missed; }
+            if host_frame < 188 * 512 { startup_missed += missed; } else { steady_missed += missed; }
             for &sample in left.iter().chain(&right) { assert!(sample.is_finite()); peak = peak.max(sample.abs()); }
         }
         shared.quit.store(true, Ordering::Relaxed); worker.join().unwrap();
         let view = shared.view.lock().unwrap();
-        eprintln!("REALTIME X0X 48k/512 lead={lead} legacy={legacy}: startup_missing={startup_missed}, steady_missing={steady_missed}, debt={}, position={}, callback_max_us={}, host_late_max_us={}, engine_speed={:.3}, peak={peak:.5}, halted={}",
+        eprintln!("REALTIME X0X 48k/{block_size} lead={lead} legacy={legacy}: startup_missing={startup_missed}, steady_missing={steady_missed}, debt={}, position={}, callback_max_us={}, host_late_max_us={}, engine_speed={:.3}, peak={peak:.5}, halted={}",
             playback.debt, playback.position, max_callback.as_micros(), max_host_late.as_micros(), view.speed, view.halted);
         assert!(view.booted && !view.halted && peak > 0.0001);
         assert_eq!(steady_missed, 0, "steady playback missed frames; inspect diagnostic timing/load");
