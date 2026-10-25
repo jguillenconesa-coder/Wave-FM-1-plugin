@@ -9,14 +9,13 @@ repositorio no se presenta como autora de ese trabajo; consulta
 
 ## Descargar e instalar
 
-**Comparación en revisión (2026-10-25):** el usuario comunica pérdidas con
-X0X y un posible empeoramiento de DUB-1 respecto a 0.2.5. Después ha observado
-que Live estaba a **64 muestras**, frente a las 512 comunicadas anteriormente,
-y está repitiendo la prueba. No se considera demostrada una regresión de DUB
-hasta comparar ambas versiones con los mismos ajustes. 0.2.7 sigue siendo una
-preview experimental y no se da por resuelto X0X. El
-[instalador Windows 0.2.5](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.5-preview.3/Wave-FM-1-0.2.5-Windows-x64-Setup.exe)
-se conserva como referencia anterior; cierra Live antes de cambiar de versión.
+**Estado de la investigación (2026-10-25):** el usuario ha confirmado que DUB
+funciona mayormente al volver de 64 a 512 muestras, pero comunica bloqueos después
+de un error. No se estableció una regresión al comparar buffers distintos.
+Se está validando 0.2.8 con recuperación de audio, knobs limitados y biblioteca
+actualizada. Los enlaces siguientes conservan la última preview publicada hasta
+que termine esa validación; [0.2.5](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/tag/v0.2.5-preview.3)
+permanece disponible como referencia anterior.
 
 - [Instalador Windows 0.2.7](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.7-preview.2/Wave-FM-1-0.2.7-Windows-x64-Setup.exe)
 - [ZIP portátil Windows](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/releases/download/v0.2.7-preview.2/Wave-FM-1-0.2.7-Windows-x64-Portable.zip)
@@ -44,6 +43,13 @@ firmwares. Prueba la actualización en un Set vacío con tus proyectos
 importantes cerrados y respaldados; no se garantiza riesgo cero.
 
 ## Firmwares y aspecto
+
+La fuente de **0.2.8**, pendiente de publicación validada, añade cinco versiones
+(Skiff 2.0.1, DUB-1 1.3.0, Chipbox 1.3.1-stable, TRIBE 0.3-beta y GammaWave
+1.1.1-GW) y SIDOU 0.4.0. Conserva todos los paquetes anteriores. El ratón y MIDI
+comparten una referencia 0–127 guardada; Shift afina y Alt permite giros sin fin.
+La recuperación tras una interrupción larga conserva el firmware y sus patches.
+
 
 **0.2.6** declara **cero latencia sin firmware** y añade **Audio buffer**:
 Low latency, Balanced y Safe / legacy. A 48 kHz / bloque máximo 512, sus latencias
@@ -86,9 +92,9 @@ Desde **0.2.3**, los indicadores de los siete encoders del panel, incluidos
 automatización. Se recuperan al reabrir la ventana. El dibujo usa un recorrido
 de 270°; la función musical de cada encoder depende del firmware.
 
-**Community firmwares…** permite buscar entre 83 referencias conocidas,
+**Community firmwares…** permite buscar entre 96 referencias conocidas,
 consultar novedades en Firmware Hub y guardar un `.fwsc` sin actualizar un Set
-automáticamente. Incluye enlaces alternativos a **64 publicaciones originales
+automáticamente. Incluye enlaces alternativos a **78 publicaciones originales
 de GitHub**, con hash de referencia. Los paquetes externos no forman parte
 del instalador ni equivalen a firmwares completamente verificados. Consulta
 [el explorador, las descargas y sus límites](docs/COMMUNITY_BROWSER.md).
@@ -98,7 +104,7 @@ original del autor y muestra la ruta guardada o el error. Corrige la descarga de
 Melodee, bloqueada en el enlace del Hub. **Download in browser** permite guardar
 manualmente desde el navegador; después se puede abrir el archivo en el plugin.
 
-El menú **Firmware…** incluye **23 firmwares sin conexión**, con versiones
+El menú **Firmware…** incluye **29 versiones de 24 instrumentos sin conexión**, con versiones
 fijadas y pruebas reales de arranque, pantalla y audio. Entre ellos: Felucca,
 X0X, AMB-1, FoMni-1, Polly, Skiff, DUB-1, Chipbox, Frodhes y Niagara Drift.
 Consulta [la lista completa, autores, licencias y fuentes](firmware/README.md)

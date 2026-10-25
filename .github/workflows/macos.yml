@@ -52,6 +52,17 @@ jobs:
           set -euo pipefail
           cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --lib audio_timing::tests::realtime_x0x_48k_ -j 3 -- --ignored --nocapture --test-threads=1 2>&1 | tee dist/macos/REALTIME_X0X.txt
           cat dist/macos/REALTIME_X0X.txt >> "$GITHUB_STEP_SUMMARY"
+      - name: DUB-1 real-time and forced-stall recovery
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/build/macos-rust
+          MACOSX_DEPLOYMENT_TARGET: '11.0'
+          FM1_REALTIME_DIAGNOSTIC: '1'
+        run: |
+          set -euo pipefail
+          for filter in realtime_dub_48k_both stalled_engine_recovers_dub_and_x0x_both_blocks; do
+            cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --lib "$filter" -j 3 -- --ignored --nocapture --test-threads=1 2>&1 | tee -a dist/macos/RECOVERY.txt
+          done
+          cat dist/macos/RECOVERY.txt >> "$GITHUB_STEP_SUMMARY"
       - name: Official VST3 validation
         run: |
           cmake -S tools/validator -B build/macos-validator -G Ninja -DCMAKE_BUILD_TYPE=Release -DVST3_SDK_ROOT="$PWD/build/macos/cpm/vst3sdk"

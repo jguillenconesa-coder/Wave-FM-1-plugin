@@ -279,7 +279,7 @@ mod transport {
         let null = std::ptr::null();
         let start = std::time::Instant::now();
         unsafe {
-            let session = Owned::new(WinHttpOpen(wide("Wave-FM-1/0.2.7").as_ptr(), 4, null, null, 0))?;
+            let session = Owned::new(WinHttpOpen(wide("Wave-FM-1/0.2.8").as_ptr(), 4, null, null, 0))?;
             ok(WinHttpSetTimeouts(session.0, 5000, 5000, 5000, 5000))?;
             let connection = Owned::new(WinHttpConnect(session.0, wide(host).as_ptr(), 443, 0))?;
             let request = Owned::new(WinHttpOpenRequest(connection.0, wide("GET").as_ptr(), wide(&format!("/{path}")).as_ptr(), null, null, std::ptr::null(), 0x00800000))?;
@@ -362,7 +362,7 @@ mod tests {
         assert_eq!(entries[0].author, "Original author");
         assert_eq!(entries[0].version, "1");
         assert!(downloadable(&entries[0]));
-        assert_eq!(offline().len(), 83);
+        assert_eq!(offline().len(), 96);
     }
     #[test]
     fn malformed_large_and_duplicate_catalogues_are_rejected() {
@@ -455,7 +455,7 @@ mod tests {
     fn pinned_author_alternatives_have_valid_addresses_and_hashes() {
         let entries = offline();
         let alternatives: Vec<_> = entries.iter().filter_map(alternative).collect();
-        assert_eq!(alternatives.len(), 64);
+        assert_eq!(alternatives.len(), 78);
         for entry in alternatives {
             assert!(entry.package.starts_with("https://github.com/"));
             assert_eq!(entry.alternate_sha256.len(), 64);

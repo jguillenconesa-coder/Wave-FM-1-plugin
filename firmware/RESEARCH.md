@@ -1,4 +1,32 @@
-# Registro de investigación de firmwares · 23-10-2026
+# Revisión de firmwares · 25-10-2026
+
+El índice actualizado de [fm1-emu](https://github.com/joakimeriksson/fm1-emu/blob/ba11e2e68f3934a2c5c98a0eb55607387e262a49/web/firmwares.json)
+aporta **96 referencias**. Se revisaron las publicaciones originales de los 23
+instrumentos incluidos y los candidatos nuevos/cambiados. El explorador ofrece
+**78 enlaces de autor**, con versión y SHA-256 fijados. No es un inventario
+exhaustivo del Hub: su acceso directo sigue bloqueado en este entorno.
+
+Se incorporan **cinco versiones nuevas** (Skiff 2.0.1, DUB-1 1.3.0, Chipbox
+1.3.1-stable, TRIBE 0.3-beta y GammaWave 1.1.1-GW) y **SIDOU 0.4.0** como nuevo
+instrumento. Los 23 paquetes anteriores se conservan. Las seis incorporaciones
+tienen avisos originales, fuentes correspondientes y hashes en el manifiesto.
+SIDOU incluye el submódulo libresidfp, con sus licencias y autores.
+
+Los ocho candidatos descargados (los seis anteriores, MONK 0.9.1 y LOOM 0.7)
+pasaron arranque, pantalla y ocho segundos de audio finito en la prueba inicial.
+MONK y LOOM **no se empaquetan**: sigue pendiente aclarar, respectivamente,
+recursos gráficos y loops incluidos. Permanecen disponibles como enlaces a sus
+autores. El registro [de esta revisión](../docs/validation/firmware-review-2026-10-25.json)
+identifica paquetes y alcance de las pruebas. No se atribuyen resultados anteriores
+a un archivo nuevo cuyo hash cambie. Una comprobación básica no valida USB/BLE,
+todas las funciones, el rendimiento a tiempo real ni sesiones largas de Live.
+
+Los otros nuevos identificadores del índice son Clipper, Carnac, Drift, Frasil,
+Tessera, Del Rio, FM1 Dock, Hera, Golana DZ y Modelar. Se muestran con su autor y
+sus enlaces cuando existe un paquete FM-1 inequívoco; su redistribución no se da
+por autorizada por figurar en el índice.
+
+## Revisión anterior conservada · 23-10-2026
 
 Se localizaron **83 candidatos** en `web/firmwares.json` del emulador fijado
 `72adb810c4409c4b7302ca56906c05083834faee`, que combina un listado del Hub y

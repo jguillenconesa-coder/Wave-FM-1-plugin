@@ -34,11 +34,20 @@ impl EncoderDisplay {
         changed
     }
 
-    /// Mouse operation remains endless. The next host change reanchors the
-    /// indicator to its absolute MIDI reference without changing audio routing.
+    /// Explicit relative/navigation gesture (Alt). Ordinary mouse turns use
+    /// turn_bounded and the same saved parameter as host/controller changes.
     pub fn turn(&mut self, i: usize, clicks: i32) {
         self.angles[i] = (self.angles[i] + (clicks as f32 * 18.0).to_radians())
             .rem_euclid(std::f32::consts::TAU);
+    }
+
+    pub fn turn_bounded(&mut self, i: usize, clicks: i32) -> (i32, i32) {
+        let positions = self.positions.get_or_insert([64; 7]);
+        let previous = positions[i];
+        let target = previous.saturating_add(clicks).clamp(0, 127);
+        positions[i] = target;
+        self.angles[i] = (-135.0 + 270.0 * target as f32 / 127.0).to_radians();
+        (target, target - previous)
     }
 }
 
@@ -200,6 +209,29 @@ impl Routing {
 mod tests {
     use super::*;
     fn initial() -> Snapshot { PanelParams::default().snapshot().unwrap() }
+
+    #[test]
+    fn mouse_limits_do_not_wrap_or_accumulate_overshoot_and_share_saved_references() {
+        let mut display = EncoderDisplay::default();
+        display.sync([64; 7]);
+        for i in 0..7 {
+            assert_eq!(display.turn_bounded(i, i32::MAX), (127, 63));
+            assert_eq!(display.turn_bounded(i, 1000), (127, 0));
+            assert!((display.angles[i].to_degrees() - 135.0).abs() < 0.001);
+            assert_eq!(display.turn_bounded(i, -1), (126, -1));
+            assert_eq!(display.turn_bounded(i, i32::MIN), (0, -126));
+            assert_eq!(display.turn_bounded(i, -1000), (0, 0));
+            assert!((display.angles[i].to_degrees() + 135.0).abs() < 0.001);
+            assert_eq!(display.turn_bounded(i, 1), (1, 1));
+        }
+        // These are the host parameter values written by the mouse setter;
+        // reopening reads those same saved values and emits no engine event.
+        let mut reopened = EncoderDisplay::default();
+        reopened.sync([1; 7]);
+        assert_eq!(reopened.angles, display.angles);
+        display.sync([99; 7]); // controller takes over from the current reference
+        assert_eq!(display.turn_bounded(3, 1), (100, 1));
+    }
 
     #[test]
     fn host_knobs_repaint_without_mouse_events_and_reopen_at_the_saved_reference() {

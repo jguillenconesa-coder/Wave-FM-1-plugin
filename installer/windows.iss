@@ -1,6 +1,6 @@
 ; Standard VST3 installation. Only this product's bundle and uninstall key.
 #ifndef AppVersion
-  #define AppVersion "0.2.7"
+  #define AppVersion "0.2.8"
 #endif
 [Setup]
 AppId={{E45CB310-7AAF-4D78-9093-FAC036548235}

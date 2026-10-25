@@ -4,7 +4,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / ".deps" / "fm1-emu"
-REVISION = "72adb810c4409c4b7302ca56906c05083834faee"
+REVISION = "ba11e2e68f3934a2c5c98a0eb55607387e262a49"
 URL = "https://github.com/joakimeriksson/fm1-emu.git"
 
 

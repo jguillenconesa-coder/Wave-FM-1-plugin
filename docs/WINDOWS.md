@@ -1,4 +1,4 @@
-# Wave FM-1 Preview 0.2.7 · Windows
+# Wave FM-1 Preview 0.2.8 · Windows
 
 VST3 de 64 bits para Windows 10/11. Conserva la identidad VST3 de la preview
 0.1.0 para recuperar sus proyectos. El usuario confirmó que la versión anterior
@@ -11,7 +11,7 @@ funciona en Live. Consulta las pruebas concretas de esta versión en
 2. Si tienes la preview **0.1.0**, desinstálala desde **Agregar o quitar programas**.
    Conserva tus Sets y exportaciones. El nuevo instalador detecta esa instalación
    y pide retirarla para evitar dos copias del mismo VST3.
-3. Ejecuta `Wave-FM-1-0.2.7-Windows-x64-Setup.exe`.
+3. Ejecuta `Wave-FM-1-0.2.8-Windows-x64-Setup.exe`.
 4. La ruta predeterminada es
    `C:\Program Files\Common Files\VST3\Wave FM-1.vst3`. Requiere permisos de
    administrador. Puedes cambiarla manteniendo el nombre final `Wave FM-1.vst3`.
@@ -38,7 +38,7 @@ La vista **MIDI / Live** identifica controles asignables con etiquetas claras.
 **Community firmwares…** permite consultar el Hub y descargar paquetes de sus
 autores, con alternativas GitHub: [uso y límites](COMMUNITY_BROWSER.md).
 
-**Firmware…** incluye [23 paquetes originales](../firmware/README.md), sin
+**Firmware…** incluye [29 versiones originales](../firmware/README.md), sin
 conexión y con tamaño y SHA-256 comprobados al abrirlos. **Open firmware / save
 file…** y **Load firmware / save…** conservan la carga manual `.fwsc` y `.fm1save`.
 **Export save…** exporta el estado portátil.

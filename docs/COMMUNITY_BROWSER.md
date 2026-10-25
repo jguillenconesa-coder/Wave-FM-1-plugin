@@ -1,16 +1,16 @@
 # Explorar y descargar firmwares comunitarios
 
 **Community firmwares…** abre un explorador separado del menú Firmware.
-El menú Firmware sigue incluyendo los **23 paquetes con fuentes y avisos
+El menú Firmware sigue incluyendo los **29 versiones con fuentes y avisos
 completos**, probados con arranque, pantalla y audio. El explorador contiene
-**83 referencias** del índice de fm1-emu de Joakim Eriksson (MIT), con el autor
+**96 referencias** del índice de fm1-emu de Joakim Eriksson (MIT), con el autor
 y el repositorio original de cada proyecto. No es una copia exhaustiva y en
 tiempo real del Hub.
 
-En esta revisión, **62 de las 64 descargas alternativas** pasaron la prueba
+En la revisión histórica del 23-10-2026, **62 de 64 descargas alternativas** pasaron la prueba
 básica de arranque, LCD y ocho segundos de audio. BEETLE y PIGEON arrancaron
 pero quedaron en silencio con la secuencia genérica. El explorador distingue
-estos resultados: [informe, versiones y hashes](COMMUNITY_COMPATIBILITY.md).
+los resultados vinculados al hash comprobado: [informe, versiones y hashes](COMMUNITY_COMPATIBILITY.md).
 
 - **Check Hub for new firmwares** consulta
   `https://thefirmwarehub.com/catalog.json` y muestra cuántos nombres/versiones
@@ -61,3 +61,7 @@ relicencian. Revisa las condiciones del autor, especialmente las de muestras,
 presets y gráficos, antes de compartirlos. El plugin sigue aceptando archivos
 propios mediante **Load firmware / save…**. Un firmware se ejecuta dentro del
 DAW, sin sandbox; carga solo archivos de confianza.
+
+Revisión 25-10-2026: el encabezado muestra la versión de la descarga preferida
+del autor; si difiere de la referencia del Hub, ambas se identifican. Los
+resultados básicos solo se conservan cuando coincide el hash del paquete.

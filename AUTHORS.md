@@ -17,7 +17,7 @@ archivos originales siguen siendo las que constan en sus avisos.
 - **Joakim Eriksson y colaboradores**: fm1-emu, emulación de CPU/SoC, motor de
   instrumento, carga de firmware, plugin CLAP y panel interactivo original, MIT.
   `desktop/README.md` identifica la revisión y las adaptaciones de esta distribución.
-- **Catálogo comunitario**: las 83 referencias iniciales proceden del índice de
+- **Catálogo comunitario**: las 96 referencias revisadas el 25-10-2026 proceden del índice de
   fm1-emu de Joakim Eriksson (MIT), que combina el Firmware Hub de zvenson con
   referencias propias. `firmware/community-index.json` conserva los autores y
   repositorios de cada firmware. Los enlaces adicionales apuntan a publicaciones
@@ -29,7 +29,7 @@ archivos originales siguen siendo las que constan en sus avisos.
 - **M-VAVE**: fabricante y diseño del instrumento FM-1. Las seis paletas se
   dibujan a partir de la referencia de acabados proporcionada; no se distribuye
   la fotografía. Las marcas no pertenecen a este repositorio.
-- **Autores de los 23 firmwares y de sus componentes**: nombres, versiones,
+- **Autores de las 29 versiones de firmware y de sus componentes**: nombres, versiones,
   repositorios y licencias en [firmware/README.md](https://github.com/jguillenconesa-coder/Wave-FM-1-plugin/blob/main/firmware/README.md).
   Los avisos íntegros en `firmware/licenses/<id>/` conservan también los créditos
   de motores DSP, muestras, presets, SDK, fuentes y otros recursos heredados.

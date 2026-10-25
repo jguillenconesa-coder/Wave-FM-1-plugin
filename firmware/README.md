@@ -1,12 +1,18 @@
 # Firmwares incluidos y procedencia
 
-Catálogo sin conexión de Wave FM-1 Preview 0.2.0. Los archivos originales se
+Catálogo sin conexión de Wave FM-1 Preview 0.2.8. Los archivos originales se
 distribuyen como programas separados, sin modificaciones, junto a sus fuentes
 y avisos. No se descarga ni ejecuta código del sistema operativo al elegirlos.
 El emulador interpreta el firmware dentro del proceso del host; no es un sandbox.
 
 | Firmware | Autor | Uso | Licencia de esta versión |
 | --- | --- | --- | --- |
+| [Skiff 2.0.1](https://github.com/illuminus5/skiff/releases/tag/v2.0.1) | illuminus5; Leo Kuroshita / Hügelton Instruments and contributors | Six-track multi-engine groovebox · updated author release | GPL-3.0-only |
+| [DUB-1 1.3.0](https://github.com/sbegueria/fm1-dub/releases/tag/v1.3.0) | Santiago Beguería; Charles Vestal and contributors | Generative dub techno instrument · updated author release | GPL-3.0-only |
+| [Chipbox 1.3.1-stable](https://github.com/pbarilla/chipbox/releases/tag/v1.3.1-stable) | Pasquale Barilla; upstream contributors credited in LICENSING.md | A chiptune groovebox with replicas of the NES, Game Boy and Sega Master System sound chips, in three views: RACK for the 16 steps of a page, CHIP to set up each channel, SONG to chain the pages into a song. · updated author release | GPL-3.0-only |
+| [TRIBE 0.3-beta](https://github.com/apiel/fm1-tribe/releases/tag/v0.3-beta) | apiel; upstream platform and component contributors | A ten-track groovebox built on X0X where any engine plays on any track: kicks, 909 and 808 voices, a 303, sixteen clips a track and scatter effects. · updated author release | GPL-3.0-only |
+| [Pocket GammaWave 1.1.1-GW](https://github.com/fvalente/GammaWave-FM1/releases/tag/v1.1.1-GW) | ShadowTune (GammaWave Audio); upstream contributors credited in LICENSING.md | The companion to the GammaWave desktop synth: four industrial distortions, vowel and scream filters, an FFT spectrogram, a four-track tape deck screen and a song generator with 49 genres, trap and drill too. · updated author release | GPL-3.0-only |
+| [SIDOU 0.4.0](https://github.com/dsablic/sidou/releases/tag/v0.4.0) | dsablic and SIDOU contributors; Lasse Öörni and GoatTracker contributors | SID synthesizer and song player for FM-1 | GPL-3.0-only (SIDOU code GPL-3.0-or-later; linked Felucca GPL-3.0-only) |
 | [Felucca 1.6.1](https://github.com/hugelton/Felucca/releases/tag/v1.6.1) | Leo Kuroshita / Hügelton Instruments | Multi-engine synthesizer and four-track sequencer | GPL-3.0-only |
 | [X0X 1.1.0](https://github.com/charlesvestal/fm1-x0x/releases/tag/v1.1.0) | Charles Vestal and contributors | 303 bass, 808/909 drums and breakbeat groovebox | GPL-3.0-only |
 | [AMB-1 1.3](https://github.com/charlesvestal/fm1-amb/releases/tag/v1.3) | Charles Vestal and contributors | Generative ambient instrument | MPL-2.0 |
@@ -37,6 +43,21 @@ tipografías y SDK se conservan en `licenses/<id>/`. Consulta sus `LICENSING.md`
 y `CREDITS.md`, que acreditan también a los autores de componentes anteriores.
 Estos programas no son productos oficiales ni están avalados por M-VAVE,
 Ableton, Roland o Suzuki. Sus marcas corresponden a sus propietarios.
+
+## Revisión del 25-10-2026
+
+Se añaden Skiff 2.0.1, DUB-1 1.3.0, Chipbox 1.3.1-stable,
+TRIBE 0.3-beta y Pocket GammaWave 1.1.1-GW, además de SIDOU 0.4.0.
+Se conservan las 23 versiones anteriores: **29 versiones de 24 instrumentos**.
+La actualización no sustituye el firmware guardado dentro de un proyecto.
+El menú permite seguir usando, por ejemplo, DUB-1 1.2.0 o Skiff 1.4.
+
+SIDOU conserva los créditos de dsablic, Lasse Öörni/GoatTracker y sus componentes.
+Su archivo de fuentes incluye el submódulo libresidfp en la revisión exacta del
+manifiesto. Su código propio es GPL-3.0-or-later; el conjunto enlazado con Felucca
+se distribuye bajo GPL-3.0-only. No se incluye Exomizer.
+MONK y LOOM quedan como referencias externas mientras se aclaran sus recursos;
+una prueba de sonido no sustituye los permisos de redistribución.
 
 ## Fuentes completas
 
@@ -80,6 +101,6 @@ The Firmware Hub y ambas búsquedas de YouTube aportadas por el usuario devolvie
 HTTP 403 desde el entorno. El catálogo del emulador sirvió para localizar
 candidatos del Hub; las comprobaciones se hicieron sobre publicaciones originales.
 La cobertura y los motivos individuales de exclusión o revisión pendiente están en
-[RESEARCH.md](RESEARCH.md). No se afirma que estos 23 paquetes sean todos los
+[RESEARCH.md](RESEARCH.md). No se afirma que estas 29 versiones sean todos los
 firmwares actuales del Hub. No se incluyen firmwares propietarios ni versiones
 cuya redistribución no se haya podido justificar.

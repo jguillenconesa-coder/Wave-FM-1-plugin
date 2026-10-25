@@ -109,3 +109,16 @@ bloque real; no oculta faltas posteriores ni modifica el tempo. X0X se comprueba
 ahora a 48 kHz / 64 y 512 muestras. Engine y Audio late, por sí solos, no
 establecen que el procesador del usuario sea insuficiente. Los resultados y
 límites de cada paquete están en el registro de validación.
+
+## Recuperación después de un error (0.2.8)
+
+Una interrupción que agota la reserva inicia un acuerdo de pausa entre la cola
+y el emulador. El plugin descarta el audio obsoleto y prepara una nueva reserva
+sin recargar el firmware ni borrar patches. Puede haber un breve silencio durante
+esta operación. El reloj interno del firmware sigue su estado actual; en modo
+DAW se envía Stop/Start para alinear de nuevo el transporte.
+
+**Recoveries** cuenta recuperaciones terminadas; **rebuffering** identifica una
+en curso. **Firmware halted** distingue una parada real del emulador, que no se
+soluciona solo vaciando una cola. Estos datos se incluyen en Copy audio status.
+Un contador de recuperaciones que siga aumentando indica un problema persistente.

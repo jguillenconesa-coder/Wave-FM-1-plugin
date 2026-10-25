@@ -89,12 +89,24 @@ jobs:
             Write-Output "::error title=X0X real-time diagnostic::$Context"
             throw 'Real-time X0X diagnostic failed; inspect timing/load report'
           }
+      - name: DUB-1 real-time and forced-stall recovery
+        shell: pwsh
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/.deps/fm1-emu/crates/fm1-plugin/target
+          RUSTFLAGS: '-C target-feature=+crt-static'
+          FM1_REALTIME_DIAGNOSTIC: '1'
+        run: |
+          foreach ($Filter in @('realtime_dub_48k_both', 'stalled_engine_recovers_dub_and_x0x_both_blocks')) {
+            cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --target x86_64-pc-windows-msvc --lib $Filter -j 2 -- --ignored --nocapture --test-threads=1 2>&1 | Tee-Object -Append dist/RECOVERY.txt
+            if ($LASTEXITCODE -ne 0) { throw 'DUB real-time or forced-stall recovery failed' }
+          }
+          Get-Content dist/RECOVERY.txt >> $env:GITHUB_STEP_SUMMARY
       - name: Official VST3 validation
         shell: pwsh
         run: |
           cmake -S tools/validator -B build/windows-validator -G 'Visual Studio 17 2022' -A x64 "-DVST3_SDK_ROOT=$PWD/build/windows/cpm/vst3sdk"
           if ($LASTEXITCODE -ne 0) { throw 'Validator configuration failed' }
-          cmake --build build/windows-validator --config Release --target validator fm1-latency-check --parallel 2 2>&1 | Tee-Object validator-build.log
+          cmake --build build/windows-validator --config Release --target validator fm1-latency-check fm1-loaded-check --parallel 2 2>&1 | Tee-Object validator-build.log
           if ($LASTEXITCODE -ne 0) { throw 'Validator compilation failed' }
           & build/windows-validator/bin/Release/validator.exe 'dist/VST3/FM-1.vst3' | Tee-Object dist/VALIDATION.txt
           if ($LASTEXITCODE -ne 0) { throw 'VST3 validation failed' }
@@ -105,6 +117,18 @@ jobs:
           & build/windows-validator/Release/fm1-latency-check.exe 'dist/VST3/FM-1.vst3' 2>&1 | Tee-Object dist/EMPTY_LATENCY.txt
           if ($LASTEXITCODE -ne 0) { throw 'Empty VST3 latency check failed' }
           if ((Get-Content dist/EMPTY_LATENCY.txt -Raw) -notmatch 'Result: 9 empty VST3 latency checks passed') { throw 'Missing empty latency results' }
+      - name: Actual loaded VST3 audio with DUB-1 and X0X
+        shell: pwsh
+        run: |
+          foreach ($Firmware in @('dub13', 'x0x')) {
+            python tools/validator/make-loaded-state.py $Firmware "build/$Firmware.state"
+            if ($LASTEXITCODE -ne 0) { throw 'State integrity check failed' }
+            foreach ($Block in @(512, 64)) {
+              & build/windows-validator/Release/fm1-loaded-check.exe 'dist/VST3/FM-1.vst3' "build/$Firmware.state" $Block 12 2>&1 | Tee-Object -Append dist/LOADED_VST3.txt
+              if ($LASTEXITCODE -ne 0) { throw 'Loaded VST3 finite/nonzero audio failed' }
+            }
+          }
+          Get-Content dist/LOADED_VST3.txt >> $env:GITHUB_STEP_SUMMARY
       - name: Report build error context
         if: failure()
         shell: pwsh

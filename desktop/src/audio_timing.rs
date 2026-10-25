@@ -36,11 +36,60 @@ pub struct Diagnostics {
     loaded: AtomicBool, playing: AtomicBool,
     scheduling: AtomicU32,
     position: AtomicU64,
+    ready: AtomicBool,
+    recovery_request: AtomicU64,
+    recovery_paused: AtomicU64,
+    recovery_resume: AtomicU64,
+    recovery_completed: AtomicU64,
+    recovery_base: AtomicU64,
+    recoveries: AtomicU64,
 }
 
 impl Diagnostics {
     pub fn publish_position(&self, position: u64) { self.position.store(position, Ordering::Release); }
     pub fn position(&self) -> u64 { self.position.load(Ordering::Acquire) }
+    pub fn reset_stream(&self) {
+        self.ready.store(false, Ordering::Release);
+        let generation = self.recovery_request.load(Ordering::Acquire);
+        self.recovery_completed.store(generation, Ordering::Release);
+        self.recoveries.store(0, Ordering::Relaxed);
+    }
+    pub fn stream_halted(&self) {
+        self.ready.store(false, Ordering::Release);
+        let generation = self.recovery_request.load(Ordering::Acquire);
+        self.recovery_completed.store(generation, Ordering::Release);
+    }
+    pub fn stream_ready(&self) {
+        self.ready.store(true, Ordering::Release);
+        let generation = self.recovery_request.load(Ordering::Acquire);
+        if self.recovery_resume.load(Ordering::Acquire) == generation
+            && self.recovery_completed.load(Ordering::Acquire) != generation {
+            self.recoveries.fetch_add(1, Ordering::Relaxed);
+            self.recovery_completed.store(generation, Ordering::Release);
+        }
+    }
+    fn request_recovery(&self) -> Option<u64> {
+        let previous = self.recovery_request.load(Ordering::Acquire);
+        if previous != self.recovery_completed.load(Ordering::Acquire) || previous == u64::MAX { return None; }
+        let generation = previous + 1;
+        self.recovery_request.store(generation, Ordering::Release);
+        Some(generation)
+    }
+    /// Called only by the producer at a slice boundary, after its last push.
+    pub fn pending_recovery(&self) -> Option<u64> {
+        let generation = self.recovery_request.load(Ordering::Acquire);
+        (generation != self.recovery_completed.load(Ordering::Acquire)).then_some(generation)
+    }
+    pub fn pause_recovery(&self, generation: u64) {
+        self.ready.store(false, Ordering::Release);
+        self.recovery_paused.store(generation, Ordering::Release);
+    }
+    pub fn recovery_resume(&self, generation: u64) -> Option<u64> {
+        (self.recovery_resume.load(Ordering::Acquire) == generation)
+            .then(|| self.recovery_base.load(Ordering::Acquire))
+    }
+    pub fn recovery_count(&self) -> u64 { self.recoveries.load(Ordering::Relaxed) }
+    pub fn recovering(&self) -> bool { self.pending_recovery().is_some() }
     pub fn configure(&self, rate: f32, block: u32) {
         self.rate.store(rate.to_bits(), Ordering::Relaxed);
         self.block.store(block, Ordering::Relaxed);
@@ -65,10 +114,62 @@ impl Diagnostics {
     }
 }
 
+/// Consumer/producer handshake for an underrun that cannot catch up at 1x.
+/// Only the consumer flushes its ring, after the producer acknowledges a pause.
+/// No waits, command allocations, locks or firmware reloads in the callback.
+#[derive(Default)]
+pub struct Recovery {
+    pending: Option<u64>,
+    waiting_pause: bool,
+    stalled: u64,
+    last_position: u64,
+    last_request: Option<u64>,
+}
+
+impl Recovery {
+    pub fn before_block(&mut self, diagnostics: &Diagnostics, playback: &mut Playback,
+                        audio: Option<&mut rtrb::Consumer<[f32; 2]>>) -> bool {
+        let Some(generation) = self.pending else { return false; };
+        if diagnostics.recovery_completed.load(Ordering::Acquire) == generation {
+            self.pending = None; self.waiting_pause = false;
+            return false;
+        }
+        if !self.waiting_pause || diagnostics.recovery_paused.load(Ordering::Acquire) != generation { return false; }
+        let Some(audio) = audio else { return false; };
+        let available = audio.slots();
+        if let Ok(chunk) = audio.read_chunk(available) { chunk.commit_all(); }
+        else { return false; }
+        playback.debt = 0; playback.cur = [0.0; 2]; playback.next = [0.0; 2];
+        // Keep the host frame counter and fractional rate phase monotonic.
+        diagnostics.recovery_base.store(playback.position, Ordering::Release);
+        diagnostics.recovery_resume.store(generation, Ordering::Release);
+        self.waiting_pause = false;
+        self.stalled = 0;
+        true
+    }
+    pub fn holding(&self) -> bool { self.waiting_pause }
+    pub fn observe(&mut self, diagnostics: &Diagnostics, playback: &Playback,
+                   missed: u64, lead: usize) {
+        let elapsed = playback.position.saturating_sub(self.last_position);
+        self.last_position = playback.position;
+        if missed == 0 { self.stalled = 0; } else { self.stalled = self.stalled.saturating_add(elapsed); }
+        if self.pending.is_some() || !diagnostics.loaded()
+            || !diagnostics.ready.load(Ordering::Acquire) { return; }
+        let cooled = self.last_request.is_none_or(|at| playback.position.saturating_sub(at) >= 44100);
+        if missed > 0 && cooled && (playback.debt >= lead as u64 || self.stalled >= 11025) {
+            if let Some(generation) = diagnostics.request_recovery() {
+                self.pending = Some(generation); self.waiting_pause = true;
+                self.last_request = Some(playback.position);
+            }
+        }
+    }
+}
+
 /// Before a new firmware has produced its first DMA half, elapsed host time is
 /// boot silence, not missing synthesis. Supply that silence on the producer so
 /// the bounded consumer can retire startup debt without needing to emulate the
-/// entire boot delay faster than real time. Never use this after audio starts.
+/// entire boot delay faster than real time. Also used after the paused-producer
+/// handshake establishes a new host audio origin; never during normal rendering.
 /// A full ring returns immediately; the worker retries without advancing the
 /// guest or losing its first DMA buffer. Callback work remains unchanged.
 pub fn prime_startup(made: &mut u64, position: u64, lead: usize,
@@ -379,18 +480,111 @@ mod tests {
     }
 
     #[test]
+    fn a_midstream_stall_recovers_at_exactly_one_x_without_reload_or_timeline_rewind() {
+        for block_size in [64, 512] {
+            let ratio = 44100.0 / 48000.0;
+            let lead = lead_for(ratio, block_size as u32, Reserve::Safe).unwrap();
+            let diagnostics = Diagnostics::default();
+            diagnostics.set_loaded(true); diagnostics.stream_ready();
+            let (mut tx, mut rx) = rtrb::RingBuffer::new(16384);
+            let mut made = lead as u64;
+            for _ in 0..lead { tx.push([0.25, -0.25]).unwrap(); }
+            let mut playback = Playback::default(); let mut recovery = Recovery::default();
+            let mut left = vec![0.0; block_size]; let mut right = left.clone();
+            let mut producer_recovering = None;
+            let mut ready_again = false; let mut audible_after = 0; let mut resumed_callbacks = 0;
+            for block in 0..144000 / block_size {
+                let host_frame = block * block_size;
+                let n = (((block + 1) * block_size) as f64 * ratio).floor() as usize
+                    - ((block * block_size) as f64 * ratio).floor() as usize;
+                // One 50 ms worker scheduling stall, followed by exactly 1x
+                // production. A fast computer cannot hide the stuck-debt case.
+                if !(48000..50400).contains(&host_frame) {
+                    let mut paused = false;
+                    if let Some(generation) = diagnostics.pending_recovery() {
+                        if producer_recovering != Some(generation) {
+                            diagnostics.pause_recovery(generation);
+                            if let Some(base) = diagnostics.recovery_resume(generation) {
+                                made = base; producer_recovering = Some(generation);
+                                assert!(prime_startup(&mut made, diagnostics.position(), lead, |f| tx.push(f).is_ok()));
+                            } else { paused = true; }
+                        }
+                    }
+                    if !paused {
+                        for _ in 0..n { tx.push([0.25, -0.25]).unwrap(); made += 1; }
+                        if producer_recovering.take().is_some() { diagnostics.stream_ready(); ready_again = true; }
+                    }
+                }
+                let previous = playback.position;
+                if recovery.before_block(&diagnostics, &mut playback, Some(&mut rx)) { resumed_callbacks += 1; }
+                assert_eq!(previous, playback.position, "recovery rewound the MIDI/host frame origin");
+                let missed = if recovery.holding() {
+                    playback.render(&mut [&mut left, &mut right], ratio, || None)
+                } else { playback.render(&mut [&mut left, &mut right], ratio, || rx.pop().ok()) };
+                recovery.observe(&diagnostics, &playback, missed, lead);
+                diagnostics.publish_position(playback.position);
+                if host_frame >= 96000 {
+                    audible_after += left.iter().filter(|&&v| v > 0.2).count();
+                    assert_eq!(missed, 0, "the stream remained stuck after recovery");
+                }
+            }
+            assert!(ready_again);
+            assert_eq!(resumed_callbacks, 1);
+            assert_eq!(diagnostics.recovery_count(), 1);
+            assert!(!diagnostics.recovering());
+            assert_eq!(playback.debt, 0);
+            assert!(audible_after >= 47000);
+            assert_eq!(made - playback.position, rx.slots() as u64);
+            assert!((playback.position as f64 - 144000.0 * ratio).abs() < block_size as f64);
+        }
+    }
+
+    #[test]
+    fn recovery_does_not_flush_a_running_producer_and_can_be_cancelled_on_firmware_change() {
+        let diagnostics = Diagnostics::default();
+        diagnostics.set_loaded(true); diagnostics.stream_ready();
+        let (mut tx, mut rx) = rtrb::RingBuffer::new(16);
+        tx.push([0.75; 2]).unwrap();
+        let mut playback = Playback { position: 12000, debt: 4096, ..Default::default() };
+        let mut recovery = Recovery::default();
+        recovery.observe(&diagnostics, &playback, 64, 1083);
+        assert!(recovery.holding());
+        assert!(!recovery.before_block(&diagnostics, &mut playback, Some(&mut rx)));
+        assert_eq!(rx.slots(), 1, "consumer flushed before producer acknowledgement");
+        diagnostics.reset_stream();
+        assert!(!recovery.before_block(&diagnostics, &mut playback, Some(&mut rx)));
+        assert!(!recovery.holding()); assert!(!diagnostics.recovering());
+        assert_eq!(rx.pop().unwrap(), [0.75; 2]);
+        assert_eq!(diagnostics.recovery_count(), 0);
+    }
+
+    #[test]
     #[ignore = "Opt-in wall-clock diagnostic: real X0X, 48 kHz, 512-sample callbacks"]
     fn realtime_x0x_48k_512() {
-        realtime_x0x(512);
+        realtime_firmware(512, "x0x", false);
     }
 
     #[test]
     #[ignore = "Opt-in wall-clock diagnostic: real X0X, user's 48 kHz / 64-sample configuration"]
     fn realtime_x0x_48k_64() {
-        realtime_x0x(64);
+        realtime_firmware(64, "x0x", false);
     }
 
-    fn realtime_x0x(block_size: usize) {
+    #[test]
+    #[ignore = "Opt-in real DUB-1 at 48 kHz, both block sizes"]
+    fn realtime_dub_48k_both() {
+        for block in [512, 64] { realtime_firmware(block, "dub13", false); }
+    }
+
+    #[test]
+    #[ignore = "Opt-in forced 100ms producer stall; must recover without reloading"]
+    fn stalled_engine_recovers_dub_and_x0x_both_blocks() {
+        for id in ["dub13", "x0x"] {
+            for block in [512, 64] { realtime_firmware(block, id, true); }
+        }
+    }
+
+    fn realtime_firmware(block_size: usize, firmware_id: &str, inject_stall: bool) {
         use crate::{engine::{self, Cmd, Shared, View}, Fm1Params};
         use std::{sync::{mpsc, Arc, Mutex, atomic::Ordering}, time::{Duration, Instant}};
         // Real audio hosts use audio-priority callbacks. The synthetic host
@@ -402,7 +596,7 @@ mod tests {
         let _host_scheduling = crate::worker::Scheduling::audio();
         let directory = std::env::var_os("FM1_CATALOGUE_TEST_DIR").map(std::path::PathBuf::from)
             .unwrap_or_else(|| std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../../firmware/catalogue"));
-        let entry = crate::catalogue::ENTRIES.iter().find(|e| e.id == "x0x").unwrap();
+        let entry = crate::catalogue::ENTRIES.iter().find(|e| e.id == firmware_id).unwrap();
         let firmware = crate::catalogue::read_at(&directory, entry).unwrap();
         let shared = Arc::new(Shared { view: Mutex::new(View {
             lcd: vec![0; 240 * 240], leds: [0.0; 41], pads: [0; 16], board: fm1_soc::Board::Fm1,
@@ -422,9 +616,11 @@ mod tests {
         let boot = answer.recv_timeout(Duration::from_secs(20));
         if !matches!(&boot, Ok(Ok(()))) {
             shared.quit.store(true, Ordering::Relaxed); worker.join().unwrap();
-            panic!("X0X boot failed: {boot:?}");
+            panic!("{firmware_id} boot failed: {boot:?}");
         }
         let mut playback = Playback::default();
+        let mut recovery = Recovery::default();
+        let mut fault_missing = 0; let mut recovered_peak = 0.0f32;
         let mut left = vec![0.0; block_size]; let mut right = left.clone();
         let ratio = 44100.0 / 48000.0;
         let started = Instant::now(); let mut startup_missed = 0; let mut steady_missed = 0;
@@ -460,21 +656,39 @@ mod tests {
                         bytes: [0x90 | channel, note, 100], len: 3 }).unwrap();
                 }
             }
+            if inject_stall && contains(240000) { cmd.send(Cmd::TestStall(Duration::from_millis(100))).unwrap(); }
             let call = Instant::now();
-            let missed = if legacy {
+            recovery.before_block(&params.audio_diagnostics, &mut playback, Some(&mut audio));
+            let missed = if recovery.holding() {
+                playback.render(&mut [&mut left, &mut right], ratio, || None)
+            } else if legacy {
                 playback.render_with_budget(&mut [&mut left, &mut right], ratio, || audio.pop().ok(), 16384)
             } else { playback.render(&mut [&mut left, &mut right], ratio, || audio.pop().ok()) };
+            recovery.observe(&params.audio_diagnostics, &playback, missed, lead);
             params.audio_diagnostics.publish_position(playback.position);
             max_callback = max_callback.max(call.elapsed());
-            if host_frame < 188 * 512 { startup_missed += missed; } else { steady_missed += missed; }
+            if host_frame < 188 * 512 { startup_missed += missed; }
+            else if inject_stall && (240000..288000).contains(&host_frame) { fault_missing += missed; }
+            else { steady_missed += missed; }
+            if inject_stall && (288000..360000).contains(&host_frame) {
+                for &sample in &left { recovered_peak = recovered_peak.max(sample.abs()); }
+            }
             for &sample in left.iter().chain(&right) { assert!(sample.is_finite()); peak = peak.max(sample.abs()); }
         }
         shared.quit.store(true, Ordering::Relaxed); worker.join().unwrap();
         host_deadline.report();
         let view = shared.view.lock().unwrap();
-        eprintln!("REALTIME X0X 48k/{block_size} lead={lead} legacy={legacy}: startup_missing={startup_missed}, steady_missing={steady_missed}, debt={}, position={}, callback_max_us={}, host_late_max_us={}, engine_speed={:.3}, peak={peak:.5}, halted={}",
+        eprintln!("REALTIME {firmware_id} 48k/{block_size} lead={lead} legacy={legacy}: startup_missing={startup_missed}, steady_missing={steady_missed}, debt={}, position={}, callback_max_us={}, host_late_max_us={}, engine_speed={:.3}, peak={peak:.5}, halted={}",
             playback.debt, playback.position, max_callback.as_micros(), max_host_late.as_micros(), view.speed, view.halted);
+        eprintln!("RECOVERY {firmware_id} 48k/{block_size}: injected={inject_stall}, fault_missing={fault_missing}, recoveries={}, post_fault_peak={recovered_peak:.5}", params.audio_diagnostics.recovery_count());
         assert!(view.booted && !view.halted && peak > 0.0001);
+        if inject_stall {
+            assert!(fault_missing > 0, "fault did not exercise an underrun");
+            assert_eq!(params.audio_diagnostics.recovery_count(), 1, "must complete exactly one recovery");
+            assert!(recovered_peak > 0.0001, "audio never returned after stall");
+            assert!(!params.audio_diagnostics.recovering());
+            assert_eq!(playback.debt, 0);
+        } else { assert_eq!(params.audio_diagnostics.recovery_count(), 0, "normal playback needed recovery"); }
         assert_eq!(steady_missed, 0, "steady playback missed frames; inspect diagnostic timing/load");
     }
 }

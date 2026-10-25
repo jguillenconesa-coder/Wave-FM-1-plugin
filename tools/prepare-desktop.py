@@ -12,7 +12,7 @@ BASE_HASHES = {
     "crates/fm1-plugin/src/engine.rs": "e5e48026467ace50a5b0bc31517687017115a8f5be04df672b1a406ce2085a12",
     "crates/fm1-plugin/src/editor.rs": "cee9c6c3036c9ab62505ec5bbe36217c9e932c0a4d14bd46bc871642b16e2df3",
     "crates/fm1-live/src/panel.rs": "8ea12e3383cca39ed8ace90bb04f465e6bff174e010a23899fec0e8e5985f931",
-    "crates/fm1-soc/src/periph.rs": "4380f1efd1ba76a5dd6348f7e6899669a0674bee4024cdb0050cd6440a670d9f",
+    "crates/fm1-soc/src/periph.rs": "25503467028aaf65d38f5077ed4474c8464adabf4e04aaebceec577a489b5ed1",
 }
 
 
@@ -65,11 +65,11 @@ def main():
     text = replace_once(text, '''    taken: u64,
     frac: f64,
     cur: [f32; 2],
-    next: [f32; 2],''', '    playback: audio_timing::Playback,')
+    next: [f32; 2],''', '    playback: audio_timing::Playback,\n    recovery: audio_timing::Recovery,')
     text = replace_once(text, '''            taken: 0,
             frac: 0.0,
             cur: [0.0; 2],
-            next: [0.0; 2],''', '            playback: audio_timing::Playback::default(),')
+            next: [0.0; 2],''', '            playback: audio_timing::Playback::default(),\n            recovery: audio_timing::Recovery::default(),')
     init_start = text.index('        let link = self.start();\n        self.ratio = RATE / cfg.sample_rate as f64;')
     init_end = text.index('        true\n', init_start)
     text = text[:init_start] + '''        self.ratio = RATE / cfg.sample_rate as f64;
@@ -96,6 +96,10 @@ def main():
         self.params.audio_diagnostics.set_playing(playing);
         let loaded = self.params.audio_diagnostics.loaded();
         if let Some(latency) = self.update_audio_timing(playing, loaded, self.params.audio_reserve.value()) { ctx.set_latency_samples(latency); }
+        if self.recovery.before_block(&self.params.audio_diagnostics, &mut self.playback, self.audio.as_mut())
+            && self.params.transport_sync.value() == host_sync::Source::Daw {
+            self.musical_clock.delivery_failed();
+        }
         let start = self.playback.position;''')
     text = replace_once(text, 'impl Fm1 {', '''impl Fm1 {
     // Latency changes are explicit, coalesced and applied at block boundaries.
@@ -131,7 +135,10 @@ def main():
     render_end = text.index('        if starved > 0 {', render_start)
     if text[render_start:render_end].count('self.frac = self.frac.min(1.0);') != 1:
         raise SystemExit('Unexpected audio rendering baseline')
-    text = text[:render_start] + '''        let starved = self.playback.render(out, self.ratio, || rx.pop().ok());
+    text = text[:render_start] + '''        let starved = if self.recovery.holding() {
+            self.playback.render(out, self.ratio, || None)
+        } else { self.playback.render(out, self.ratio, || rx.pop().ok()) };
+        self.recovery.observe(&self.params.audio_diagnostics, &self.playback, starved, self.lead);
         self.params.audio_diagnostics.publish_position(self.playback.position);
         let starved = if loaded { starved } else {
             // Empty/restored-empty instances produce silence and need no PDC.
@@ -188,7 +195,7 @@ def main():
     }
 
     fn changed_sectors(&self) -> Sectors {''')
-    text = replace_once(text, '    Lead(usize),', '    Lead(usize),\n    Clear,')
+    text = replace_once(text, '    Lead(usize),', '    Lead(usize),\n    Clear,\n    #[cfg(test)]\n    TestStall(std::time::Duration),')
     text = replace_once(text, '    let mut m: Option<Machine> = None;', '''    let scheduling = crate::worker::Scheduling::audio();
     params.audio_diagnostics.set_scheduling(scheduling.status);
     let mut m: Option<Machine> = None;''')
@@ -203,21 +210,29 @@ def main():
     #[cfg(test)]
     let mut render_max = (0u128, 0usize, 0u128);
     let mut warming = true;
+    let mut recovering = None;
     let mut m: Option<Machine> = None;''')
     text = replace_once(text, '                    active_pkg = m.as_ref().map(|_| pkg);',
-                        '                    controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n                    warming = true;\n                    active_pkg = m.as_ref().map(|_| pkg);')
+                        '                    controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n                    warming = true; recovering = None; params.audio_diagnostics.reset_stream();\n                    active_pkg = m.as_ref().map(|_| pkg);')
     text = replace_once(text, '                    v.booted = m.is_some();', '                    v.booted = m.is_some();\n                    params.audio_diagnostics.set_loaded(m.is_some());\n                    v.late = 0;')
-    text = replace_once(text, '                Cmd::Lead(l) => lead = l,', '''                Cmd::Lead(l) => { lead = l; params.audio_diagnostics.request_lead(l); }
+    text = replace_once(text, '                Cmd::Lead(l) => lead = l,', '''                #[cfg(test)]
+                Cmd::TestStall(duration) => std::thread::sleep(duration),
+                Cmd::Lead(l) => { lead = l; params.audio_diagnostics.request_lead(l); }
                 Cmd::Clear => {
                     cancel_snapshots(&mut pending);
                     m = None; active_pkg = None; due.clear(); saved.clear();
                     params.audio_diagnostics.set_loaded(false);
+                    params.audio_diagnostics.reset_stream(); recovering = None;
                     let mut v = shared.view.lock().unwrap();
                     v.booted = false; v.halted = false; v.speed = 0.0; v.late = 0;
                     v.lcd.fill(0); v.leds.fill(0.0); v.pads.fill(0);
                 }''')
     text = replace_once(text, '        let Some(mm) = m.as_mut().filter(|m| !m.halted) else {', '''        let requested = params.audio_diagnostics.requested_lead();
         if requested > 0 && requested <= 16384 - 512 { lead = requested; }
+        if m.as_ref().is_some_and(|m| m.halted) {
+            params.audio_diagnostics.stream_halted();
+            shared.view.lock().unwrap().halted = true;
+        }
         let Some(mm) = m.as_mut().filter(|m| !m.halted) else {''')
     text = replace_once(text, 'Cmd::Key { id, down } => apply(&mut m, Action::Key { id, down }),',
                         '''Cmd::Key { id, down } => {
@@ -226,7 +241,7 @@ def main():
                     } else { apply(&mut m, Action::Key { id, down }); }
                 }''')
     text = replace_once(text, '                    m = Some(next);',
-                        '                    controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n                    warming = true;\n                    m = Some(next);')
+                        '                    controls = crate::controls::Routing::new(params.controls.snapshot().unwrap_or_default());\n                    warming = true; recovering = None; params.audio_diagnostics.reset_stream();\n                    m = Some(next);')
     text = replace_once(text, '        snapshots(&mut pending, m.as_ref(), &params, Instant::now());', '''        if m.as_ref().is_some_and(|m| m.soc.board == Board::Fm1) {
             if let Some(snapshot) = params.controls.snapshot() {
                 controls.poll(snapshot, Instant::now(), |e| panel_event(&mut m, e));
@@ -259,6 +274,20 @@ def main():
     if text.count('mm.run(20_000);') != 2:
         raise SystemExit('Unexpected worker render-slice baseline')
     text = text.replace('mm.run(20_000);', 'mm.run(render_slice);')
+    text = replace_once(text, '        let fill = rtrb_fill(&out);', '''        if let Some(generation) = params.audio_diagnostics.pending_recovery() {
+            if recovering != Some(generation) {
+                params.audio_diagnostics.pause_recovery(generation);
+                let Some(base) = params.audio_diagnostics.recovery_resume(generation) else {
+                    std::thread::sleep(Duration::from_micros(500));
+                    continue;
+                };
+                let old_end = made.saturating_add((mm.soc.periph.audio.len() / 2) as u64);
+                crate::midi_timing::rebase(&mut mm.soc.periph, old_end, base);
+                mm.soc.periph.audio.clear();
+                made = base; warming = true; recovering = Some(generation);
+            }
+        }
+        let fill = rtrb_fill(&out);''')
     text = replace_once(text, '''        if fill >= lead && last_take.elapsed()''', '''        if !warming && fill >= lead && last_take.elapsed()''')
     text = replace_once(text, '''        } else if fill >= lead {''', '''        } else if !warming && fill >= lead {''')
     text = replace_once(text, '''            let t0 = Instant::now();
@@ -269,6 +298,7 @@ def main():
                 continue;
             }
             let t0 = Instant::now();
+            let was_warming = warming;
             #[cfg(test)]
             let mut published_at = None;
             // Keep the first half pending if padding could not fit last time.
@@ -302,7 +332,8 @@ def main():
             if !crate::audio_timing::publish_dma(&mut mm.soc.periph.audio,
                 &mut made, &mut out, params.audio_diagnostics.position(), lead, &mut warming) {
                 std::thread::sleep(Duration::from_micros(500));
-            }''')
+            }
+            if was_warming && !warming { params.audio_diagnostics.stream_ready(); recovering = None; }''')
     text = replace_once(text, '''    }
 }
 
@@ -388,6 +419,8 @@ mod early_delivery_tests {
     text = replace_once(text, '            self.alnk_next += self.half_period();',
         '            self.last_audio_cycle = self.alnk_next;\n            self.alnk_next += self.half_period();')
     text = replace_once(text, '    pub fn apply(&mut self, a: &Action) {', '''    /// Insert timestamped input and invalidate the JIT's cached next deadline.
+    pub fn invalidate_input_deadline(&mut self) { self.next_due = 0; }
+
     pub fn schedule_input(&mut self, cycle: u64, action: Action) {
         let i = self.script.partition_point(|(at, _)| *at <= cycle);
         self.script.insert(i, (cycle, action));
@@ -398,10 +431,10 @@ mod early_delivery_tests {
     periph.write_text(text)
     # Only this integration's plugin version changes; dependency pins remain intact.
     manifest = plugin / "Cargo.toml"
-    manifest.write_text(replace_once(manifest.read_text(), 'version = "0.2.0"', 'version = "0.2.7"'))
+    manifest.write_text(replace_once(manifest.read_text(), 'version = "0.2.0"', 'version = "0.2.8"'))
     lock = plugin / "Cargo.lock"
     lock.write_text(replace_once(lock.read_text(), 'name = "fm1-plugin"\nversion = "0.2.0"',
-                                'name = "fm1-plugin"\nversion = "0.2.7"'))
+                                'name = "fm1-plugin"\nversion = "0.2.8"'))
     entries = json.loads((ROOT / "firmware/manifest.json").read_text())["firmwares"]
     generated = "// Generated from firmware/manifest.json. Do not edit.\npub static ENTRIES: &[Entry] = &[\n"
     for e in entries:

@@ -14,9 +14,43 @@ pub fn schedule(periph: &mut Periph, made: u64, event: Midi) -> bool {
     true
 }
 
+/// A queue recovery establishes a new host-frame origin at the current guest
+/// DMA boundary. Keep pending MIDI bytes in order without touching hardware
+/// timers, RAM, voices, patches, or non-MIDI scripted actions.
+pub fn rebase(periph: &mut Periph, old_end: u64, new_end: u64) {
+    let offset = (old_end as i128 - new_end as i128) * periph.hz as i128 / 44100;
+    for (cycle, action) in &mut periph.script {
+        if matches!(action, Action::Midi { .. }) {
+            *cycle = (*cycle as i128 + offset).clamp(0, u64::MAX as i128) as u64;
+        }
+    }
+    // Stable ordering is essential: the three bytes of a MIDI message may
+    // share a timestamp. This work runs only on the paused producer.
+    periph.script.make_contiguous().sort_by_key(|(cycle, _)| *cycle);
+    periph.invalidate_input_deadline();
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn recovery_rebases_midi_stably_without_retiming_hardware_or_keys() {
+        let mut soc = fm1_soc::Soc::new(1 << 20, vec![]);
+        let p = &mut soc.periph;
+        p.hz = 240_000_000;
+        p.schedule_input(360_000_000, Action::Key { id: 12, down: false });
+        for b in [0x90, 60, 100] { p.schedule_input(480_000_000, Action::Midi { b }); }
+        let cycles = p.cycles;
+        rebase(p, 44100, 88200);
+        assert_eq!(p.cycles, cycles);
+        assert_eq!(p.script.iter().map(|(at, _)| *at).collect::<Vec<_>>(),
+            [240_000_000, 240_000_000, 240_000_000, 360_000_000]);
+        assert_eq!(p.script.iter().take(3).map(|(_, a)| a.clone()).collect::<Vec<_>>(),
+            [Action::Midi { b: 0x90 }, Action::Midi { b: 60 }, Action::Midi { b: 100 }]);
+        assert_eq!(p.script.back().unwrap().1, Action::Key { id: 12, down: false });
+        rebase(p, 0, 88200);
+        assert_eq!(p.script.iter().take(3).map(|(at, _)| *at).collect::<Vec<_>>(), [0, 0, 0]);
+    }
     #[test]
     fn midi_deadlines_do_not_snap_to_audio_dma_blocks() {
         let mut soc = fm1_soc::Soc::new(1 << 20, vec![]);

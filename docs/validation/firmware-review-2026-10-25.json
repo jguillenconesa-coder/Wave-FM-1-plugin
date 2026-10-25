@@ -1,0 +1,81 @@
+{
+  "reviewed_at": "2026-10-25",
+  "scope": "Initial 8-second boot/LCD/finite-audio smoke; not real-time/all-function verification",
+  "initial_emulator": "72adb810c4409c4b7302ca56906c05083834faee",
+  "release_emulator": "ba11e2e68f3934a2c5c98a0eb55607387e262a49",
+  "bundled_added_ids": [
+    "skiff2",
+    "dub13",
+    "chipbox13",
+    "tribe03",
+    "gamma11",
+    "sidou"
+  ],
+  "initial_smoke_results": [
+    {
+      "error": null,
+      "id": "skiff",
+      "passed_basic_smoke": true,
+      "sha256": "5cb6526bb6720e02bb4d5308edc39e4ca1a7bf0befd543e377748ba56c627d02",
+      "size": 610429,
+      "version": "v2.0.1"
+    },
+    {
+      "error": null,
+      "id": "dub",
+      "passed_basic_smoke": true,
+      "sha256": "35a464983c8b0f1143e668db770f36d943df0279a477be5e61435325d9354796",
+      "size": 609666,
+      "version": "v1.3.0"
+    },
+    {
+      "error": null,
+      "id": "chipbox",
+      "passed_basic_smoke": true,
+      "sha256": "e02b38f43394bbd6816eea1d91baf159ce060821717afa6f668ebee3b6b6035c",
+      "size": 610110,
+      "version": "v1.3.1-stable"
+    },
+    {
+      "error": null,
+      "id": "tribe",
+      "passed_basic_smoke": true,
+      "sha256": "daa953ea5c37a5612d6db6f508a86879a79214768acc79d6ae04f2e0b93b6f6b",
+      "size": 609680,
+      "version": "v0.3-beta"
+    },
+    {
+      "error": null,
+      "id": "gammawave",
+      "passed_basic_smoke": true,
+      "sha256": "3dc96815125dc3aa42672ffb71214da955f946adc26cd472f42f46c8db4eb9eb",
+      "size": 610113,
+      "version": "v1.1.1-GW"
+    },
+    {
+      "error": null,
+      "id": "loom",
+      "passed_basic_smoke": true,
+      "sha256": "be9c64a8275b5dd5e99b8b137330e2988e4b0fb660cb5ad8f657ae62b82aca94",
+      "size": 611496,
+      "version": "v0.7"
+    },
+    {
+      "error": null,
+      "id": "monk",
+      "passed_basic_smoke": true,
+      "sha256": "76fe9af0ab18b49e197ebae2224daf8a354424bd89cd241527a85bf7048eb192",
+      "size": 609661,
+      "version": "v0.9.1"
+    },
+    {
+      "error": null,
+      "id": "sidou",
+      "passed_basic_smoke": true,
+      "sha256": "731ea917806d53399deea369105294b880281fe5dcd1ad5dd8ddcdc8621e3950",
+      "size": 610090,
+      "version": "v0.4.0"
+    }
+  ],
+  "release_gate": "All 29 bundled versions are checked again by native release CI; see downloads/windows/VALIDATION.md for the immutable source and workflow."
+}

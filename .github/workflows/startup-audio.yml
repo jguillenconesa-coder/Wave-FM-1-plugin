@@ -1,7 +1,7 @@
 name: Windows startup audio at 64 and 512 samples
 on:
   push:
-    branches: ['fix/startup-audio-64', 'fix/host-deadline-027', 'fix/early-dma027']
+    branches: ['fix/startup-audio-64', 'fix/host-deadline-027', 'fix/early-dma027', 'fix/dub-regression']
   workflow_dispatch:
 permissions:
   contents: read
@@ -43,6 +43,19 @@ jobs:
           }
           Write-Output "::notice title=Startup audio test::$Lines"
           if ((Select-String -Path startup-realtime.txt -Pattern 'steady_missing=0,').Count -ne 2) { throw 'Missing complete real-time results' }
+      - name: DUB-1 real-time and forced-stall recovery
+        shell: pwsh
+        run: |
+          foreach ($Filter in @('realtime_dub_48k_both', 'stalled_engine_recovers_dub_and_x0x_both_blocks')) {
+            cargo test --manifest-path .deps/fm1-desktop/crates/fm1-plugin/Cargo.toml --release --locked --target x86_64-pc-windows-msvc --lib $Filter -j 2 -- --ignored --nocapture --test-threads=1 2>&1 | Tee-Object -Append startup-recovery.txt
+            $Code = $LASTEXITCODE
+            if ($Code -ne 0) {
+              $Lines = (Get-Content startup-recovery.txt -Tail 40) -join ' | '
+              Write-Output "::error title=Firmware recovery test::$Lines"
+              throw 'DUB real-time or forced recovery test failed'
+            }
+          }
+          Get-Content startup-recovery.txt >> $env:GITHUB_STEP_SUMMARY
       - name: Old busy-host control (evidence only, no publication)
         if: always()
         shell: pwsh

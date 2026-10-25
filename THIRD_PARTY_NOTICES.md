@@ -10,7 +10,7 @@ and AI-assisted integration disclosure. Original copyright notices are retained.
 
 | Component | Credit | Licence / use |
 | --- | --- | --- |
-| [fm1-emu](https://github.com/joakimeriksson/fm1-emu) | Joakim Eriksson and contributors | MIT; CPU/SoC emulation, firmware loading, instrument engine and original interactive panel. Pinned to `72adb810c4409c4b7302ca56906c05083834faee`. |
+| [fm1-emu](https://github.com/joakimeriksson/fm1-emu) | Joakim Eriksson and contributors | MIT; CPU/SoC emulation, firmware loading, instrument engine and original interactive panel. Pinned to `ba11e2e68f3934a2c5c98a0eb55607387e262a49`. |
 | [clap-wrapper](https://github.com/free-audio/clap-wrapper) | defiantnerd (Timo Kaluza), Paul Walker and contributors | MIT; VST3 wrapper. Pinned to `1cca996e96f29ab2be7ae9f8cfe532bbc92e1dd6` (v0.16.0). |
 | [nih-plug](https://github.com/robbert-vdh/nih-plug) | Robbert van der Helm and contributors | ISC; Rust CLAP plugin framework. Upstream disables its GPL VST3 bindings; our VST3 uses clap-wrapper. |
 | [CLAP SDK](https://github.com/free-audio/clap) | CLAP contributors | MIT; plugin interface. |

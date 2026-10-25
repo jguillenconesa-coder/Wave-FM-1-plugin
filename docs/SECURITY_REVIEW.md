@@ -1,5 +1,25 @@
 # Security review — 2026-10-25
 
+## Version 0.2.8 recovery and library review (2026-10-25)
+
+The audio callback never waits for recovery: atomics request a worker pause,
+and the single consumer flushes its ring only after the producer acknowledges.
+Firmware memory/patches are retained; only queued host audio and scheduled MIDI
+origins are adjusted. Recovery is rate limited. Test-only producer stalls are
+compiled out of shipped binaries. A halted guest is explicitly distinguished.
+The upstream pin includes its icfg global-interrupt-enable fix and JIT fixes;
+CPU/peripheral tests and real firmware checks gate the native Windows build.
+
+Normal knob motion uses existing bounded host parameters, preserving IDs and
+Set references. Explicit Alt motion remains relative for long firmware menus.
+The refreshed index contains 96 references / 78 author links. Six added offline
+packages retain exact release bytes, matching sources, component notices and
+SHA-256 values. SIDOU's libresidfp submodule is included at its pinned revision.
+MONK/LOOM remain external while resource permissions need clarification. Downloads
+retain the existing HTTPS allowlist, bounds, hash checks and no-overwrite behavior.
+No new automatic network requests, installers, drivers or Live preference writes.
+
+
 Scope: the initial Windows packaging source, CI workflow, installer and pinned
 fm1-emu dependency manifests. This was a focused source/configuration review,
 not an independent penetration test or a complete audit of upstream Rust/C++

@@ -1,3 +1,17 @@
+# Revisión actual · 25-10-2026
+
+La biblioteca actual tiene **96 referencias y 78 enlaces directos de autor**.
+Los hashes y versiones de cada enlace están en `firmware/community-index.json`.
+Se eliminaron los resultados básicos antiguos cuando cambió el archivo: un enlace
+nuevo no hereda la validación del anterior. Se comprobaron los ocho candidatos
+de la [revisión actual](validation/firmware-review-2026-10-25.json).
+Los demás enlaces nuevos o actualizados que carecen de resultado no se anuncian
+como funcionalmente verificados. El instalador incluye solo las **29 versiones**
+documentadas en [el catálogo](../firmware/README.md).
+
+El siguiente registro es histórico: sus versiones y hashes son los comprobados
+el 23-10-2026; no describe necesariamente el archivo que se ofrece hoy.
+
 # Descargas alternativas y comprobación básica · 23-10-2026
 
 Se descargaron **64 paquetes FM-1 originales de GitHub** fuera del árbol

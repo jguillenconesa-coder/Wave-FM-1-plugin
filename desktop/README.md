@@ -1,7 +1,7 @@
 # Desktop UI fork
 
 `src/editor.rs` and `src/panel.rs` derive from Joakim Eriksson's fm1-emu
-commit `72adb810c4409c4b7302ca56906c05083834faee`, Copyright (c) 2026
+commit `ba11e2e68f3934a2c5c98a0eb55607387e262a49`, Copyright (c) 2026
 Joakim Eriksson, MIT. The original licence is in the dependency checkout and
 distributed as `licenses/fm1-emu-MIT.txt`.
 
@@ -69,3 +69,17 @@ the original runner. Windows tests use a private high-resolution host timer;
 the timer FFI is cfg(test) and is absent from the plugin DLL. These delivery
 changes are MIT integration additions; original CPU/SoC/DSP authorship remains
 unchanged.
+
+Version 0.2.8 adds a producer/consumer pause handshake after a mid-stream underrun
+exhausts the reserve. The consumer flushes only after the producer acknowledges;
+the worker re-primes audio at the monotonic host position without rebooting the
+guest or clearing patches. Future MIDI deadlines are rebased on the worker.
+Internal transport is preserved; DAW mode resynchronizes its transport clock.
+A real guest halt is separately reported and is not concealed by recovery.
+Upstream ba11e2e also restores global interrupt enable on icfg writes and fixes
+branch flag liveness/self-modifying RAM invalidation; its original authors retain
+credit. Test-only forced stalls are excluded from production builds.
+
+Ordinary mouse encoders now use the existing saved host parameters with bounded
+0–127 reference positions. Shift gives finer motion; Alt retains relative menu
+navigation. Host parameter IDs and the VST3 class identity are unchanged.

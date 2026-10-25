@@ -1,3 +1,32 @@
+# Wave FM-1 Preview 0.2.8 · recuperación, knobs y biblioteca
+
+- Recuperación de la cola tras una interrupción larga sin recargar el firmware
+  ni borrar sus patches. El reloj interno se conserva; el modo DAW resincroniza
+  su transporte. Un halt real del firmware se identifica por separado.
+- Ratón y MIDI comparten una referencia 0–127 guardada, con límites y sin vuelta
+  circular. Shift: ajuste fino. Alt-arrastre/rueda: navegación relativa sin fin.
+- Nuevas versiones: Skiff 2.0.1, DUB-1 1.3.0, Chipbox 1.3.1-stable,
+  TRIBE 0.3-beta, GammaWave 1.1.1-GW. Nuevo instrumento: SIDOU 0.4.0.
+  Se conservan los 23 paquetes previos: 29 versiones de 24 instrumentos.
+- Explorador comunitario: 96 referencias, 78 enlaces originales de autor,
+  versiones preferidas claramente identificadas y hashes actualizados.
+- Emulador de Joakim Eriksson fijado a `ba11e2e`, con correcciones originales de
+  interrupciones/JIT. Se conservan avisos, autores y fuentes de cada firmware.
+
+El usuario confirmó que DUB funcionaba mayormente al volver de 64 a 512 muestras,
+pero comunicó bloqueos después de un error. La comparación anterior no demostró
+una regresión de DUB. Esta preview aborda la recuperación; las pruebas automáticas
+no sustituyen la comprobación dentro de Live con su controlador y configuración.
+No se promete eliminar todos los cortes de X0X ni reducir la reserva de latencia.
+
+Instala con Live cerrado y prueba primero en un Set vacío. La instalación usa
+la ruta VST3 estándar y ofrece desinstalación en Agregar o quitar programas.
+Las sesiones guardadas conservan su firmware; no se actualizan automáticamente.
+Consulta los resultados concretos y los límites en `downloads/windows/VALIDATION.md`.
+macOS solo se publica si supera sus propias comprobaciones nativas.
+
+---
+
 # Wave FM-1 Preview 0.2.7 · recuperación del audio al arrancar
 
 **Comparación en revisión, 2026-10-25:** tras comunicar un posible empeoramiento

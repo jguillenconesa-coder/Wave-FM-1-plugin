@@ -86,7 +86,7 @@ impl Default for Ui {
             community: online::offline(),
             browser_job: None,
             browser_pick: None,
-            browser_status: "Included index · 83 references from fm1-emu; not a live Hub check".into(),
+            browser_status: "Included index · 96 references from fm1-emu; not a live Hub check".into(),
             browser_error: false,
             downloaded: None,
         }
@@ -246,10 +246,13 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                 row.label(format!("Plugin latency: {latency} samples ({latency_ms:.1} ms)"))
                     .on_hover_text("The delay reported for host compensation, separate from the audio interface's input/output buffers. Zero only when no firmware is loaded. Lower reserves can underrun on a busy or slower CPU.");
                 row.label(params.audio_diagnostics.scheduling());
+                row.label(format!("Recoveries: {}{}", params.audio_diagnostics.recovery_count(),
+                    if params.audio_diagnostics.recovering() { " · rebuffering" } else { "" }))
+                    .on_hover_text("Automatic queue recovery after a persistent underrun. A short audio gap can occur; the firmware and its patches are not reloaded. Repeated recoveries indicate continuing audio delivery problems.");
                 if row.button("Copy audio status").clicked() {
                     let firmware = params.firmware.lock().unwrap().name.clone();
-                    ctx.copy_text(format!("FM-1 {} | Firmware: {firmware} | Engine: {engine} | Audio late: {late} frames/s | CPU: {cpu} MHz | Host: {rate:.0} Hz / {samples} samples | Audio buffer: {:?} | Plugin latency: {latency} samples ({latency_ms:.2} ms) | Scheduling: {}",
-                        env!("CARGO_PKG_VERSION"), params.audio_reserve.value(), params.audio_diagnostics.scheduling()));
+                    ctx.copy_text(format!("FM-1 {} | Firmware: {firmware} | Engine: {engine} | Audio late: {late} frames/s | CPU: {cpu} MHz | Host: {rate:.0} Hz / {samples} samples | Audio buffer: {:?} | Plugin latency: {latency} samples ({latency_ms:.2} ms) | Scheduling: {} | Recoveries: {} | Rebuffering: {} | Firmware halted: {halted}",
+                        env!("CARGO_PKG_VERSION"), params.audio_reserve.value(), params.audio_diagnostics.scheduling(), params.audio_diagnostics.recovery_count(), params.audio_diagnostics.recovering()));
                 }
             });
         });
@@ -291,7 +294,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
             let mut open = true;
             egui::Window::new("Community firmwares · Firmware Hub").open(&mut open).default_width(640.0)
                 .show(ctx, |browser| {
-                    browser.label("23 bundled/tested firmwares remain in Firmware. This explorer lists additional references; a listing does not verify functionality or redistribution rights.");
+                    browser.label(format!("{} bundled firmware versions remain in Firmware. This explorer lists additional references; a listing does not verify full functionality or redistribution rights.", catalogue::ENTRIES.len()));
                     browser.horizontal(|row| {
                         let idle = ui.browser_job.is_none() && ui.browser_pick.is_none();
                         if row.add_enabled(idle, egui::Button::new("Check Hub for new firmwares")).clicked() {
@@ -318,12 +321,16 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                     let query = ui.search.to_lowercase();
                     egui::ScrollArea::vertical().max_height(300.0).show(browser, |list| {
                         for entry in &ui.community {
-                            if !format!("{} {} {}", entry.name, entry.author, entry.version).to_lowercase().contains(&query) { continue; }
+                            let preferred = online::preferred(entry);
+                            if !format!("{} {} {} {}", entry.name, entry.author, entry.version, preferred.version).to_lowercase().contains(&query) { continue; }
                             list.group(|card| {
-                                card.label(egui::RichText::new(format!("{} {} · {}", entry.name, entry.version, entry.author)).strong());
-                                if let Some(bundled) = catalogue::ENTRIES.iter().find(|b| b.id == entry.id || !entry.hub.is_empty() && b.id == entry.hub) {
+                                card.label(egui::RichText::new(format!("{} {} · {}", entry.name, preferred.version, entry.author)).strong());
+                                if preferred.version.trim_start_matches(['v', 'V']) != entry.version.trim_start_matches(['v', 'V']) {
+                                    card.small(format!("Hub reference: {} · primary download: {}", entry.version, preferred.version));
+                                }
+                                if let Some(bundled) = catalogue::ENTRIES.iter().find(|b| b.name == entry.name || b.id == entry.id || !entry.hub.is_empty() && b.id == entry.hub) {
                                     card.small(format!("Bundled/tested: {} · {}", bundled.version, bundled.license));
-                                } else { card.small("External firmware · not included or functionally tested by this plugin"); }
+                                } else { card.small("External firmware · not bundled; see basic-check information below"); }
                                 card.small(format!("Reported terms: {}", entry.license));
                                 if let Some(passed) = entry.alternate_smoke {
                                     card.small(format!("GitHub {}: {}", entry.alternate_version,
@@ -373,7 +380,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                         .on_hover_text("Master · absolute level · the same parameter as the panel's MASTER pot");
                     map.add_enabled_ui(!smk, |map| {
                         map.label("Encoders · relative reference 0–127")
-                            .on_hover_text("A change of one step sends one encoder click. The panel indicators follow these MIDI references over a 270° sweep; they are not firmware parameter values. Mouse turns remain endless.");
+                            .on_hover_text("Mouse and MIDI share a saved 0–127 reference over a 270° sweep. One reference step sends one encoder click. Shift-drag for fine changes; Alt-drag or Alt-scroll for endless menu navigation. The firmware's own parameter value remains on its screen.");
                         // Put the four performance knobs first, with names matching Live exactly.
                         for i in [3, 4, 5, 6, 0, 1, 2] {
                             let param = &params.controls.encoders[i].value;
@@ -431,8 +438,17 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
             let at = |p: egui::Pos2| ((p.x - rect.min.x) / k, (p.y - rect.min.y) / k);
 
             // the pointer
-            let (pressed, released, pos, scroll) =
-                ctx.input(|i| (i.pointer.primary_pressed(), i.pointer.primary_released(), i.pointer.interact_pos(), i.raw_scroll_delta.y));
+            let (pressed, released, pos, scroll, relative, fine) =
+                ctx.input(|i| (i.pointer.primary_pressed(), i.pointer.primary_released(), i.pointer.interact_pos(), i.raw_scroll_delta.y, i.modifiers.alt, i.modifiers.shift));
+            if resp.hovered() && !smk {
+                if let Some(p) = pos {
+                    let (x, y) = at(p); let ctl = hit(false, x, y);
+                    if (0..7).contains(&ctl) {
+                        let param = &params.controls.encoders[ctl as usize].value;
+                        resp.clone().on_hover_text(format!("{} · reference {}/127\nDrag/scroll: bounded, saved with the Set. Shift: fine. Alt: endless navigation.\nThe current firmware parameter value is shown on its display.", param.name(), param.value()));
+                    }
+                }
+            }
             if pressed && resp.hovered() {
                 if let Some(p) = pos {
                     let (x, y) = at(p);
@@ -448,6 +464,8 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                         slide(ui, &link, ctl, y);
                     } else if !smk && ctl == 7 {
                         setter.begin_set_parameter(&params.master);
+                    } else if !smk && (0..7).contains(&ctl) {
+                        setter.begin_set_parameter(&params.controls.encoders[ctl as usize].value);
                     }
                     ui.grab = Some(g);
                 }
@@ -471,13 +489,15 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                     let ctl = g.ctl;
                     slide(ui, &link, ctl, y);
                 } else if g.ctl >= 0 && g.ctl < if smk { 8 } else { 7 } {
-                    // 12 px of drag a click
+                    // Bounded 0..127 references span about 254 px; Shift is fine.
+                    // Explicit relative/SMK navigation retains its old cadence.
                     g.acc += g.last_y - y;
-                    let clicks = (g.acc / 12.0).trunc();
-                    g.acc -= clicks * 12.0;
+                    let step = if smk || relative { 12.0 } else if fine { 8.0 } else { 2.0 };
+                    let clicks = (g.acc / step).trunc();
+                    g.acc -= clicks * step;
                     let ctl = g.ctl;
                     if clicks != 0.0 {
-                        turn(ui, &link, smk, ctl, clicks as i32);
+                        turn(ui, &link, &params, setter, smk, relative, ctl, clicks as i32);
                     }
                 } else if !smk && g.ctl == 7 {
                     let v = (params.master.value() + (g.last_y - y) * 4.0 / 1023.0).clamp(0.0, 1.0);
@@ -501,6 +521,8 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                     }
                     if !smk && g.ctl == 7 {
                         setter.end_set_parameter(&params.master);
+                    } else if !smk && (0..7).contains(&g.ctl) {
+                        setter.end_set_parameter(&params.controls.encoders[g.ctl as usize].value);
                     }
                 }
             }
@@ -517,15 +539,17 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                         setter.set_parameter(&params.master, v);
                         setter.end_set_parameter(&params.master);
                     } else if (0..if smk { 8 } else { 7 }).contains(&h) {
+                        if !smk { setter.begin_set_parameter(&params.controls.encoders[h as usize].value); }
                         ui.wheel_acc += scroll;
                         while ui.wheel_acc >= 40.0 {
                             ui.wheel_acc -= 40.0;
-                            turn(ui, &link, smk, h, 1);
+                            turn(ui, &link, &params, setter, smk, relative, h, 1);
                         }
                         while ui.wheel_acc <= -40.0 {
                             ui.wheel_acc += 40.0;
-                            turn(ui, &link, smk, h, -1);
+                            turn(ui, &link, &params, setter, smk, relative, h, -1);
                         }
+                        if !smk { setter.end_set_parameter(&params.controls.encoders[h as usize].value); }
                     }
                 }
             }
@@ -757,7 +781,19 @@ fn key(ui: &mut Ui, link: &Link, id: i32, down: bool) {
     let _ = link.cmds.send(Cmd::Key { id: id as u8, down });
 }
 
-fn turn(ui: &mut Ui, link: &Link, smk: bool, i: i32, clicks: i32) {
+fn turn(ui: &mut Ui, link: &Link, params: &Fm1Params, setter: &ParamSetter,
+        smk: bool, relative: bool, i: i32, clicks: i32) {
+    if !smk && !relative {
+        let (target, applied) = ui.encoder_display.turn_bounded(i as usize, clicks);
+        if applied != 0 {
+            // One route for both mouse and controller: the worker observes
+            // the parameter delta once. Do not also send a direct Cmd::Enc.
+            setter.set_parameter(&params.controls.encoders[i as usize].value, target);
+            ui.enc_clicks[i as usize] = ui.enc_clicks[i as usize].wrapping_add(applied);
+            ui.turning[i as usize] = 10;
+        }
+        return;
+    }
     ui.enc_clicks[i as usize] = ui.enc_clicks[i as usize].wrapping_add(clicks);
     if !smk { ui.encoder_display.turn(i as usize, clicks); }
     ui.turning[i as usize] = 10;

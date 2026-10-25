@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.27)
-project(WaveFM1Windows VERSION 0.2.7 LANGUAGES C CXX)
+project(WaveFM1Windows VERSION 0.2.8 LANGUAGES C CXX)
 if(APPLE)
     enable_language(OBJCXX)
 endif()
