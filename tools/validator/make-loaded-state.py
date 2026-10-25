@@ -14,6 +14,7 @@ root = Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("firmware", choices=("dub", "dub13", "x0x"))
 parser.add_argument("output", type=Path)
+parser.add_argument("--daw", action="store_true", help="Restore Ableton/DAW clock mode")
 args = parser.parse_args()
 entry = next(e for e in json.loads((root / "firmware/manifest.json").read_text())["firmwares"]
              if e["id"] == args.firmware)
@@ -23,7 +24,7 @@ if len(package) != entry["size"] or hashlib.sha256(package).hexdigest() != entry
 state = {
     "version": "0.2.5",
     "params": {"master": {"f32": 900 / 1023}, "clock": {"i32": 0},
-               "channel": {"i32": 0}, "transport_sync": {"i32": 0}},
+               "channel": {"i32": 0}, "transport_sync": {"i32": int(args.daw)}},
     "fields": {
         "firmware": json.dumps({"name": f"{entry['name']} {entry['version']}",
                                 "pkg": base64.b64encode(package).decode("ascii")}),

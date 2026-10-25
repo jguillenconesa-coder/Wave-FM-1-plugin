@@ -130,6 +130,18 @@ jobs:
             }
           }
           Get-Content dist/LOADED_VST3.txt >> $env:GITHUB_STEP_SUMMARY
+      - name: Actual DUB VST3 follows host clock and transport
+        shell: pwsh
+        run: |
+          python tools/validator/make-loaded-state.py dub13 'build/dub-daw.state' --daw
+          if ($LASTEXITCODE -ne 0) { throw 'DAW state integrity check failed' }
+          foreach ($Block in @(512, 64)) {
+            foreach ($Mode in @('daw', 'daw-hot')) {
+              & build/windows-validator/Release/fm1-loaded-check.exe 'dist/VST3/FM-1.vst3' 'build/dub-daw.state' $Block 12 $Mode 2>&1 | Tee-Object -Append dist/DAW_VST3.txt
+              if ($LASTEXITCODE -ne 0) { throw 'DUB host clock/start/stop/restart check failed' }
+            }
+          }
+          Get-Content dist/DAW_VST3.txt >> $env:GITHUB_STEP_SUMMARY
       - name: Report build error context
         if: failure()
         shell: pwsh

@@ -83,3 +83,10 @@ credit. Test-only forced stalls are excluded from production builds.
 Ordinary mouse encoders now use the existing saved host parameters with bounded
 0–127 reference positions. Shift gives finer motion; Alt retains relative menu
 navigation. Host parameter IDs and the VST3 class identity are unchanged.
+
+DAW clock now observes guest boot generations and first-DMA readiness. It sends
+the host's transport again after firmware replacement and waits through audio
+rebuffering without dropping host notes. Resynchronization emits Start alone;
+X0X's original sequencer clears req_start when req_stop is consumed in the same
+audio update. Its shipped binary is unchanged. A real-package regression writes
+the documented kick pattern and measures timing/start/stop/restart/loop output.

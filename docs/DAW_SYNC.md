@@ -37,7 +37,7 @@ Stop; el plugin no cambia automáticamente ajustes internos del firmware.
 
 Cada inicio de reproducción de Live envía Start y reinicia la secuencia del
 firmware. Los saltos de posición y retornos de loop durante la reproducción
-envían Stop/Start y vuelven a alinearla al clock. No se transmite Song Position
+envían Start y vuelven a alinearla al clock. Start reinicia por sí mismo la secuencia. No se transmite Song Position
 Pointer ni se recupera automáticamente un paso correspondiente al compás de
 Arrangement. Si el host solo proporciona tempo, se mantiene la frecuencia del
 clock sin una referencia absoluta de posición.
@@ -72,7 +72,7 @@ sus propios plazos. Ante sobrecarga, reduce otras cargas/instancias o prueba
 un buffer mayor. El plugin no modifica esos ajustes por su cuenta.
 **MIDI queue full** indica
 que falta capacidad para entregar eventos; la sincronización intenta recuperarse
-con Stop/Start cuando vuelve a haber espacio.
+con Start cuando vuelve a haber espacio.
 
 La lectura de BPM de algunos firmwares estima intervalos MIDI y puede variar
 por su resolución o filtrado. Comprueba también el ritmo grabado, no solo ese
@@ -116,9 +116,30 @@ Una interrupción que agota la reserva inicia un acuerdo de pausa entre la cola
 y el emulador. El plugin descarta el audio obsoleto y prepara una nueva reserva
 sin recargar el firmware ni borrar patches. Puede haber un breve silencio durante
 esta operación. El reloj interno del firmware sigue su estado actual; en modo
-DAW se envía Stop/Start para alinear de nuevo el transporte.
+DAW se envía Start para alinear de nuevo el transporte.
 
 **Recoveries** cuenta recuperaciones terminadas; **rebuffering** identifica una
 en curso. **Firmware halted** distingue una parada real del emulador, que no se
 soluciona solo vaciando una cola. Estos datos se incluyen en Copy audio status.
 Un contador de recuperaciones que siga aumentando indica un problema persistente.
+
+## Arranque y loops corregidos en 0.2.8
+
+Se espera a los primeros datos de audio del firmware antes de enviar su estado
+de transporte: un Start enviado antes de habilitar la entrada MIDI podía perderse.
+Cada carga o reinicio del firmware vuelve a publicar el estado de Live aunque el
+transporte del host siga reproduciendo. En ese intervalo se muestra **DAW · waiting
+for firmware audio**. Las notas MIDI continúan por su cola normal.
+
+Al entrar en DAW con Live parado se envía Stop una sola vez, también si el firmware
+arranca reproduciendo por defecto. Un loop, salto, nuevo firmware o recuperación
+con Live reproduciendo envía **Start**, sin un Stop adyacente: X0X 1.1.0 descarta
+su solicitud de Start cuando procesa ambos mensajes en la misma tanda de audio.
+Las paradas reales del host siguen enviando Stop. No se modifica el firmware.
+
+La prueba de X0X crea el patrón de bombo del manual y mide el audio generado a
+120 y 90 BPM, la parada, reanudación y loop a través de la UART emulada real.
+El VST3 cargado se comprueba además con el arreglo de DUB. Esto no certifica una
+sesión real de Live ni todos los firmwares. Felucca/Skiff requieren seleccionar
+la entrada externa **TRS/MIDI** en sus propios ajustes; el selector del plugin no
+cambia esos ajustes automáticamente.

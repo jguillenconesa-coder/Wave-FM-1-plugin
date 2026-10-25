@@ -21,7 +21,7 @@ with zipfile.ZipFile(portable, "w", compression=zipfile.ZIP_DEFLATED, compressle
                 if path.is_symlink():
                     raise SystemExit("Refusing linked package input")
                 archive.write(path, path.relative_to(DIST).as_posix())
-    for path in (DIST / "INSTALL.md", DIST / "build-info.json", DIST / "REALTIME_X0X.txt", DIST / "EMPTY_LATENCY.txt", DIST / "RECOVERY.txt", DIST / "LOADED_VST3.txt", DIST / "VALIDATION.txt"):
+    for path in (DIST / "INSTALL.md", DIST / "build-info.json", DIST / "REALTIME_X0X.txt", DIST / "EMPTY_LATENCY.txt", DIST / "RECOVERY.txt", DIST / "LOADED_VST3.txt", DIST / "VALIDATION.txt", DIST / "DAW_VST3.txt"):
         archive.write(path, path.name)
 checksums = []
 for path in (setup, portable):

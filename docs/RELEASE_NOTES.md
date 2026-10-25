@@ -3,6 +3,10 @@
 - Recuperación de la cola tras una interrupción larga sin recargar el firmware
   ni borrar sus patches. El reloj interno se conserva; el modo DAW resincroniza
   su transporte. Un halt real del firmware se identifica por separado.
+- Reloj DAW: Start se reenvía al cargar un firmware con Live en marcha y se
+  retrasa hasta que el firmware produce audio. Stop se envía al entrar en DAW
+  con Live parado. Los loops/resincronizaciones usan Start sin Stop adyacente,
+  evitando que X0X descarte el reinicio. Se conserva el reloj interno.
 - Ratón y MIDI comparten una referencia 0–127 guardada, con límites y sin vuelta
   circular. Shift: ajuste fino. Alt-arrastre/rueda: navegación relativa sin fin.
 - Nuevas versiones: Skiff 2.0.1, DUB-1 1.3.0, Chipbox 1.3.1-stable,

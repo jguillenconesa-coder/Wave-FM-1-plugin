@@ -37,6 +37,7 @@ pub struct Diagnostics {
     scheduling: AtomicU32,
     position: AtomicU64,
     ready: AtomicBool,
+    stream_generation: AtomicU64,
     recovery_request: AtomicU64,
     recovery_paused: AtomicU64,
     recovery_resume: AtomicU64,
@@ -50,10 +51,13 @@ impl Diagnostics {
     pub fn position(&self) -> u64 { self.position.load(Ordering::Acquire) }
     pub fn reset_stream(&self) {
         self.ready.store(false, Ordering::Release);
+        self.stream_generation.fetch_add(1, Ordering::Release);
         let generation = self.recovery_request.load(Ordering::Acquire);
         self.recovery_completed.store(generation, Ordering::Release);
         self.recoveries.store(0, Ordering::Relaxed);
     }
+    pub fn stream_generation(&self) -> u64 { self.stream_generation.load(Ordering::Acquire) }
+    pub fn stream_is_ready(&self) -> bool { self.ready.load(Ordering::Acquire) }
     pub fn stream_halted(&self) {
         self.ready.store(false, Ordering::Release);
         let generation = self.recovery_request.load(Ordering::Acquire);

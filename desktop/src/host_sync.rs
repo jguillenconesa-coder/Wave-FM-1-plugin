@@ -42,6 +42,7 @@ pub const STOPPED: u8 = 1;
 pub const FOLLOWING: u8 = 2;
 pub const UNAVAILABLE: u8 = 3;
 pub const QUEUE_FULL: u8 = 4;
+pub const WAITING_FIRMWARE: u8 = 5;
 
 /// Audio-thread publication, read by the editor without locks or allocation.
 #[derive(Default)]
@@ -57,6 +58,7 @@ impl Feedback {
         match self.state.load(Ordering::Relaxed) {
             FOLLOWING => format!("DAW · {:.2} BPM · playing", self.bpm.load(Ordering::Relaxed) as f64 / 100.0),
             STOPPED => "DAW · stopped".into(),
+            WAITING_FIRMWARE => "DAW · waiting for firmware audio".into(),
             QUEUE_FULL => "MIDI queue full · resync pending".into(),
             _ => "DAW tempo unavailable · waiting for host".into(),
         }
@@ -69,9 +71,31 @@ pub struct Clock {
     expected_beat: Option<f64>,
     last_tick: Option<f64>,
     delivery_fault: bool,
+    last_source: Option<Source>,
+    firmware_generation: Option<u64>,
+    suspended: bool,
 }
 
 impl Clock {
+    /// A newly booted guest must receive transport state even if Live never
+    /// stopped. References are per instance; host PPQ remains authoritative.
+    pub fn observe_firmware(&mut self, generation: u64) {
+        if self.firmware_generation != Some(generation) {
+            self.reset();
+            self.last_source = None;
+            self.firmware_generation = Some(generation);
+        }
+    }
+
+    pub fn set_firmware_ready(&mut self, ready: bool) {
+        if !ready && !self.suspended {
+            self.delivery_fault |= self.running;
+            self.expected_beat = None;
+            self.last_tick = None;
+        }
+        self.suspended = !ready;
+    }
+
     pub fn reset(&mut self) {
         self.delivery_fault |= self.running;
         self.running = false;
@@ -91,7 +115,9 @@ impl Clock {
         let mut start_tick = 0.0;
         let mut step = 0.0;
         let mut next_tick = 0.0;
-        if block.samples > 0 {
+        if block.samples > 0 && !(source == Source::Daw && self.suspended) {
+            let entering_daw = source == Source::Daw && self.last_source != Some(Source::Daw);
+            self.last_source = Some(source);
             if active {
                 let per_sample = tempo.unwrap() / (60.0 * block.sample_rate);
                 let beat = block.beats.filter(|v| v.is_finite() && v.abs() < 1.0e9)
@@ -99,7 +125,8 @@ impl Clock {
                 let seek = self.expected_beat.is_some_and(|expected|
                     (beat - expected).abs() > (per_sample * 2.0).max(1.0e-6));
                 if !self.running || seek || self.delivery_fault {
-                    if self.running || self.delivery_fault { prefix[prefix_len] = 0xfc; prefix_len += 1; }
+                    // Start resets the sequence by itself. A Stop+Start pair
+                    // in one firmware poll makes X0X clear its pending Start.
                     prefix[prefix_len] = 0xfa; prefix_len += 1;
                     self.last_tick = None;
                 }
@@ -110,7 +137,7 @@ impl Clock {
                 next_tick = (start_tick - 1.0e-7).ceil();
                 if let Some(last) = self.last_tick { next_tick = next_tick.max(last + 1.0); }
             } else {
-                if self.running || self.delivery_fault { prefix[0] = 0xfc; prefix_len = 1; }
+                if self.running || self.delivery_fault || entering_daw { prefix[0] = 0xfc; prefix_len = 1; }
                 self.running = false;
                 self.expected_beat = None;
                 self.last_tick = None;
@@ -202,6 +229,61 @@ mod tests {
     }
 
     #[test]
+    fn entering_daw_stopped_sends_stop_once_for_auto_starting_firmwares() {
+        let mut clock = Clock::default();
+        let stopped = block(false, 120.0, Some(0.0), 512);
+        clock.observe_firmware(1);
+        assert_eq!(clock.events(Source::Daw, stopped).collect::<Vec<_>>(), [(0, 0xfc)]);
+        assert!(clock.events(Source::Daw, stopped).next().is_none());
+        assert!(clock.events(Source::Internal, stopped).next().is_none());
+        assert_eq!(clock.events(Source::Daw, stopped).collect::<Vec<_>>(), [(0, 0xfc)]);
+        clock.observe_firmware(2);
+        assert_eq!(clock.events(Source::Daw, stopped).collect::<Vec<_>>(), [(0, 0xfc)]);
+    }
+
+    #[test]
+    fn loading_a_guest_with_transport_running_reissues_start_without_repeating_it_each_block() {
+        let mut clock = Clock::default();
+        clock.observe_firmware(1);
+        let begin = block(true, 120.0, Some(8.0), 24000);
+        assert_eq!(clock.events(Source::Daw, begin).next(), Some((0, 0xfa)));
+        // Consume a complete block, as the real callback does.
+        clock.events(Source::Daw, block(true, 120.0, Some(9.0), 24000)).for_each(drop);
+        clock.observe_firmware(2);
+        let restarted: Vec<_> = clock.events(Source::Daw, block(true, 120.0, Some(10.0), 24000)).collect();
+        assert_eq!(&restarted[..2], &[(0, 0xfa), (0, 0xf8)]);
+        clock.observe_firmware(2);
+        let next: Vec<_> = clock.events(Source::Daw, block(true, 120.0, Some(11.0), 24000)).collect();
+        assert_eq!(next.len(), 24); assert!(next.iter().all(|(_, b)| *b == 0xf8));
+        let mut internal = Clock::default();
+        internal.observe_firmware(1);
+        assert!(internal.events(Source::Internal, begin).next().is_none());
+        internal.observe_firmware(2);
+        assert!(internal.events(Source::Internal, begin).next().is_none());
+    }
+
+    #[test]
+    fn cold_boot_and_rebuffer_wait_without_losing_notes_or_issuing_adjacent_stop_start() {
+        let mut clock = Clock::default(); clock.observe_firmware(1);
+        clock.set_firmware_ready(false);
+        let b = block(true, 120.0, Some(0.0), 24000);
+        assert!(clock.events(Source::Daw, b).next().is_none());
+        clock.set_firmware_ready(true);
+        assert_eq!(clock.events(Source::Daw, b).collect::<Vec<_>>()[..2], [(0, 0xfa), (0, 0xf8)]);
+        clock.set_firmware_ready(false);
+        let (mut tx, mut rx) = rtrb::RingBuffer::new(8);
+        let mut note = std::iter::once(NoteEvent::NoteOn { timing: 100, voice_id: None,
+            channel: 0, note: 60, velocity: 1.0 });
+        assert!(send_events(&mut clock, Source::Daw, block(true, 120.0, Some(1.0), 24000),
+            || note.next(), Some(&mut tx), 44100, 44100.0/48000.0, 1495, 0));
+        assert_eq!(rx.pop().unwrap().bytes[0], 0x90); assert!(rx.pop().is_err());
+        clock.set_firmware_ready(true);
+        let resumed: Vec<_> = clock.events(Source::Daw, block(true, 120.0, Some(2.0), 24000)).collect();
+        assert_eq!(&resumed[..2], &[(0, 0xfa), (0, 0xf8)]);
+        assert!(!resumed.iter().any(|(_, byte)| *byte == 0xfc));
+    }
+
+    #[test]
     fn clock_has_24_pulses_per_quarter_independent_of_block_size_or_sample_rate() {
         for rate in [44100.0, 48000.0, 96000.0] {
             for size in [1, 127, 512, 4096] {
@@ -230,7 +312,7 @@ mod tests {
     fn transport_start_stop_restart_and_mode_changes_are_explicit() {
         let mut clock = Clock::default();
         assert!(clock.events(Source::Internal, block(true, 120.0, Some(0.0), 1000)).next().is_none());
-        assert!(clock.events(Source::Daw, block(false, 120.0, Some(0.0), 1000)).next().is_none());
+        assert_eq!(clock.events(Source::Daw, block(false, 120.0, Some(0.0), 1000)).collect::<Vec<_>>(), [(0, 0xfc)]);
         let a: Vec<_> = clock.events(Source::Daw, block(true, 120.0, Some(0.0), 1000)).collect();
         assert_eq!(a, [(0, 0xfa), (0, 0xf8)]);
         assert_eq!(clock.events(Source::Daw, block(false, 120.0, None, 1000)).collect::<Vec<_>>(), [(0, 0xfc)]);
@@ -247,7 +329,7 @@ mod tests {
         let faster: Vec<_> = clock.events(Source::Daw, block(true, 240.0, Some(1.0), 24000)).collect();
         assert_eq!(faster.len(), 48); assert!(faster.iter().all(|(_, b)| *b == 0xf8));
         let looped: Vec<_> = clock.events(Source::Daw, block(true, 120.0, Some(0.0), 1000)).collect();
-        assert_eq!(looped, [(0, 0xfc), (0, 0xfa), (0, 0xf8)]);
+        assert_eq!(looped, [(0, 0xfa), (0, 0xf8)]);
         assert!(other.events(Source::Internal, block(true, 120.0, None, 1000)).next().is_none());
         let mut no_position = Clock::default();
         let a: Vec<_> = no_position.events(Source::Daw, block(true, 120.0, None, 24000)).collect();
@@ -289,7 +371,7 @@ mod tests {
         }
         clock.delivery_failed();
         assert_eq!(clock.events(Source::Daw, block(true, 120.0, Some(4.0), 1000)).collect::<Vec<_>>(),
-            [(0, 0xfc), (0, 0xfa), (0, 0xf8)]);
+            [(0, 0xfa), (0, 0xf8)]);
         clock.reset();
         assert_eq!(clock.events(Source::Internal, block(false, 120.0, None, 512)).collect::<Vec<_>>(), [(0, 0xfc)]);
         assert!(clock.events(Source::Daw, block(true, 120.0, None, 0)).next().is_none());

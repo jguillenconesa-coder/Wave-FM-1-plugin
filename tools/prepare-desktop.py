@@ -33,7 +33,7 @@ def main():
     reference = DEST / "reference/firmwares"
     reference.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(ROOT / "firmware/catalogue/felucca-1.6.1.fwsc", reference / "felucca.fwsc")
-    for name in ("editor.rs", "catalogue.rs", "skins.rs", "controls.rs", "online.rs", "host_sync.rs", "audio_timing.rs", "midi_timing.rs", "worker.rs", "latency_tests.rs"):
+    for name in ("editor.rs", "catalogue.rs", "skins.rs", "controls.rs", "online.rs", "host_sync.rs", "audio_timing.rs", "midi_timing.rs", "worker.rs", "latency_tests.rs", "clock_firmware_tests.rs"):
         shutil.copyfile(ROOT / "desktop/src" / name, plugin / "src" / name)
     shutil.copyfile(ROOT / "firmware/community-index.json", plugin / "src/community-index.json")
     shutil.copyfile(ROOT / "desktop/src/panel.rs", DEST / "crates/fm1-live/src/panel.rs")
@@ -124,11 +124,17 @@ def main():
     midi_end = text.index('        let Some(rx) = self.audio.as_mut()', midi_start)
     if text[midi_start:midi_end].count('while let Some(ev) = ctx.next_event()') != 1:
         raise SystemExit('Unexpected MIDI processing baseline')
-    text = text[:midi_start] + '''        let source = self.params.transport_sync.value();
+    text = text[:midi_start] + '''        let selected_source = self.params.transport_sync.value();
+        self.musical_clock.observe_firmware(self.params.audio_diagnostics.stream_generation());
+        // A boot's Start can be dropped before the guest enables its UART.
+        // Defer transport until first DMA audio; notes still use their queue.
+        let waiting = selected_source == host_sync::Source::Daw && !self.params.audio_diagnostics.stream_is_ready();
+        self.musical_clock.set_firmware_ready(!waiting);
+        let source = selected_source;
         let block = host_sync::Block::from_host(ctx.transport(), buffer.samples() as u32);
         let delivered = host_sync::send_block(&mut self.musical_clock, source, block, ctx,
             self.midi.as_mut(), start, self.ratio, self.lead, self.params.channel.value() as u8);
-        self.params.transport_feedback.publish(if delivered { block.status(source) } else { host_sync::QUEUE_FULL }, block.tempo);
+        self.params.transport_feedback.publish(if !delivered { host_sync::QUEUE_FULL } else if waiting { host_sync::WAITING_FIRMWARE } else { block.status(source) }, block.tempo);
 ''' + text[midi_end:]
     text = replace_once(text, 'use nih_plug::midi::MidiResult;\n', '')
     render_start = text.index('        let n = out[0].len();')
@@ -411,6 +417,7 @@ mod early_delivery_tests {
     }
 }
 '''
+    text += '\n#[cfg(test)]\n#[path = "clock_firmware_tests.rs"]\nmod clock_firmware_tests;\n'
     engine.write_text(text)
     periph = DEST / 'crates/fm1-soc/src/periph.rs'
     text = periph.read_text()

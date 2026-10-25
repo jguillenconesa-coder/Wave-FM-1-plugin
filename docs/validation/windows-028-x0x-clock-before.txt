@@ -1,0 +1,25 @@
+error: XDG_RUNTIME_DIR is invalid or not set in the environment.
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+
+running 1 test
+DAW_FIRMWARE X0X: peak=0.39999, onsets=[1.0501133786848074, 2.0229024943310656, 2.419501133786848, 2.9183673469387754, 3.417233560090703, 3.9160997732426304, 4.5421768707483, 5.215646258503401, 5.876643990929705, 6.550113378684808, 9.021995464852608, 9.543310657596372, 10.216780045351474], 120bpm_intervals=[0.49886621315192725, 0.4988662131519277, 0.49886621315192725], 90bpm_intervals=[0.6734693877551017, 0.6609977324263037, 0.6734693877551026], dropped_midi=0
+
+thread 'engine::clock_firmware_tests::programmed_x0x_follows_daw_start_tempo_stop_restart_and_loop' (300) panicked at src/clock_firmware_tests.rs:76:5:
+sequence did not restart after host loop
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test engine::clock_firmware_tests::programmed_x0x_follows_daw_start_tempo_stop_restart_and_loop ... FAILED
+
+failures:
+
+failures:
+    engine::clock_firmware_tests::programmed_x0x_follows_daw_start_tempo_stop_restart_and_loop
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 57 filtered out; finished in 5.36s
+

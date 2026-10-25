@@ -10,6 +10,13 @@ compiled out of shipped binaries. A halted guest is explicitly distinguished.
 The upstream pin includes its icfg global-interrupt-enable fix and JIT fixes;
 CPU/peripheral tests and real firmware checks gate the native Windows build.
 
+DAW transport tracks each guest boot and defers initial clock transport until
+first audio, while forwarding notes normally. Stop is emitted on entry to DAW
+with a stopped host. Seeks/recovery use MIDI Start alone: the actual X0X firmware
+coalesces adjacent Stop+Start and clears its pending Start. A real-package audio
+regression programs the manual's kick pattern, checks 120/90 BPM and transport.
+No firmware bytes or user clock settings are modified by these fixes.
+
 Normal knob motion uses existing bounded host parameters, preserving IDs and
 Set references. Explicit Alt motion remains relative for long firmware menus.
 The refreshed index contains 96 references / 78 author links. Six added offline

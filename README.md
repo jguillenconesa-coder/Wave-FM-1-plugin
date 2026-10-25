@@ -49,6 +49,8 @@ La fuente de **0.2.8**, pendiente de publicación validada, añade cinco version
 1.1.1-GW) y SIDOU 0.4.0. Conserva todos los paquetes anteriores. El ratón y MIDI
 comparten una referencia 0–127 guardada; Shift afina y Alt permite giros sin fin.
 La recuperación tras una interrupción larga conserva el firmware y sus patches.
+También corrige el arranque del reloj DAW y la resincronización de loops en X0X,
+sin modificar sus bytes. [Detalles y configuración](docs/DAW_SYNC.md).
 
 
 **0.2.6** declara **cero latencia sin firmware** y añade **Audio buffer**:

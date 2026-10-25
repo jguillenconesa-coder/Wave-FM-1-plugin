@@ -33,11 +33,13 @@ static void require(bool ok, const char* text) { if (!ok) throw std::runtime_err
 
 int main(int argc, char** argv) {
     try {
-        require(argc >= 5, "Usage: fm1-loaded-check bundle state.json block seconds [stopped|autoplay]");
+        require(argc >= 5, "Usage: fm1-loaded-check bundle state.json block seconds [stopped|autoplay|daw|daw-hot]");
         const int block = std::stoi(argv[3]), seconds = std::stoi(argv[4]);
         require((block == 64 || block == 512) && seconds >= 12 && seconds <= 120,
                 "Use block 64/512 and duration 12..120 seconds");
         const bool playing = argc < 6 || std::string(argv[5]) != "stopped";
+        const bool daw = argc >= 6 && (std::string(argv[5]) == "daw" || std::string(argv[5]) == "daw-hot");
+        const bool hot = argc >= 6 && std::string(argv[5]) == "daw-hot";
         const bool autoStarts = argc >= 6 && std::string(argv[5]) == "autoplay";
         std::ifstream input(argv[2], std::ios::binary);
         require(bool(input), "State fixture missing");
@@ -104,6 +106,7 @@ int main(int argc, char** argv) {
                     data.processContext=&context;
                     uint64_t active=0, silent=0, silentRun=0, longestSilent=0;
                     double peak=0.0, square=0.0;
+                    double sections[12]{}; double sectionPeak[12]{};
                     std::chrono::nanoseconds callbackMax{}, lateMax{};
                     const auto started=Clock::now();
                     for (int64 frame=0; frame<int64(seconds)*48000; frame+=block) {
@@ -120,11 +123,24 @@ int main(int argc, char** argv) {
                         std::this_thread::sleep_until(deadline);
 #endif
                         lateMax=std::max(lateMax,std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now()-deadline));
-                        context.projectTimeSamples=playing ? frame : 0;
-                        context.projectTimeMusic=playing ? frame/24000.0 : 0.0;
+                        const bool dawPlaying = (hot || frame >= 96000) && (frame < 336000 || frame >= 432000);
+                        if (daw) {
+                            context.tempo = frame < 192000 ? 120.0 : 90.0;
+                            context.state = (context.state & ~ProcessContext::kPlaying) | (dawPlaying ? ProcessContext::kPlaying : 0);
+                            const auto elapsed = std::max<int64>(0, std::min<int64>(frame,336000) - (hot ? 0 : 96000));
+                            const auto fast = std::min<int64>(elapsed,hot ? 192000 : 96000);
+                            auto beat = fast/24000.0+(elapsed-fast)/32000.0;
+                            if (frame >= 432000) beat += (frame-432000)/32000.0;
+                            if (frame >= 504000) beat -= 4.0; // a host loop/seek
+                            context.projectTimeSamples=frame;
+                            context.projectTimeMusic=beat;
+                        } else {
+                            context.projectTimeSamples=playing ? frame : 0;
+                            context.projectTimeMusic=playing ? frame/24000.0 : 0.0;
+                        }
                         events.clear(); changes.clearQueue();
                         const auto contains=[&](int64 sample){ return frame<=sample && sample<frame+block; };
-                        if (!autoStarts && (contains(96000) || contains(100800))) {
+                        if (!daw && !autoStarts && (contains(96000) || contains(100800))) {
                             int32 index=0, point=0;
                             auto* q=changes.addParameterData(playId,index);
                             require(q && q->addPoint(0,contains(96000)?1.0:0.0,point)==kResultOk,"PLAY automation failed");
@@ -146,6 +162,11 @@ int main(int argc, char** argv) {
                         output.silenceFlags=0;
                         require(processor->process(data)==kResultOk,"Loaded VST3 process failed");
                         callbackMax=std::max(callbackMax,std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now()-before));
+                        for (auto* channel : channels) for (int i=0; i<block; ++i) {
+                            const double v=channel[i]; require(std::isfinite(v),"Nonfinite audio");
+                            if (frame/48000 < 12) { sections[frame/48000]+=v*v;
+                                sectionPeak[frame/48000]=std::max(sectionPeak[frame/48000],std::abs(v)); }
+                        }
                         if (frame>=192000) {
                             bool audible=false;
                             for (auto* channel : channels) for (int i=0; i<block; ++i) {
@@ -158,11 +179,18 @@ int main(int argc, char** argv) {
                         }
                     }
                     std::cout<<"LOADED_VST3 state="<<argv[2]<<" block="<<block<<" seconds="<<seconds
-                        <<" playing="<<playing<<" latency="<<latency<<" active_blocks="<<active
+                        <<" playing="<<playing<<" daw="<<daw<<" hot="<<hot<<" latency="<<latency<<" active_blocks="<<active
                         <<" silent_blocks="<<silent<<" longest_silent_ms="<<longestSilent*block/48.0
                         <<" peak="<<peak<<" energy="<<square<<" callback_max_us="<<callbackMax.count()/1000
                         <<" host_late_max_us="<<lateMax.count()/1000<<std::endl;
                     require(peak>0.0001 && active>0,"Loaded firmware stayed silent");
+                    if (daw) {
+                        for (int i=0;i<12;++i) std::cout<<"DAW_SECTION second="<<i<<" energy="<<sections[i]<<" peak="<<sectionPeak[i]<<std::endl;
+                        require(std::max(sectionPeak[3],sectionPeak[4])>0.0001,"No audio after DAW Start");
+                        require(std::max(sectionPeak[10],sectionPeak[11])>0.0001,"No audio after DAW restart/loop");
+                        require(sections[8] < sections[6]*0.1,"Arrangement kept playing after DAW Stop");
+                        require(sections[10] > sections[8]*5.0,"Arrangement did not return after DAW restart/loop");
+                    }
                 } catch (...) { failure=std::current_exception(); }
             });
             audio.join();

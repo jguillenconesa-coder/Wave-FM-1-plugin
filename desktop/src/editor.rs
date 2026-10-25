@@ -203,7 +203,7 @@ pub fn create(params: Arc<Fm1Params>, link: Arc<Link>) -> Option<Box<dyn Editor>
                     .on_hover_text("Internal / firmware: use the firmware's own tempo. Ableton / DAW: send 24-PPQN MIDI Clock and Start/Stop from the host. Set the firmware's clock input to external TRS/MIDI; USB clock is not the emulated MIDI IN. CPU clock is unrelated to musical tempo.");
                 if params.transport_sync.value() == crate::host_sync::Source::Daw {
                     bar.label(params.transport_feedback.label(params.transport_sync.value()));
-                    bar.label("Firmware clock: external TRS / MIDI")
+                    bar.label("In firmware: select external TRS / MIDI")
                         .on_hover_text("Load and configure the firmware before starting Live. Every DAW start or timeline jump restarts the sequence; firmware support is required. Return its clock setting to Internal when leaving DAW sync.");
                 }
                 bar.separator();
